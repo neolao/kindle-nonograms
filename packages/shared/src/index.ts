@@ -2,15 +2,9 @@
  * Domain types and helpers shared between the server and the client.
  */
 
-export type CellState = "empty" | "filled" | "marked";
+export * from "./puzzle.js";
 
-export interface Puzzle {
-  id: string;
-  width: number;
-  height: number;
-  rowClues: number[][];
-  colClues: number[][];
-}
+export type CellState = "empty" | "filled" | "marked";
 
 /**
  * Builds an empty grid of the given dimensions, every cell set to "empty".
