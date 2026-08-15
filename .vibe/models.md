@@ -25,6 +25,12 @@ Defined in: `packages/shared/src/clues.ts`
 | columns | ClueRun[][] | one clue-run list per column |
 Defined in: `packages/shared/src/clues.ts`
 
-## CellState
-Type alias: `"empty" | "filled" | "marked"`
-Defined in: `packages/shared/src/index.ts`
+## PlayerCellMark
+Type alias: `number | "marked" | null` — a cell's play state: filled with a palette color index, deliberately excluded ("marked"), or untouched (`null`).
+Defined in: `packages/shared/src/progress.ts`
+
+## PuzzleProgress
+| Field | Type | Notes |
+|---|---|---|
+| cells | PlayerCellMark[][] | one mark per cell, same shape as the puzzle's solution grid |
+Defined in: `packages/shared/src/progress.ts`
