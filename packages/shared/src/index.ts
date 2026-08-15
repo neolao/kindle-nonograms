@@ -3,6 +3,7 @@
  */
 
 export * from "./puzzle.js";
+export * from "./clues.js";
 
 export type CellState = "empty" | "filled" | "marked";
 
