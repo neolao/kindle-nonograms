@@ -3,7 +3,9 @@
 A nonogram (picross) puzzle game designed to be played directly in the built-in web browser of a Kindle e-reader.
 
 <!-- vibe:begin:features -->
-No features have shipped yet — this project is in early scaffolding. Check back after the first release.
+- Puzzles support any number of colors, not just black and white.
+- A puzzle's clues (the numbers shown per row and column) are calculated automatically from its solution, so puzzle data only needs to store the solution itself.
+- Player progress on a puzzle can be tracked and checked to confirm it was solved correctly.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->
