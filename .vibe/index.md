@@ -11,6 +11,7 @@
 - Client code guards DOM access behind `typeof document !== "undefined"` so pure logic stays testable outside a browser.
 - Domain types live in `shared` and are meant to be imported by both `server` and `client`.
 - Clues are never stored — they are always derived on demand from a puzzle's solution grid.
+- Browser-API-dependent client tests opt into a per-file `// @vitest-environment jsdom` pragma rather than switching the whole suite's default environment.
 
 ## Other context files
 - [`models.md`](models.md) — data models

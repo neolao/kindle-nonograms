@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A player's progress on a puzzle is now saved in the browser, so it survives closing and reopening the page.
+
 ## [0.1.0] - 2026-08-16
 
 ### Added
