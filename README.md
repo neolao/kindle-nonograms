@@ -8,6 +8,8 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - Player progress on a puzzle can be tracked and checked to confirm it was solved correctly.
 - Player progress is saved in the browser, so it survives closing and reopening the page.
 - Puzzles exported from the reMarkable nonogram generator project can be converted into this project's puzzle format.
+- 18 black-and-white puzzles converted from the reMarkable nonogram generator are included in the puzzle library.
+- The game is automatically built and published online whenever a change is pushed.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->
