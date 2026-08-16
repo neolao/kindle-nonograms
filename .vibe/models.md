@@ -34,3 +34,12 @@ Defined in: `packages/shared/src/progress.ts`
 |---|---|---|
 | cells | PlayerCellMark[][] | one mark per cell, same shape as the puzzle's solution grid |
 Defined in: `packages/shared/src/progress.ts`
+
+## BooleanGridExport
+| Field | Type | Notes |
+|---|---|---|
+| name | string, optional | falls back to the given id when missing or blank |
+| width | number | |
+| height | number | |
+| cells | boolean[][] | `true` maps to color index `0`, `false` maps to `null` |
+Defined in: `packages/shared/src/adapters.ts`

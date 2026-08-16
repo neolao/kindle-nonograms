@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Puzzles exported from the reMarkable nonogram generator project can now be converted into this project's puzzle format.
+
 ## [0.2.0] - 2026-08-16
 
 ### Added
