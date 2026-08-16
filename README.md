@@ -7,6 +7,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - A puzzle's clues (the numbers shown per row and column) are calculated automatically from its solution, so puzzle data only needs to store the solution itself.
 - Player progress on a puzzle can be tracked and checked to confirm it was solved correctly.
 - Player progress is saved in the browser, so it survives closing and reopening the page.
+- Puzzles exported from the reMarkable nonogram generator project can be converted into this project's puzzle format.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->
