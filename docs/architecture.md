@@ -34,6 +34,8 @@ Currently exposes:
 
 A vanilla TypeScript frontend (no framework), built with Vite. `src/main.ts` mounts into the `#app` element in `index.html`, guarded behind `typeof document !== "undefined"` so pure functions (like `formatClueLine`) stay unit-testable outside a browser.
 
+`src/progressStorage.ts` persists a puzzle's `PuzzleProgress` (from `shared`) to `localStorage` under `kindle-nonograms:progress:<puzzleId>` via `saveProgress`/`loadProgress`. Both degrade silently — no throw, nothing saved/loaded — if storage is unavailable, throws (quota, restricted mode), or holds corrupted JSON. Its tests opt into a real DOM via a per-file `// @vitest-environment jsdom` pragma, since the rest of the suite defaults to the `node` environment.
+
 The Vite build targets `es2015` (see `packages/client/vite.config.ts`) — see [docs/configuration.md](configuration.md) if the target ever needs revisiting for a specific Kindle model's browser.
 
 ## Why this split
