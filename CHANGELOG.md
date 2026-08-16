@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- All puzzle files in the puzzle folder are now automatically discovered and validated when the site is built, whether they were authored in the game's own format or exported from the reMarkable nonogram generator.
+
 ## [1.0.0] - 2026-08-16
 
 ### Added

@@ -4,6 +4,7 @@
 ## Modules
 - [`modules/shared.md`](modules/shared.md) — domain types and pure helpers shared across the project
 - [`modules/client.md`](modules/client.md) — vanilla TypeScript frontend built with Vite
+- [`modules/site.md`](modules/site.md) — static-site generator, starting with puzzle source loading
 
 ## Observed patterns
 - The project no longer ships a runtime server — it is being rebuilt as a static site.
@@ -11,7 +12,9 @@
 - Domain types live in `shared` and are meant to be imported by both the client and, eventually, the static-site generator.
 - Clues are never stored — they are always derived on demand from a puzzle's solution grid.
 - Browser-API-dependent client tests opt into a per-file `// @vitest-environment jsdom` pragma rather than switching the whole suite's default environment.
+- Puzzle source files are auto-detected by shape (native vs. reMarkable export) rather than by a format tag, and a source file's id always comes from its filename, never from content.
 
 ## Other context files
 - [`models.md`](models.md) — data models
 - [`glossary.md`](glossary.md) — ubiquitous language
+- [`decisions/`](decisions/) — architectural decision records
