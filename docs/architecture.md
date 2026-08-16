@@ -2,14 +2,16 @@
 
 # Architecture
 
-Kindle Nonograms is an npm workspaces monorepo. It pivoted from a full-stack (Express) architecture to a static-site generator — no runtime server is needed. It currently has two packages.
+Kindle Nonograms is an npm workspaces monorepo. It pivoted from a full-stack (Express) architecture to a static-site generator — no runtime server is needed. It currently has three packages.
 
 ```mermaid
 graph LR
     shared["shared\n(domain types, pure helpers)"]
     client["client\n(Vite frontend)"]
+    site["site\n(static-site generator)"]
 
     client --> shared
+    site --> shared
 ```
 
 ## `packages/shared`
@@ -28,6 +30,10 @@ A vanilla TypeScript frontend (no framework), built with Vite. `src/main.ts` mou
 `src/progressStorage.ts` persists a puzzle's `PuzzleProgress` (from `shared`) to `localStorage` under `kindle-nonograms:progress:<puzzleId>` via `saveProgress`/`loadProgress`. Both degrade silently — no throw, nothing saved/loaded — if storage is unavailable, throws (quota, restricted mode), or holds corrupted JSON. Its tests opt into a real DOM via a per-file `// @vitest-environment jsdom` pragma, since the rest of the suite defaults to the `node` environment.
 
 The Vite build targets `es2015` (see `packages/client/vite.config.ts`) — see [docs/configuration.md](configuration.md) if the target ever needs revisiting for a specific Kindle model's browser.
+
+## `packages/site`
+
+The static-site generator, still taking shape. `discoverPuzzles.ts` exposes `loadPuzzleSources(dir)`: it lists every `*.json` file in a directory, auto-detects whether each one is the project's native `Puzzle` shape or the sibling reMarkable project's export shape (by checking for a `palette` field), and validates it through `createPuzzle`/`fromBooleanGridExport` from `shared`. A puzzle's id always comes from its filename, even for native-shape files that carry their own `id` field, so id and filename can never drift apart (see `.vibe/decisions/001-puzzle-id-from-filename.md`). Loading fails fast: the first malformed or invalid file throws immediately, naming the file, rather than silently skipping it or returning a partial list.
 
 ## Why this split
 
