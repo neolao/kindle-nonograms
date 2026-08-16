@@ -1,0 +1,24 @@
+{
+  "id": "edc0f21c-3ff4-4b45-a737-7cb096d3babf",
+  "name": "Violin",
+  "width": 7,
+  "height": 15,
+  "palette": ["#000000"],
+  "cells": [
+    [null, 0, 0, null, null, null, null],
+    [null, 0, 0, null, null, null, 0],
+    [null, null, 0, null, null, 0, 0],
+    [null, null, 0, null, null, 0, 0],
+    [null, null, 0, null, null, null, 0],
+    [null, null, 0, null, null, null, 0],
+    [null, 0, 0, 0, null, null, 0],
+    [0, 0, 0, 0, 0, null, 0],
+    [0, 0, 0, 0, 0, null, 0],
+    [0, 0, 0, 0, 0, null, 0],
+    [null, 0, 0, 0, null, null, 0],
+    [0, 0, 0, 0, 0, null, 0],
+    [0, null, null, null, 0, null, 0],
+    [0, 0, 0, 0, 0, null, 0],
+    [null, 0, 0, 0, null, null, null]
+  ]
+}
