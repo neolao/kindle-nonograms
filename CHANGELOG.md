@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- The project no longer ships a runtime server; it is being rebuilt as a static site.
+
 ## [0.3.0] - 2026-08-16
 
 ### Added

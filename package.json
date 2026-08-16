@@ -8,7 +8,6 @@
     "test": "vitest run",
     "lint": "biome check --write .",
     "build": "npm run build --workspaces --if-present",
-    "dev:server": "npm run dev --workspace packages/server",
     "dev:client": "npm run dev --workspace packages/client"
   },
   "devDependencies": {

@@ -2,14 +2,6 @@
 
 # Configuration
 
-## Server
-
-| Variable | Purpose | Default | Required |
-|---|---|---|---|
-| `PORT` | TCP port the Express server listens on | `3000` | No |
-
-Read in `packages/server/src/index.ts`.
-
 ## Client build
 
 Not an environment variable, but a build-time setting worth knowing about: `packages/client/vite.config.ts` sets `build.target` to `es2015` to match the JS baseline supported by Kindle's built-in browser. Change it only after confirming compatibility with the target Kindle models.

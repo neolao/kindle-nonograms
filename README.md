@@ -25,19 +25,13 @@ npm test
 <!-- vibe:end:install -->
 
 <!-- vibe:begin:usage -->
-Run the backend API in development mode:
-
-```bash
-npm run dev:server
-```
-
-Run the frontend in development mode (in a separate terminal):
+Run the frontend in development mode:
 
 ```bash
 npm run dev:client
 ```
 
-Build both the server and the client for production:
+Build for production:
 
 ```bash
 npm run build
@@ -59,7 +53,6 @@ npm run lint
 ## Documentation
 
 <!-- vibe:begin:docs-index -->
-- [docs/api.md](docs/api.md) — the server's HTTP API
 - [docs/architecture.md](docs/architecture.md) — how the project's packages fit together
-- [docs/configuration.md](docs/configuration.md) — environment variables and build-time settings
+- [docs/configuration.md](docs/configuration.md) — build-time settings
 <!-- vibe:end:docs-index -->
