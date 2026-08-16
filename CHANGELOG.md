@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Each puzzle now has a static page showing its color-coded clues and an empty grid ready to play, viewable and shareable even before any interactivity is added.
+
 ## [1.1.0] - 2026-08-16
 
 ### Added

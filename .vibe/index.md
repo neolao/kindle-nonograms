@@ -13,6 +13,7 @@
 - Clues are never stored — they are always derived on demand from a puzzle's solution grid.
 - Browser-API-dependent client tests opt into a per-file `// @vitest-environment jsdom` pragma rather than switching the whole suite's default environment.
 - Puzzle source files are auto-detected by shape (native vs. reMarkable export) rather than by a format tag, and a source file's id always comes from its filename, never from content.
+- Rendered puzzle pages inline all their own CSS in a `<style>` block (no external stylesheet exists yet) and never encode information by color alone, since Kindle's e-ink screens are often grayscale.
 
 ## Other context files
 - [`models.md`](models.md) — data models
