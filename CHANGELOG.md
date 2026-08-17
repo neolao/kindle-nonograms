@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The site now has a home page listing every puzzle with its size and a link to play it, ready to show which ones are already solved once that's tracked.
+
 ## [1.2.0] - 2026-08-17
 
 ### Added

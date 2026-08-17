@@ -35,6 +35,16 @@ Defined in: `packages/shared/src/progress.ts`
 | cells | PlayerCellMark[][] | one mark per cell, same shape as the puzzle's solution grid |
 Defined in: `packages/shared/src/progress.ts`
 
+## PuzzleSummary
+| Field | Type | Notes |
+|---|---|---|
+| id | string | |
+| name | string | |
+| width | number | |
+| height | number | |
+Just enough of a `Puzzle` to list and link to it on the library page; deliberately excludes `palette`/`cells` so no solution data reaches that renderer.
+Defined in: `packages/site/src/renderLibraryPage.ts`
+
 ## BooleanGridExport
 | Field | Type | Notes |
 |---|---|---|
