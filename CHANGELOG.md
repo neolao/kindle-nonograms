@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-08-17
+
 ### Added
 
 - The library page now shows which puzzles you've already solved.
@@ -66,7 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/neolao/kindle-nonograms/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/neolao/kindle-nonograms/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/neolao/kindle-nonograms/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/neolao/kindle-nonograms/compare/v1.1.0...v1.2.0
