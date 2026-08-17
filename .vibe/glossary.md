@@ -21,9 +21,9 @@ The sequence of runs attached to a row or column of a puzzle, each run carrying 
 _Sources: `packages/shared/src/clues.ts`, `packages/client/src/main.ts`_
 
 ## Library page
-The site's home page: a list of every puzzle a player can choose from, each linking to its own page, with an empty-state message when there are none. It shows only enough of each puzzle to list and link to it (name, size) — never its solution.
+The site's home page: a list of every puzzle a player can choose from, each linking to its own page, with an empty-state message when there are none, and a badge revealing which ones the player already solved. Its visible markup shows only enough of each puzzle to list and link to it (name, size); each puzzle's full data, including its solution, is also embedded in the page for client-side hydration to check saved progress against.
 **Do not confuse with:** Puzzle, the single item each library entry links to.
-_Sources: `packages/site/src/renderLibraryPage.ts`_
+_Sources: `packages/site/src/renderLibraryPage.ts`, `packages/client/src/hydrateLibraryPage.ts`_
 
 ## Boolean grid export
 The plain puzzle format produced by the sibling `remarkable-nonogram-generator` project: dimensions plus a boolean solution grid, with no palette and no id. It is converted into this project's Puzzle before use, with `true` cells becoming the single palette color and `false` cells becoming empty.

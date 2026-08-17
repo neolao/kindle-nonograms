@@ -3,7 +3,7 @@ import {
   type Puzzle,
   computePuzzleClues,
 } from "@kindle-nonograms/shared";
-import { escapeHtml } from "./htmlEscape.js";
+import { embedJson, escapeHtml } from "./htmlEscape.js";
 
 // Cycled by palette index so different colors stay distinguishable even
 // where the browser can't render color (Kindle's e-ink is often grayscale).
@@ -131,10 +131,4 @@ tbody td:nth-child(5n+2){border-left-width:2px;}
 tbody tr:nth-child(5n+1) td,tbody tr:nth-child(5n+1) th{border-top-width:2px;}
 .run{display:inline-block;}
 ${colorClasses}`;
-}
-
-function embedJson(puzzle: Puzzle): string {
-  // Escapes "<" so the payload can never be parsed as HTML markup (e.g. a
-  // "</script>" inside a puzzle's id/name breaking out of this tag).
-  return JSON.stringify(puzzle).replace(/</g, "\\u003c");
 }

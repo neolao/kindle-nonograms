@@ -1,10 +1,25 @@
 // @vitest-environment jsdom
+import type { Puzzle } from "@kindle-nonograms/shared";
 import { describe, expect, it } from "vitest";
-import { type PuzzleSummary, renderLibraryPage } from "./renderLibraryPage.js";
+import { renderLibraryPage } from "./renderLibraryPage.js";
 
-const summaries: PuzzleSummary[] = [
-  { id: "sailboat", name: "Sailboat", width: 20, height: 20 },
-  { id: "cat", name: "Cat", width: 10, height: 15 },
+const puzzles: Puzzle[] = [
+  {
+    id: "sailboat",
+    name: "Sailboat",
+    width: 20,
+    height: 20,
+    palette: ["#000000"],
+    cells: Array.from({ length: 20 }, () => Array(20).fill(null)),
+  },
+  {
+    id: "cat",
+    name: "Cat",
+    width: 10,
+    height: 15,
+    palette: ["#000000"],
+    cells: Array.from({ length: 15 }, () => Array(10).fill(null)),
+  },
 ];
 
 function parse(html: string): Document {
@@ -13,7 +28,7 @@ function parse(html: string): Document {
 
 describe("renderLibraryPage", () => {
   it("lists every puzzle with a relative link and its size in the accessible link name", () => {
-    const doc = parse(renderLibraryPage(summaries));
+    const doc = parse(renderLibraryPage(puzzles));
     const links = doc.querySelectorAll("li a");
 
     expect(links).toHaveLength(2);
@@ -25,7 +40,7 @@ describe("renderLibraryPage", () => {
   });
 
   it("tags every row with the puzzle id for later hydration to find it", () => {
-    const doc = parse(renderLibraryPage(summaries));
+    const doc = parse(renderLibraryPage(puzzles));
     const items = doc.querySelectorAll("li");
 
     expect(items[0]?.getAttribute("data-puzzle-id")).toBe("sailboat");
@@ -33,7 +48,7 @@ describe("renderLibraryPage", () => {
   });
 
   it("reserves a hidden solved-badge node in every row for hydration to reveal", () => {
-    const doc = parse(renderLibraryPage(summaries));
+    const doc = parse(renderLibraryPage(puzzles));
     const items = doc.querySelectorAll("li");
 
     for (const item of Array.from(items)) {
@@ -53,7 +68,14 @@ describe("renderLibraryPage", () => {
   it("escapes special characters in a puzzle's name instead of injecting markup", () => {
     const doc = parse(
       renderLibraryPage([
-        { id: "weird", name: "<b>Bold</b>", width: 5, height: 5 },
+        {
+          id: "weird",
+          name: "<b>Bold</b>",
+          width: 5,
+          height: 5,
+          palette: ["#000000"],
+          cells: Array.from({ length: 5 }, () => Array(5).fill(null)),
+        },
       ]),
     );
 
@@ -62,12 +84,44 @@ describe("renderLibraryPage", () => {
   });
 
   it("references the client bundle with a relative path that has no leading slash", () => {
-    const doc = parse(renderLibraryPage(summaries));
+    const doc = parse(renderLibraryPage(puzzles));
     const script = doc.querySelector('script[type="module"]');
     const src = script?.getAttribute("src") ?? "";
 
     expect(src).not.toBe("");
     expect(src.startsWith("/")).toBe(false);
     expect(src.startsWith("http")).toBe(false);
+  });
+
+  it("embeds every puzzle's full data as JSON that round-trips, for later solved-state checking", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const payload = doc.querySelector('script[type="application/json"]');
+
+    expect(payload).not.toBeNull();
+    expect(JSON.parse(payload?.textContent ?? "null")).toEqual(puzzles);
+  });
+
+  it("escapes an embedded </script> sequence in puzzle content instead of breaking out of the page", () => {
+    const maliciousPuzzles: Puzzle[] = [
+      { ...puzzles[0], id: "cat</script><script>alert(1)</script>" },
+    ];
+
+    const doc = parse(renderLibraryPage(maliciousPuzzles));
+
+    expect(doc.querySelectorAll("script")).toHaveLength(2);
+    const payload = doc.querySelector('script[type="application/json"]');
+    expect(JSON.parse(payload?.textContent ?? "null")).toEqual(
+      maliciousPuzzles,
+    );
+  });
+
+  it("does not render any puzzle solution content in the visible list markup", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const items = doc.querySelectorAll("li");
+
+    for (const item of Array.from(items)) {
+      expect(item.querySelector("table")).toBeNull();
+      expect(item.innerHTML).not.toContain("#000000");
+    }
   });
 });

@@ -15,6 +15,7 @@
 - Puzzle source files are auto-detected by shape (native vs. reMarkable export) rather than by a format tag, and a source file's id always comes from its filename, never from content.
 - Rendered puzzle pages inline all their own CSS in a `<style>` block (no external stylesheet exists yet) and never encode information by color alone, since Kindle's e-ink screens are often grayscale.
 - Client-side updates to the puzzle grid touch only the single cell that changed, never rebuilding the grid, to avoid a visible redraw on Kindle's slow e-ink refresh.
+- Generated pages keep their visible markup solution-blind but embed the full puzzle data as JSON regardless, since the site has no backend to hide solutions behind anyway.
 
 ## Other context files
 - [`models.md`](models.md) — data models

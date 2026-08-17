@@ -1,24 +1,22 @@
 import type { Puzzle } from "@kindle-nonograms/shared";
-import { escapeHtml } from "./htmlEscape.js";
-
-/**
- * Just enough of a Puzzle to list and link to it — no solution data ever
- * reaches this renderer.
- */
-export type PuzzleSummary = Pick<Puzzle, "id" | "name" | "width" | "height">;
+import { embedJson, escapeHtml } from "./htmlEscape.js";
 
 /**
  * Renders the site's home page: a list of every puzzle (name, size, a
  * relative link to its own page) with a hidden "solved" badge already
  * reserved in each row for later client-side hydration to reveal (see
  * .vibe/decisions/004-library-page-reserves-solved-badge-node.md), or a
- * plain empty-state message when there are no puzzles.
+ * plain empty-state message when there are no puzzles. The *visible*
+ * markup only ever shows id/name/size — every puzzle's full data
+ * (including its solution) is also embedded as JSON so hydration can check
+ * saved progress for a correct solve without a backend to do it for it
+ * (see .vibe/decisions/006-library-page-embeds-full-puzzles-for-solved-checking.md).
  */
-export function renderLibraryPage(summaries: PuzzleSummary[]): string {
+export function renderLibraryPage(puzzles: Puzzle[]): string {
   const body =
-    summaries.length === 0
+    puzzles.length === 0
       ? "<p>No puzzles are available yet.</p>"
-      : `<ul>${summaries.map(renderLibraryItem).join("")}</ul>`;
+      : `<ul>${puzzles.map(renderLibraryItem).join("")}</ul>`;
 
   return `<!doctype html>
 <html lang="en">
@@ -31,16 +29,17 @@ export function renderLibraryPage(summaries: PuzzleSummary[]): string {
 <body>
 <h1>Kindle Nonograms</h1>
 ${body}
+<script type="application/json" id="puzzles-data">${embedJson(puzzles)}</script>
 <script type="module" src="./assets/main.js"></script>
 </body>
 </html>`;
 }
 
-function renderLibraryItem(summary: PuzzleSummary): string {
-  const href = `puzzles/${encodeURIComponent(summary.id)}/`;
-  const label = `${escapeHtml(summary.name)} — ${summary.width} × ${summary.height}`;
+function renderLibraryItem(puzzle: Puzzle): string {
+  const href = `puzzles/${encodeURIComponent(puzzle.id)}/`;
+  const label = `${escapeHtml(puzzle.name)} — ${puzzle.width} × ${puzzle.height}`;
 
-  return `<li data-puzzle-id="${escapeHtml(summary.id)}"><a href="${href}">${label}</a><span class="solved-badge" hidden>Solved</span></li>`;
+  return `<li data-puzzle-id="${escapeHtml(puzzle.id)}"><a href="${href}">${label}</a><span class="solved-badge" hidden>Solved</span></li>`;
 }
 
 const STYLE = `
