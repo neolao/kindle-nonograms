@@ -1,4 +1,4 @@
-name: Deploy client to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -11,6 +11,9 @@ permissions:
   id-token: write
 
 # Avoid overlapping deployments; let the latest push win.
+# Rollback: re-run a previous successful "Deploy to GitHub Pages" run from
+# the Actions tab (redeploys its already-built artifact), or revert the
+# offending commit and push to rebuild from source.
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -18,6 +21,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,8 +41,8 @@ jobs:
       - name: Test
         run: npm test
 
-      - name: Build client
-        run: npm run build --workspace packages/client
+      - name: Build site
+        run: npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -46,11 +50,12 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: packages/client/dist
+          path: dist
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

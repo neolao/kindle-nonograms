@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The game published to GitHub Pages is now the real, playable site — the previous automatic deploy was publishing an unrelated placeholder page instead.
+
 ## [1.7.0] - 2026-08-17
 
 ### Added
