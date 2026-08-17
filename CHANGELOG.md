@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Two small demo puzzles — a black-and-white one and a multi-color one — are now included, so the whole site is playable end to end right out of the box.
+
 ## [1.6.0] - 2026-08-17
 
 ### Added
