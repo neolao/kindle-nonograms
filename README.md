@@ -12,6 +12,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - All puzzle files, whether in the game's own format or exported from the reMarkable nonogram generator, are automatically discovered and validated when the site is built.
 - Each puzzle has its own page showing its color-coded clues and an empty grid, viewable even without loading any interactive code.
 - The site has a home page listing every puzzle with its size and a link to play it.
+- Puzzles are playable right on the page: tap a cell to fill it, switch to marking mode to cross out cells you're sure are empty, and get a message once you've solved it.
 - The game is automatically built and published online whenever a change is pushed.
 <!-- vibe:end:features -->
 

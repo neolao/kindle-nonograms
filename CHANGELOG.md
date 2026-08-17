@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Puzzle pages are now playable: tap a cell to fill it or switch to marking mode to cross out cells you're sure are empty, your progress is saved automatically, and a message tells you when you've solved the puzzle.
+
 ## [1.3.0] - 2026-08-17
 
 ### Added

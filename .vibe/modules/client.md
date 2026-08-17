@@ -1,5 +1,5 @@
 # Module: client
 **Role:** Vanilla TypeScript frontend, built with Vite (es2015 target) for compatibility with Kindle's browser.
-**Files:** `packages/client/src/main.ts`, `packages/client/src/progressStorage.ts`
-**Exports:** `formatClueLine(clues: number[]): string`; mounts the app into `#app` on load; `saveProgress(puzzleId, progress): void`, `loadProgress(puzzleId): PuzzleProgress | undefined` — persists a puzzle's progress to `localStorage`, degrading silently if storage is unavailable, throws, or holds corrupted JSON
+**Files:** `packages/client/src/main.ts`, `packages/client/src/progressStorage.ts`, `packages/client/src/hydratePlayPage.ts`
+**Exports:** `formatClueLine(clues: number[]): string`; mounts the app into `#app` on load; `saveProgress(puzzleId, progress): void`, `loadProgress(puzzleId): PuzzleProgress | undefined` — persists a puzzle's progress to `localStorage`, degrading silently if storage is unavailable, throws, or holds corrupted JSON; `hydrate(): void` — the interactive entry point for a generated puzzle page: builds a Fill/Cross mode toggle (plus a color swatch per palette entry once there is more than one color) and a win banner, restores saved progress onto the grid, and wires one delegated click listener that toggles a tapped cell's mark, redraws only that cell, saves progress, and shows/hides the win banner via `isPuzzleSolved`
 **Depends on:** `modules/shared.md`
