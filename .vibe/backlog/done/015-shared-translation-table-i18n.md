@@ -1,5 +1,5 @@
 ---
-status: in_progress
+status: done
 ---
 # Shared Translation Table (i18n)
 
