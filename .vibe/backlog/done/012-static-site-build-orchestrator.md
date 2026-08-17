@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 depends_on: [005, 006, 007, 008, 010, 011]
 ---
 # Static Site Build Orchestrator
