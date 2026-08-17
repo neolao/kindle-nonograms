@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 depends_on: [012, 013]
 ---
 # GitHub Actions Pages Deploy Workflow
