@@ -124,4 +124,11 @@ describe("renderLibraryPage", () => {
       expect(item.innerHTML).not.toContain("#000000");
     }
   });
+
+  it("appends the given asset version as a query string on the client bundle script", () => {
+    const doc = parse(renderLibraryPage(puzzles, "abc123ef"));
+    const script = doc.querySelector('script[type="module"]');
+
+    expect(script?.getAttribute("src")).toBe("./assets/main.js?v=abc123ef");
+  });
 });

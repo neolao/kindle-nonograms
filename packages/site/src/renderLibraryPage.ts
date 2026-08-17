@@ -1,5 +1,5 @@
 import type { Puzzle } from "@kindle-nonograms/shared";
-import { embedJson, escapeHtml } from "./htmlEscape.js";
+import { embedJson, escapeHtml, versionQuery } from "./htmlEscape.js";
 
 /**
  * Renders the site's home page: a list of every puzzle (name, size, a
@@ -12,7 +12,10 @@ import { embedJson, escapeHtml } from "./htmlEscape.js";
  * saved progress for a correct solve without a backend to do it for it
  * (see .vibe/decisions/006-library-page-embeds-full-puzzles-for-solved-checking.md).
  */
-export function renderLibraryPage(puzzles: Puzzle[]): string {
+export function renderLibraryPage(
+  puzzles: Puzzle[],
+  assetVersion?: string,
+): string {
   const body =
     puzzles.length === 0
       ? "<p>No puzzles are available yet.</p>"
@@ -30,7 +33,7 @@ export function renderLibraryPage(puzzles: Puzzle[]): string {
 <h1>Kindle Nonograms</h1>
 ${body}
 <script type="application/json" id="puzzles-data">${embedJson(puzzles)}</script>
-<script type="module" src="./assets/main.js"></script>
+<script type="module" src="./assets/main.js${versionQuery(assetVersion)}"></script>
 </body>
 </html>`;
 }

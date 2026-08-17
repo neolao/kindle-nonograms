@@ -20,3 +20,14 @@ export function escapeHtml(text: string): string {
 export function embedJson(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
+
+/**
+ * Formats an optional asset version as a `?v=` query string suffix, or an
+ * empty string when no version is given. Appended to the client bundle's
+ * script `src` so a returning browser doesn't keep serving a stale cached
+ * bundle after a rebuild — the bundle itself keeps a fixed, unhashed
+ * filename (see .vibe/decisions/007-static-site-build-orchestrator-design.md).
+ */
+export function versionQuery(assetVersion: string | undefined): string {
+  return assetVersion ? `?v=${assetVersion}` : "";
+}

@@ -7,12 +7,15 @@
   "scripts": {
     "test": "vitest run",
     "lint": "biome check --write .",
-    "build": "npm run build --workspaces --if-present",
+    "build": "vite-node packages/site/src/build-cli.ts",
+    "preview": "vite preview --outDir dist",
     "dev:client": "npm run dev --workspace packages/client"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "typescript": "^5.7.3",
+    "vite": "^7.3.6",
+    "vite-node": "^3.2.4",
     "vitest": "^3.0.5"
   }
 }

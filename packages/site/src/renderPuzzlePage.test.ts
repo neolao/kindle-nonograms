@@ -153,4 +153,11 @@ describe("renderPuzzlePage", () => {
     expect(src.startsWith("/")).toBe(false);
     expect(src.startsWith("http")).toBe(false);
   });
+
+  it("appends the given asset version as a query string on the client bundle script", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle, "abc123ef"));
+    const script = doc.querySelector('script[type="module"]');
+
+    expect(script?.getAttribute("src")).toBe("../../assets/main.js?v=abc123ef");
+  });
 });

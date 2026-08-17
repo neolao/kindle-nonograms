@@ -14,6 +14,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The site has a home page listing every puzzle with its size and a link to play it.
 - Puzzles are playable right on the page: tap a cell to fill it, switch to marking mode to cross out cells you're sure are empty, and get a message once you've solved it.
 - The home page now shows which puzzles you've already solved.
+- The whole site — every puzzle page, the home page, and the interactive bundle — can now be built with a single command and previewed locally before publishing.
 - The game is automatically built and published online whenever a change is pushed.
 <!-- vibe:end:features -->
 
@@ -38,10 +39,16 @@ Run the frontend in development mode:
 npm run dev:client
 ```
 
-Build for production:
+Build the full static site (every puzzle page, the home page, and the interactive bundle) into `dist/`:
 
 ```bash
 npm run build
+```
+
+Preview the built site locally over HTTP:
+
+```bash
+npm run preview
 ```
 
 Run the test suite:

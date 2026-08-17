@@ -3,7 +3,7 @@ import {
   type Puzzle,
   computePuzzleClues,
 } from "@kindle-nonograms/shared";
-import { embedJson, escapeHtml } from "./htmlEscape.js";
+import { embedJson, escapeHtml, versionQuery } from "./htmlEscape.js";
 
 // Cycled by palette index so different colors stay distinguishable even
 // where the browser can't render color (Kindle's e-ink is often grayscale).
@@ -15,9 +15,15 @@ const BORDER_STYLES = ["solid", "dashed", "dotted", "double"];
  * non-color border cue) clue headers, a solution-blind grid of addressable
  * cells, and the puzzle embedded as JSON for later client-side hydration.
  * See .vibe/decisions/002-puzzle-page-embeds-full-solution.md for why the
- * embedded payload includes the solution.
+ * embedded payload includes the solution. `assetVersion`, when given, is
+ * appended as a `?v=` query string on the client bundle script so a
+ * returning browser doesn't keep serving a stale cached bundle after a
+ * rebuild (see .vibe/decisions/007-static-site-build-orchestrator-design.md).
  */
-export function renderPuzzlePage(puzzle: Puzzle): string {
+export function renderPuzzlePage(
+  puzzle: Puzzle,
+  assetVersion?: string,
+): string {
   const clues = computePuzzleClues(puzzle);
   const multiColor = puzzle.palette.length > 1;
 
@@ -53,7 +59,7 @@ ${rows}
 </table>
 </div>
 <script type="application/json" id="puzzle-data">${embedJson(puzzle)}</script>
-<script type="module" src="../../assets/main.js"></script>
+<script type="module" src="../../assets/main.js${versionQuery(assetVersion)}"></script>
 </body>
 </html>`;
 }
