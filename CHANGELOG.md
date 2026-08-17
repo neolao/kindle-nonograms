@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Laid the groundwork for French and English translations across the app (not yet visible — the language switcher itself ships in a follow-up).
+
 ## [1.7.1] - 2026-08-17
 
 ### Fixed

@@ -25,6 +25,11 @@ The site's home page: a list of every puzzle a player can choose from, each link
 **Do not confuse with:** Puzzle, the single item each library entry links to.
 _Sources: `packages/site/src/renderLibraryPage.ts`, `packages/client/src/hydrateLibraryPage.ts`_
 
+## Locale
+A supported display language for the app's UI text — currently English or French, with English as the default. Every UI string is looked up by a stable key against a locale, so the same interface can render in either language without duplicating markup.
+**Do not confuse with:** TranslationKey, the identifier used to look a string up; Locale is the language it is looked up *in*.
+_Sources: `packages/shared/src/i18n.ts`_
+
 ## Boolean grid export
 The plain puzzle format produced by the sibling `remarkable-nonogram-generator` project: dimensions plus a boolean solution grid, with no palette and no id. It is converted into this project's Puzzle before use, with `true` cells becoming the single palette color and `false` cells becoming empty.
 **Do not confuse with:** Puzzle, the format it is converted into.
