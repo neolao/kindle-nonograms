@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 depends_on: [012]
 ---
 # Demo Puzzles And End-To-End Check
