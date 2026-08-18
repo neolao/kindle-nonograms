@@ -397,6 +397,20 @@ describe("language switcher", () => {
     expect(document.querySelectorAll(".page-header")).toHaveLength(1);
   });
 
+  it("inserts the toolbar and win banner into the chrome panel when one is present", () => {
+    document.body.innerHTML = `<div class="chrome-panel"><h1>${soloPuzzle.name}</h1><div class="page-header"><a class="back-link" href="../../">Back to puzzle list</a></div></div><div class="grid-wrapper"><table><tbody><tr><th scope="row">clue</th><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table></div><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
+
+    hydrate();
+
+    const chromePanel = document.querySelector(".chrome-panel");
+    expect(chromePanel?.querySelector('[data-role="check"]')).not.toBeNull();
+    expect(
+      chromePanel?.querySelector('[data-role="win-banner"]'),
+    ).not.toBeNull();
+    // Not duplicated as a stray sibling outside the panel.
+    expect(document.querySelectorAll('[data-role="check"]')).toHaveLength(1);
+  });
+
   it("retranslates the static back-link to the resolved locale on initial load, not just after switching", () => {
     setNavigatorLanguage("fr-FR");
     document.body.innerHTML = `<h1>${soloPuzzle.name}</h1><div class="page-header"><a class="back-link" data-i18n="play.backToLibrary" href="../../">Back to puzzle list</a></div><div class="grid-wrapper"><table><tbody><tr><th scope="row">clue</th><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table></div><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;

@@ -424,8 +424,18 @@ export function hydrate(): void {
       applyGridFit(anchor, table);
     }
   });
-  anchor.parentNode?.insertBefore(banner, anchor);
-  anchor.parentNode?.insertBefore(toolbar, anchor);
+  // Prefers the static chrome panel (see
+  // .vibe/decisions/014-puzzle-page-chrome-panel-wrapper.md) so the toolbar
+  // and banner land inside its bordered/shadowed box alongside the heading
+  // and back-link, instead of as bare siblings of the grid. Falls back to
+  // the old insertion point when no such panel exists (e.g. isolated tests).
+  const chromePanel = document.querySelector<HTMLElement>(".chrome-panel");
+  if (chromePanel) {
+    chromePanel.append(banner, toolbar);
+  } else {
+    anchor.parentNode?.insertBefore(banner, anchor);
+    anchor.parentNode?.insertBefore(toolbar, anchor);
+  }
 
   paintExistingProgress(table, puzzle, progress);
   banner.hidden = !isPuzzleSolved(puzzle, progress);

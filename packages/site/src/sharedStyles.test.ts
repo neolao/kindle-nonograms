@@ -120,4 +120,35 @@ describe("sharedStyles", () => {
 
     expect(css).not.toMatch(/animation|transition/);
   });
+
+  it("gives buttons and the back-link a chunky 3D offset shadow", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/button,\s*\.back-link\{[^}]*box-shadow:0 3px 0/);
+  });
+
+  it("presses a button in with a discrete style swap on :active, not an animated transition", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(
+      /button:active,\s*\.back-link:active\{[^}]*transform:translateY/,
+    );
+    expect(css).not.toMatch(/button:active[^{]*\{[^}]*transition/);
+  });
+
+  it("keeps a pressed/active toggle button visually pressed in, matching the :active state", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(
+      /button\[aria-pressed="true"\]\{[^}]*transform:translateY/,
+    );
+  });
+
+  it("rounds the corners of the panel, buttons, and the decorative dots", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/\.panel\{[^}]*border-radius:\d+px/);
+    expect(css).toMatch(/button,\s*\.back-link\{[^}]*border-radius:\d+px/);
+    expect(css).toMatch(/\.dot-row i\{[^}]*border-radius:50%/);
+  });
 });

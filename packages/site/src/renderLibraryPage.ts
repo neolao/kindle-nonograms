@@ -2,6 +2,7 @@ import type { Puzzle } from "@kindle-nonograms/shared";
 import { embedJson, escapeHtml, versionQuery } from "./htmlEscape.js";
 import { sharedStyles } from "./sharedStyles.js";
 import {
+  BORDER_RADIUS_PX,
   BORDER_WIDTH,
   COLORS,
   MIN_TAP_TARGET_PX,
@@ -71,17 +72,16 @@ function renderLibraryItem(puzzle: Puzzle): string {
 const STYLE = `
 ${sharedStyles()}
 [hidden]{display:none;}
-ul{list-style:none;padding:0;margin:${SPACING_PX.sm}px ${SPACING_PX.md}px ${SPACING_PX.md}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};}
-li{display:flex;align-items:center;border-bottom:${BORDER_WIDTH.thin} solid ${COLORS.border};border-left:${BORDER_WIDTH.thick} solid ${COLORS.line};}
-li:nth-child(4n+1){border-left-color:${COLORS.amber};}
-li:nth-child(4n+2){border-left-color:${COLORS.magenta};}
-li:nth-child(4n+3){border-left-color:${COLORS.teal};}
-li:nth-child(4n){border-left-color:${COLORS.text};}
-li:last-child{border-bottom:none;}
+ul{list-style:none;padding:0;margin:${SPACING_PX.sm}px ${SPACING_PX.md}px ${SPACING_PX.md}px;display:flex;flex-direction:column;gap:${SPACING_PX.sm}px;}
+li{display:flex;align-items:center;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-top-width:6px;border-top-color:${COLORS.line};border-radius:${BORDER_RADIUS_PX}px;box-shadow:4px 4px 0 ${COLORS.panelEdge};overflow:hidden;}
+li:nth-child(4n+1){border-top-color:${COLORS.amber};}
+li:nth-child(4n+2){border-top-color:${COLORS.magenta};}
+li:nth-child(4n+3){border-top-color:${COLORS.teal};}
+li:nth-child(4n){border-top-color:${COLORS.text};}
 li a{flex:1;display:block;padding:${SPACING_PX.sm}px ${SPACING_PX.md}px;min-height:${MIN_TAP_TARGET_PX}px;}
 li a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
-.solved-badge{margin:0 ${SPACING_PX.md}px 0 auto;padding:2px ${SPACING_PX.sm}px;border:${BORDER_WIDTH.medium} solid ${COLORS.teal};color:${COLORS.teal};font-size:0.8em;text-transform:uppercase;letter-spacing:0.05em;transform:rotate(-5deg);}
-.thumb{flex:0 0 auto;width:36px;height:36px;margin:${SPACING_PX.sm}px 0 ${SPACING_PX.sm}px ${SPACING_PX.sm}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};background:${COLORS.panel};display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.solved-badge{margin:0 ${SPACING_PX.md}px 0 auto;padding:2px ${SPACING_PX.sm}px;border:${BORDER_WIDTH.medium} solid ${COLORS.teal};border-radius:${BORDER_RADIUS_PX}px;color:${COLORS.teal};font-size:0.8em;text-transform:uppercase;letter-spacing:0.05em;transform:rotate(-5deg);}
+.thumb{flex:0 0 auto;width:36px;height:36px;margin:${SPACING_PX.sm}px 0 ${SPACING_PX.sm}px ${SPACING_PX.sm}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .thumb-lock{color:${COLORS.muted};font-weight:bold;}
 .thumb-row{display:flex;}
 .thumb-cell{width:4px;height:4px;}

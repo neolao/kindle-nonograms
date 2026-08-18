@@ -178,21 +178,31 @@ describe("renderLibraryPage", () => {
     );
   });
 
-  it("renders each puzzle row as a bordered card instead of a bare list item", () => {
+  it("renders each puzzle row as its own separate, bordered card with a gap between cards", () => {
     const doc = parse(renderLibraryPage(puzzles));
     const css = doc.querySelector("style")?.textContent ?? "";
 
-    expect(css).toMatch(/ul\{[^}]*border:/);
-    expect(css).toMatch(/li\{[^}]*border-bottom:/);
+    expect(css).toMatch(/ul\{[^}]*display:flex/);
+    expect(css).toMatch(/ul\{[^}]*gap:\d+px/);
+    expect(css).toMatch(/li\{[^}]*border:/);
+    expect(css).toMatch(/li\{[^}]*box-shadow:/);
   });
 
-  it("cycles each puzzle row's side stripe through the three decorative accent colors", () => {
+  it("rounds each card's corners and gives it a colored top stripe", () => {
     const doc = parse(renderLibraryPage(puzzles));
     const css = doc.querySelector("style")?.textContent ?? "";
 
-    expect(css).toMatch(/li:nth-child\(4n\+1\)\{[^}]*#a85f00/);
-    expect(css).toMatch(/li:nth-child\(4n\+2\)\{[^}]*#b0165c/);
-    expect(css).toMatch(/li:nth-child\(4n\+3\)\{[^}]*#0b7a68/);
+    expect(css).toMatch(/li\{[^}]*border-radius:\d+px/);
+    expect(css).toMatch(/li\{[^}]*border-top-width:\d+px/);
+  });
+
+  it("cycles each puzzle card's top stripe through the three decorative accent colors", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/li:nth-child\(4n\+1\)\{[^}]*border-top-color:#a85f00/);
+    expect(css).toMatch(/li:nth-child\(4n\+2\)\{[^}]*border-top-color:#b0165c/);
+    expect(css).toMatch(/li:nth-child\(4n\+3\)\{[^}]*border-top-color:#0b7a68/);
   });
 
   it("gives every row link at least the minimum tap target height", () => {
@@ -215,6 +225,14 @@ describe("renderLibraryPage", () => {
     const css = doc.querySelector("style")?.textContent ?? "";
 
     expect(css).toMatch(/\.solved-badge\{[^}]*#0b7a68/);
+  });
+
+  it("rounds the corners of the thumbnail box and the solved stamp", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/\.thumb\{[^}]*border-radius:\d+px/);
+    expect(css).toMatch(/\.solved-badge\{[^}]*border-radius:\d+px/);
   });
 
   it("wraps the page content in a bordered, shadowed panel", () => {

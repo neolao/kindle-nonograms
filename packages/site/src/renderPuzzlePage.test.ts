@@ -177,6 +177,25 @@ describe("renderPuzzlePage", () => {
     expect(css).toMatch(/\.grid-wrapper\{[^}]*box-sizing:border-box/);
   });
 
+  it("wraps the heading and back-link in their own bordered, shadowed panel, kept separate from the grid", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+
+    const chromePanel = doc.querySelector(".chrome-panel");
+    expect(chromePanel).not.toBeNull();
+    expect(chromePanel?.querySelector("h1")).not.toBeNull();
+    expect(chromePanel?.querySelector(".page-header")).not.toBeNull();
+    expect(chromePanel?.querySelector(".grid-wrapper")).toBeNull();
+    expect(chromePanel?.querySelector("table")).toBeNull();
+  });
+
+  it("rounds the corners of the chrome panel and the grid's own frame", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/\.chrome-panel\{[^}]*border-radius:\d+px/);
+    expect(css).toMatch(/\.grid-wrapper\{[^}]*border-radius:\d+px/);
+  });
+
   it("shows a decorative dot row before the heading", () => {
     const doc = parse(renderPuzzlePage(multiColorPuzzle));
 

@@ -76,3 +76,11 @@ export const SPACING_PX = {
 
 /** Minimum touch target size (px) for buttons and the language selector. */
 export const MIN_TAP_TARGET_PX = 44;
+
+/**
+ * Corner radius (px) for the cabinet system's panels, cards, buttons and
+ * badges — a purely decorative render property (never affects box size or
+ * layout measurement), so it's safe even on elements the grid-fit
+ * calculation cares about (e.g. the puzzle grid's own frame).
+ */
+export const BORDER_RADIUS_PX = 4;
