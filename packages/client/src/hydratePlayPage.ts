@@ -16,16 +16,10 @@ interface PlayState {
   activeColor: number;
 }
 
-// Cycled by palette index, alongside the color itself, so a filled cell
-// stays distinguishable even where the browser can't render color (Kindle's
-// e-ink is often grayscale). Fixed cross glyph never collides with any of
-// these. See .vibe/decisions/005-play-page-hydration-builds-its-own-controls.md.
-const FILL_GLYPHS = ["●", "▲", "■", "◆"];
+// A crossed cell always renders this fixed glyph regardless of active color,
+// so "excluded" never visually collides with a filled cell's plain color
+// fill. See .vibe/decisions/009-filled-cells-drop-the-disambiguation-glyph.md.
 const CROSS_GLYPH = "✖";
-
-function glyphForColor(index: number): string {
-  return FILL_GLYPHS[index % FILL_GLYPHS.length];
-}
 
 function readPuzzle(): Puzzle | undefined {
   const script = document.getElementById("puzzle-data");
@@ -62,10 +56,12 @@ function paintCell(
   puzzle: Puzzle,
 ): void {
   if (typeof mark === "number") {
-    const fillColor = puzzle.palette[mark] ?? "";
-    cell.textContent = glyphForColor(mark);
-    cell.style.backgroundColor = fillColor;
-    cell.style.color = contrastingTextColor(fillColor);
+    // A filled cell is a plain solid-color square, matching the classic
+    // nonogram look — no glyph on top. See
+    // .vibe/decisions/009-filled-cells-drop-the-disambiguation-glyph.md.
+    cell.textContent = "";
+    cell.style.backgroundColor = puzzle.palette[mark] ?? "";
+    cell.style.color = "";
   } else if (mark === "marked") {
     // A crossed cell never gets a solid fill — that absence is the whole
     // cue distinguishing it from a filled cell (see
@@ -151,9 +147,11 @@ function buildToolbar(puzzle: Puzzle, state: PlayState): HTMLElement {
         const active = index === state.activeColor;
         button.setAttribute("aria-pressed", String(active));
         button.style.borderWidth = active ? "3px" : "1px";
-        button.textContent = active
-          ? `${glyphForColor(index)} ✓`
-          : glyphForColor(index);
+        // A swatch is a plain solid-color square, matching how a filled grid
+        // cell now renders; only the checkmark (a fixed, non-color cue)
+        // marks which one is active. See
+        // .vibe/decisions/009-filled-cells-drop-the-disambiguation-glyph.md.
+        button.textContent = active ? "✓" : "";
       });
     };
 

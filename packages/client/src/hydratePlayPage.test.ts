@@ -57,14 +57,14 @@ afterEach(() => {
 });
 
 describe("hydrate", () => {
-  it("fills a cell with a solid background matching the active color and a readable glyph on top, then clears both on a second tap", () => {
+  it("fills a cell with a plain solid background matching the active color and no glyph on top, then clears it on a second tap", () => {
     buildFixture(soloPuzzle);
     hydrate();
 
     cell(0, 0).click();
-    expect(cell(0, 0).textContent).toBe("●");
+    expect(cell(0, 0).textContent).toBe("");
     expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
-    expect(cell(0, 0).style.color).toBe("rgb(255, 255, 255)");
+    expect(cell(0, 0).style.color).toBe("");
 
     cell(0, 0).click();
     expect(cell(0, 0).textContent).toBe("");
@@ -86,6 +86,39 @@ describe("hydrate", () => {
 
     expect(cell(0, 0).textContent).toBe("✖");
     expect(cell(0, 0).style.backgroundColor).toBe("");
+    expect(cell(0, 0).style.color).toBe("");
+  });
+
+  it("leaves no stale glyph, text color, or background when a cell cycles through fill, cross, clear, and refill with a different color", () => {
+    buildFixture(duoPuzzle);
+    hydrate();
+
+    cell(0, 0).click();
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(255, 0, 0)");
+
+    document
+      .querySelector<HTMLButtonElement>('[data-role="mode-cross"]')
+      ?.click();
+    cell(0, 0).click();
+    expect(cell(0, 0).textContent).toBe("✖");
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+    expect(cell(0, 0).style.color).toBe("");
+
+    cell(0, 0).click();
+    expect(cell(0, 0).textContent).toBe("");
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+
+    document
+      .querySelector<HTMLButtonElement>('[data-role="mode-fill"]')
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        '[data-role="swatch"][data-color-index="1"]',
+      )
+      ?.click();
+    cell(0, 0).click();
+    expect(cell(0, 0).textContent).toBe("");
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 255)");
     expect(cell(0, 0).style.color).toBe("");
   });
 
@@ -123,7 +156,8 @@ describe("hydrate", () => {
 
     hydrate();
 
-    expect(cell(0, 0).textContent).toBe("●");
+    expect(cell(0, 0).textContent).toBe("");
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
     expect(cell(0, 1).textContent).toBe("✖");
   });
 
@@ -172,8 +206,9 @@ describe("hydrate", () => {
       ?.click();
     cell(0, 0).click();
 
+    expect(cell(0, 0).textContent).toBe("");
     expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 255)");
-    expect(cell(0, 0).style.color).toBe("rgb(255, 255, 255)");
+    expect(cell(0, 0).style.color).toBe("");
   });
 
   it("does not render color swatches for a single-color puzzle", () => {
@@ -183,7 +218,7 @@ describe("hydrate", () => {
     expect(document.querySelectorAll('[data-role="swatch"]')).toHaveLength(0);
   });
 
-  it("renders each color swatch with a solid background matching its palette color and a readable glyph", () => {
+  it("renders each color swatch as a plain solid-color square, with only a checkmark marking the active one", () => {
     buildFixture(duoPuzzle);
     hydrate();
 
@@ -195,9 +230,11 @@ describe("hydrate", () => {
     );
 
     expect(redSwatch?.style.backgroundColor).toBe("rgb(255, 0, 0)");
-    expect(redSwatch?.style.color).toBe("rgb(0, 0, 0)");
     expect(blueSwatch?.style.backgroundColor).toBe("rgb(0, 0, 255)");
-    expect(blueSwatch?.style.color).toBe("rgb(255, 255, 255)");
+
+    // activeColor defaults to 0 (red): only that swatch carries the checkmark.
+    expect(redSwatch?.textContent).toBe("✓");
+    expect(blueSwatch?.textContent).toBe("");
   });
 
   it("does nothing and does not throw when the embedded puzzle JSON is missing", () => {

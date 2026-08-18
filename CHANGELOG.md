@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Filled cells and their matching color-swatch buttons now render as a plain block of color, with no shape symbol drawn on top — restoring the classic solid-square nonogram look.
+
 ## [1.8.0] - 2026-08-18
 
 ### Added
