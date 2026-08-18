@@ -10,6 +10,7 @@ import {
   translate,
 } from "@kindle-nonograms/shared";
 import { contrastingTextColor } from "./contrastColor.js";
+import { computeFitFontSizePx } from "./fitGrid.js";
 import {
   applyLocale,
   buildLanguageSwitcher,
@@ -30,6 +31,15 @@ interface PlayState {
 // so "excluded" never visually collides with a filled cell's plain color
 // fill. See .vibe/decisions/009-filled-cells-drop-the-disambiguation-glyph.md.
 const CROSS_GLYPH = "✖";
+
+// Grid-fit tuning: the whole grid (cells, clues, borders) is `em`-sized, so
+// a single `font-size` change on the wrapper scales everything together.
+const BASE_FONT_SIZE_PX = 16;
+const MIN_GRID_SCALE = 0.5;
+const MAX_GRID_SCALE = 2;
+// Fixed breathing room (px) kept clear of the viewport edge, on top of
+// computeFitFontSizePx's own proportional safety margin.
+const VIEWPORT_GUTTER_PX = 8;
 
 function readPuzzle(): Puzzle | undefined {
   const script = document.getElementById("puzzle-data");
@@ -222,6 +232,57 @@ function buildToolbar(
   return toolbar;
 }
 
+/**
+ * Scales `anchor` (the grid wrapper, or the table itself when there is no
+ * wrapper) to fit the currently available viewport space, via a single
+ * `font-size` change — everything inside is `em`-sized already. The
+ * natural size is measured off `table` rather than `anchor` itself: a
+ * `<table>` shrink-wraps to its actual content by default, but the
+ * wrapper `<div>` around it stretches to fill its container's width
+ * regardless of how small the puzzle is, which would otherwise make a
+ * small puzzle's "natural" width read as the full page width and defeat
+ * scaling it up. Resets font-size to the base first so the measurement
+ * reflects the grid's true unscaled size: `scrollWidth`/`scrollHeight`
+ * still report the full content size even once `.grid-wrapper{overflow:
+ * hidden}` clips it visually, which is exactly what makes that fail-safe
+ * measurable instead of a dead end.
+ */
+function applyGridFit(anchor: HTMLElement, table: HTMLElement): void {
+  anchor.style.fontSize = `${BASE_FONT_SIZE_PX}px`;
+
+  const naturalWidth = table.scrollWidth;
+  const naturalHeight = table.scrollHeight;
+  const availableWidth =
+    document.documentElement.clientWidth - VIEWPORT_GUTTER_PX;
+  const availableHeight =
+    document.documentElement.clientHeight -
+    anchor.getBoundingClientRect().top -
+    VIEWPORT_GUTTER_PX;
+
+  const fontSizePx = computeFitFontSizePx({
+    naturalWidth,
+    naturalHeight,
+    availableWidth,
+    availableHeight,
+    baseFontSizePx: BASE_FONT_SIZE_PX,
+    minScale: MIN_GRID_SCALE,
+    maxScale: MAX_GRID_SCALE,
+  });
+
+  anchor.style.fontSize = `${fontSizePx}px`;
+  // A block element with `overflow:hidden` but no bounded size still grows
+  // to fit its content — it clips nothing on its own. A puzzle large enough
+  // that even minScale doesn't bring it under the available space (e.g. a
+  // 45x45 grid on a small screen) would otherwise keep growing the page
+  // itself, defeating the whole point: `overflow:hidden` on its own isn't
+  // the fail-safe, this cap is what actually makes it one. Floored at 0 —
+  // an unusable/negative measurement (e.g. jsdom's zero layout, or the
+  // header chrome alone taller than the viewport) must never turn into an
+  // invalid negative max-width/max-height.
+  anchor.style.maxWidth = `${Math.max(availableWidth, 0)}px`;
+  anchor.style.maxHeight = `${Math.max(availableHeight, 0)}px`;
+}
+
 function toggleMark(current: PlayerCellMark, state: PlayState): PlayerCellMark {
   if (state.mode === "cross") {
     return current === "marked" ? null : "marked";
@@ -238,6 +299,7 @@ function handleGridClick(
   state: PlayState,
   banner: HTMLElement,
   locale: Locale,
+  anchor: HTMLElement,
 ): void {
   if (!(event.target instanceof HTMLElement)) {
     return;
@@ -268,7 +330,17 @@ function handleGridClick(
   if (solved) {
     setBannerMessage(banner, locale, true);
   }
+
+  const wasBannerHidden = banner.hidden;
   banner.hidden = !solved;
+  // Re-fit only on a hidden->visible transition: that's the one that can
+  // shrink the space left for the grid and reintroduce a scrollbar. Going
+  // the other way just leaves a little slack, which is harmless — and
+  // re-fitting on every tap regardless would mean measuring/reflowing the
+  // grid on every cell click, which is wasteful and risks a visible jump.
+  if (!banner.hidden && wasBannerHidden) {
+    applyGridFit(anchor, table);
+  }
 }
 
 /**
@@ -323,13 +395,18 @@ export function hydrate(): void {
 
   const progress = readProgress(puzzle);
   const state: PlayState = { mode: "fill", activeColor: 0 };
+  const anchor: HTMLElement =
+    table.closest<HTMLElement>(".grid-wrapper") ?? table;
 
   const banner = buildBanner(locale);
   const toolbar = buildToolbar(puzzle, state, locale, () => {
     setBannerMessage(banner, locale, isPuzzleSolved(puzzle, progress));
+    const wasBannerHidden = banner.hidden;
     banner.hidden = false;
+    if (wasBannerHidden) {
+      applyGridFit(anchor, table);
+    }
   });
-  const anchor = table.closest(".grid-wrapper") ?? table;
   anchor.parentNode?.insertBefore(banner, anchor);
   anchor.parentNode?.insertBefore(toolbar, anchor);
 
@@ -337,8 +414,23 @@ export function hydrate(): void {
   banner.hidden = !isPuzzleSolved(puzzle, progress);
 
   table.addEventListener("click", (event) =>
-    handleGridClick(event, table, puzzle, progress, state, banner, locale),
+    handleGridClick(
+      event,
+      table,
+      puzzle,
+      progress,
+      state,
+      banner,
+      locale,
+      anchor,
+    ),
   );
+
+  // Fit once now that the switcher/toolbar/banner are all in place (so the
+  // available space is measured accurately), then keep it fitted across
+  // viewport changes.
+  applyGridFit(anchor, table);
+  window.addEventListener("resize", () => applyGridFit(anchor, table));
 }
 
 if (typeof document !== "undefined") {

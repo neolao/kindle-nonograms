@@ -4,6 +4,8 @@ import {
   computePuzzleClues,
 } from "@kindle-nonograms/shared";
 import { embedJson, escapeHtml, versionQuery } from "./htmlEscape.js";
+import { sharedStyles } from "./sharedStyles.js";
+import { BORDER_WIDTH, COLORS } from "./theme.js";
 
 // Cycled by palette index so different colors stay distinguishable even
 // where the browser can't render color (Kindle's e-ink is often grayscale).
@@ -120,21 +122,21 @@ function renderStyle(puzzle: Puzzle, multiColor: boolean): string {
     ? puzzle.palette
         .map(
           (hex, index) =>
-            `.run-c${index}{color:${hex};border:1px ${BORDER_STYLES[index % BORDER_STYLES.length]} ${hex};padding:0 0.15em;}`,
+            `.run-c${index}{color:${hex};border:${BORDER_WIDTH.thin} ${BORDER_STYLES[index % BORDER_STYLES.length]} ${hex};padding:0 0.15em;}`,
         )
         .join("")
     : "";
 
   return `
-body{font-family:sans-serif;}
-.grid-wrapper{overflow-x:auto;}
+${sharedStyles()}
+.grid-wrapper{overflow:hidden;}
 table{border-collapse:collapse;}
-th,td{border:1px solid #000;min-width:1.6em;min-height:1.6em;text-align:center;padding:0.1em 0.2em;}
+th,td{border:${BORDER_WIDTH.thin} solid ${COLORS.border};min-width:1.6em;min-height:1.6em;text-align:center;padding:0.1em 0.2em;}
 td{width:1.6em;height:1.6em;}
 th.column-clue{vertical-align:bottom;font-weight:bold;}
 tbody th{text-align:right;font-weight:bold;white-space:nowrap;}
-tbody td:nth-child(5n+2){border-left-width:2px;}
-tbody tr:nth-child(5n+1) td,tbody tr:nth-child(5n+1) th{border-top-width:2px;}
+tbody td:nth-child(5n+2){border-left-width:${BORDER_WIDTH.medium};}
+tbody tr:nth-child(5n+1) td,tbody tr:nth-child(5n+1) th{border-top-width:${BORDER_WIDTH.medium};}
 .run{display:inline-block;}
 ${colorClasses}`;
 }

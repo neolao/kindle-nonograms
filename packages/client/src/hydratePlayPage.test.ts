@@ -450,4 +450,79 @@ describe("language switcher", () => {
     ).not.toBeNull();
     expect(banner()).toBeNull();
   });
+
+  it("sets a numeric px font-size on the grid wrapper after hydrating, to fit the available viewport", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    const wrapper = document.querySelector<HTMLElement>(".grid-wrapper");
+    expect(wrapper?.style.fontSize).toMatch(/^\d+px$/);
+  });
+
+  it("caps the grid wrapper's own box to the available space, so overflow:hidden actually has something to clip", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    const wrapper = document.querySelector<HTMLElement>(".grid-wrapper");
+    // Without an explicit bound, a block element with overflow:hidden still
+    // grows to fit its content and clips nothing — this is what makes the
+    // "fail-safe by clipping" promise real instead of a no-op.
+    expect(wrapper?.style.maxWidth).toMatch(/^\d+px$/);
+    expect(wrapper?.style.maxHeight).toMatch(/^\d+px$/);
+  });
+
+  it("recomputes the grid wrapper's font-size after a window resize", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    const wrapper = document.querySelector<HTMLElement>(".grid-wrapper");
+    const table = document.querySelector("table");
+    if (!wrapper || !table) {
+      throw new Error("fixture grid wrapper/table not found");
+    }
+
+    // Natural size is measured off the table, not the wrapper div — a div
+    // stretches to fill its container's width regardless of content, so
+    // mocking the wrapper here wouldn't exercise the real measurement path.
+    Object.defineProperty(table, "scrollWidth", {
+      value: 200,
+      configurable: true,
+    });
+    Object.defineProperty(table, "scrollHeight", {
+      value: 200,
+      configurable: true,
+    });
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      value: 100,
+      configurable: true,
+    });
+    Object.defineProperty(document.documentElement, "clientHeight", {
+      value: 100,
+      configurable: true,
+    });
+
+    window.dispatchEvent(new Event("resize"));
+
+    expect(wrapper.style.fontSize).toMatch(/^\d+px$/);
+    expect(Number.parseInt(wrapper.style.fontSize, 10)).toBeLessThan(16);
+  });
+
+  it("keeps a valid grid-wrapper font-size after revealing the win banner via Check, without throwing", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    expect(() => checkButton()?.click()).not.toThrow();
+
+    const wrapper = document.querySelector<HTMLElement>(".grid-wrapper");
+    expect(wrapper?.style.fontSize).toMatch(/^\d+px$/);
+  });
+
+  it("still fits the grid to a numeric font-size when there is no grid-wrapper element", () => {
+    document.body.innerHTML = `<h1>Solo</h1><table><tbody><tr><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
+
+    hydrate();
+
+    const table = document.querySelector<HTMLElement>("table");
+    expect(table?.style.fontSize).toMatch(/^\d+px$/);
+  });
 });

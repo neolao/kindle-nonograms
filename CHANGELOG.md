@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The library and puzzle pages now share a consistent visual style (fonts, colors, spacing, and button/language-switcher appearance) instead of minimal, inconsistent styling.
+- The puzzle grid now automatically scales to fit the screen, so it never needs to be scrolled to be seen in full — it re-scales instantly if the window is resized.
+
 ## [1.9.0] - 2026-08-18
 
 ### Added

@@ -20,6 +20,8 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The game is automatically built and published online whenever a change is pushed.
 - The app's language can be switched between English and Français from a dropdown on the puzzle library and on each puzzle page. It defaults to your browser's language and remembers your choice for next time.
 - A "Check" button on the puzzle page lets you find out at any time whether your grid is correctly solved, on top of the message that already appears automatically once you solve it.
+- The library and puzzle pages now share a consistent look — fonts, colors, spacing, and button styling.
+- The puzzle grid automatically resizes to fit your screen, so you never have to scroll to see it in full.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

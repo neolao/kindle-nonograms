@@ -1,5 +1,6 @@
 import type { Puzzle } from "@kindle-nonograms/shared";
 import { embedJson, escapeHtml, versionQuery } from "./htmlEscape.js";
+import { sharedStyles } from "./sharedStyles.js";
 
 /**
  * Renders the site's home page: a list of every puzzle (name, size, a
@@ -46,7 +47,7 @@ function renderLibraryItem(puzzle: Puzzle): string {
 }
 
 const STYLE = `
-body{font-family:sans-serif;}
+${sharedStyles()}
 [hidden]{display:none;}
 li{list-style:none;display:flex;align-items:center;}
 li a{flex:1;display:block;padding:0.5em;min-height:1.6em;}

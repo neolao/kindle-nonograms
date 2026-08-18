@@ -156,4 +156,13 @@ describe("renderLibraryPage", () => {
       expect(badge.textContent).toBe("Solved");
     }
   });
+
+  it("uses the shared design tokens' font stack, consistent with the puzzle page", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toContain(
+      'font-family:"Helvetica Neue", Helvetica, Arial, sans-serif',
+    );
+  });
 });
