@@ -6,6 +6,7 @@ import {
   createPuzzle,
   isPuzzleSolved,
 } from "@kindle-nonograms/shared";
+import { contrastingTextColor } from "./contrastColor.js";
 import { loadProgress, saveProgress } from "./progressStorage.js";
 
 type Mode = "fill" | "cross";
@@ -61,13 +62,22 @@ function paintCell(
   puzzle: Puzzle,
 ): void {
   if (typeof mark === "number") {
+    const fillColor = puzzle.palette[mark] ?? "";
     cell.textContent = glyphForColor(mark);
-    cell.style.color = puzzle.palette[mark] ?? "";
+    cell.style.backgroundColor = fillColor;
+    cell.style.color = contrastingTextColor(fillColor);
   } else if (mark === "marked") {
+    // A crossed cell never gets a solid fill — that absence is the whole
+    // cue distinguishing it from a filled cell (see
+    // .vibe/decisions/003-clue-color-plus-pattern-cue.md on never relying
+    // on color alone). Reset explicitly: a cell can transition from filled
+    // to crossed, and a stale background/text color must not survive that.
     cell.textContent = CROSS_GLYPH;
+    cell.style.backgroundColor = "";
     cell.style.color = "";
   } else {
     cell.textContent = "";
+    cell.style.backgroundColor = "";
     cell.style.color = "";
   }
 }
@@ -152,7 +162,8 @@ function buildToolbar(puzzle: Puzzle, state: PlayState): HTMLElement {
       button.type = "button";
       button.dataset.role = "swatch";
       button.dataset.colorIndex = String(index);
-      button.style.color = hex;
+      button.style.backgroundColor = hex;
+      button.style.color = contrastingTextColor(hex);
       button.addEventListener("click", () => {
         state.activeColor = index;
         refreshSwatches();

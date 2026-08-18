@@ -57,16 +57,35 @@ afterEach(() => {
 });
 
 describe("hydrate", () => {
-  it("fills a cell with the active color glyph on tap and clears it back to empty on a second tap", () => {
+  it("fills a cell with a solid background matching the active color and a readable glyph on top, then clears both on a second tap", () => {
     buildFixture(soloPuzzle);
     hydrate();
 
     cell(0, 0).click();
     expect(cell(0, 0).textContent).toBe("●");
-    expect(cell(0, 0).style.color).toBe("rgb(0, 0, 0)");
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
+    expect(cell(0, 0).style.color).toBe("rgb(255, 255, 255)");
 
     cell(0, 0).click();
     expect(cell(0, 0).textContent).toBe("");
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+    expect(cell(0, 0).style.color).toBe("");
+  });
+
+  it("clears a filled cell's solid background when it is switched to crossed instead", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    cell(0, 0).click();
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
+
+    document
+      .querySelector<HTMLButtonElement>('[data-role="mode-cross"]')
+      ?.click();
+    cell(0, 0).click();
+
+    expect(cell(0, 0).textContent).toBe("✖");
+    expect(cell(0, 0).style.backgroundColor).toBe("");
     expect(cell(0, 0).style.color).toBe("");
   });
 
@@ -153,7 +172,8 @@ describe("hydrate", () => {
       ?.click();
     cell(0, 0).click();
 
-    expect(cell(0, 0).style.color).toBe("rgb(0, 0, 255)");
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 255)");
+    expect(cell(0, 0).style.color).toBe("rgb(255, 255, 255)");
   });
 
   it("does not render color swatches for a single-color puzzle", () => {
@@ -161,6 +181,23 @@ describe("hydrate", () => {
     hydrate();
 
     expect(document.querySelectorAll('[data-role="swatch"]')).toHaveLength(0);
+  });
+
+  it("renders each color swatch with a solid background matching its palette color and a readable glyph", () => {
+    buildFixture(duoPuzzle);
+    hydrate();
+
+    const redSwatch = document.querySelector<HTMLButtonElement>(
+      '[data-role="swatch"][data-color-index="0"]',
+    );
+    const blueSwatch = document.querySelector<HTMLButtonElement>(
+      '[data-role="swatch"][data-color-index="1"]',
+    );
+
+    expect(redSwatch?.style.backgroundColor).toBe("rgb(255, 0, 0)");
+    expect(redSwatch?.style.color).toBe("rgb(0, 0, 0)");
+    expect(blueSwatch?.style.backgroundColor).toBe("rgb(0, 0, 255)");
+    expect(blueSwatch?.style.color).toBe("rgb(255, 255, 255)");
   });
 
   it("does nothing and does not throw when the embedded puzzle JSON is missing", () => {

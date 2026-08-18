@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Laid the groundwork for French and English translations across the app (not yet visible — the language switcher itself ships in a follow-up).
+- Filled cells and their matching color-swatch buttons now show as a solid block of color, with the shape symbol drawn on top in whichever of black or white reads best against it — crossed cells stay plain, with no color fill, so they're never mistaken for a filled cell.
 
 ## [1.7.1] - 2026-08-17
 

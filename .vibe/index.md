@@ -17,6 +17,7 @@
 - Client-side updates to the puzzle grid touch only the single cell that changed, never rebuilding the grid, to avoid a visible redraw on Kindle's slow e-ink refresh.
 - Generated pages keep their visible markup solution-blind but embed the full puzzle data as JSON regardless, since the site has no backend to hide solutions behind anyway.
 - Every generated page loads the same client bundle; each hydration script self-detects whether its expected markup is present and no-ops otherwise, rather than the build shipping a separate bundle per page shape.
+- A solid-color fill's text/glyph color is picked by actual WCAG contrast ratio against both black and white, not a fixed luminance threshold, so it stays legible against any arbitrary palette color.
 
 ## Other context files
 - [`models.md`](models.md) — data models

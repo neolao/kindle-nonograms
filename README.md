@@ -14,6 +14,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - Each puzzle has its own page showing its color-coded clues and an empty grid, viewable even without loading any interactive code.
 - The site has a home page listing every puzzle with its size and a link to play it.
 - Puzzles are playable right on the page: tap a cell to fill it, switch to marking mode to cross out cells you're sure are empty, and get a message once you've solved it.
+- A filled cell now shows as a solid block of its color, with the shape symbol drawn on top in whichever of black or white stays easiest to read against it.
 - The home page now shows which puzzles you've already solved.
 - The whole site — every puzzle page, the home page, and the interactive bundle — can now be built with a single command and previewed locally before publishing.
 - The game is automatically built and published online whenever a change is pushed.
