@@ -26,7 +26,7 @@ function buildFixture(puzzles: Puzzle[]): void {
   const items = puzzles
     .map(
       (puzzle) =>
-        `<li data-puzzle-id="${puzzle.id}"><a href="puzzles/${puzzle.id}/">${puzzle.name}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span></li>`,
+        `<li data-puzzle-id="${puzzle.id}"><span class="thumb" aria-hidden="true"><span class="thumb-lock">?</span></span><a href="puzzles/${puzzle.id}/">${puzzle.name}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span></li>`,
     )
     .join("");
 
@@ -63,6 +63,16 @@ function badgeFor(puzzleId: string): HTMLElement {
   );
   if (!found) {
     throw new Error(`fixture badge for ${puzzleId} not found`);
+  }
+  return found;
+}
+
+function thumbFor(puzzleId: string): HTMLElement {
+  const found = document.querySelector<HTMLElement>(
+    `[data-puzzle-id="${puzzleId}"] .thumb`,
+  );
+  if (!found) {
+    throw new Error(`fixture thumbnail for ${puzzleId} not found`);
   }
   return found;
 }
@@ -137,6 +147,37 @@ describe("hydrate", () => {
 
     expect(() => hydrate()).not.toThrow();
     expect(badgeFor("cat").hidden).toBe(true);
+  });
+});
+
+describe("solved-puzzle thumbnail", () => {
+  it("reveals a small rendering of the real solution for a puzzle with fully-correct progress", () => {
+    saveProgress("cat", { cells: [[0, null]] });
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    const cells = thumbFor("cat").querySelectorAll(".thumb-cell");
+    expect(cells).toHaveLength(2);
+    expect(thumbFor("cat").querySelector(".thumb-lock")).toBeNull();
+  });
+
+  it("leaves the neutral placeholder in place for a puzzle that is not solved", () => {
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    expect(thumbFor("dog").querySelector(".thumb-cell")).toBeNull();
+    expect(thumbFor("dog").querySelector(".thumb-lock")?.textContent).toBe("?");
+  });
+
+  it("falls back to the placeholder instead of a broken thumbnail when stored progress is corrupted", () => {
+    saveProgress("cat", { cells: [[0, null, 0]] });
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    expect(() => hydrate()).not.toThrow();
+    expect(thumbFor("cat").querySelector(".thumb-cell")).toBeNull();
+    expect(thumbFor("cat").querySelector(".thumb-lock")?.textContent).toBe("?");
   });
 });
 

@@ -45,11 +45,18 @@ ${body}
 </html>`;
 }
 
+// A neutral "?" placeholder, never derived from the puzzle's own solution:
+// a nonogram's whole payoff is revealing its picture by solving it, so the
+// real preview thumbnail must never exist in this static, server-rendered
+// markup — hydration builds and inserts it only once a puzzle is confirmed
+// solved (see .vibe/decisions/012-solved-thumbnail-built-client-side-only.md).
+const THUMBNAIL_PLACEHOLDER = `<span class="thumb" aria-hidden="true"><span class="thumb-lock">?</span></span>`;
+
 function renderLibraryItem(puzzle: Puzzle): string {
   const href = `puzzles/${encodeURIComponent(puzzle.id)}/`;
   const label = `${escapeHtml(puzzle.name)} — ${puzzle.width} × ${puzzle.height}`;
 
-  return `<li data-puzzle-id="${escapeHtml(puzzle.id)}"><a href="${href}">${label}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span></li>`;
+  return `<li data-puzzle-id="${escapeHtml(puzzle.id)}">${THUMBNAIL_PLACEHOLDER}<a href="${href}">${label}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span></li>`;
 }
 
 const STYLE = `
@@ -60,5 +67,9 @@ li{display:flex;align-items:center;border-bottom:${BORDER_WIDTH.thin} solid ${CO
 li:last-child{border-bottom:none;}
 li a{flex:1;display:block;padding:${SPACING_PX.sm}px ${SPACING_PX.md}px;min-height:${MIN_TAP_TARGET_PX}px;}
 li a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
-.solved-badge{margin-left:auto;padding:2px ${SPACING_PX.xs}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};font-size:0.85em;}
+.solved-badge{margin:0 ${SPACING_PX.md}px 0 auto;padding:2px ${SPACING_PX.sm}px;border:${BORDER_WIDTH.medium} solid ${COLORS.border};font-size:0.8em;text-transform:uppercase;letter-spacing:0.05em;transform:rotate(-5deg);}
+.thumb{flex:0 0 auto;width:36px;height:36px;margin:${SPACING_PX.sm}px 0 ${SPACING_PX.sm}px ${SPACING_PX.sm}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.thumb-lock{color:${COLORS.muted};font-weight:bold;}
+.thumb-row{display:flex;}
+.thumb-cell{width:4px;height:4px;}
 `;

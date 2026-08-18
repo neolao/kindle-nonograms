@@ -125,6 +125,18 @@ describe("renderLibraryPage", () => {
     }
   });
 
+  it("reserves a neutral, solution-independent thumbnail placeholder in every row", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const items = doc.querySelectorAll("li");
+
+    for (const item of Array.from(items)) {
+      const thumb = item.querySelector(".thumb");
+      expect(thumb).not.toBeNull();
+      expect(thumb?.getAttribute("aria-hidden")).toBe("true");
+      expect(thumb?.textContent?.trim()).toBe("?");
+    }
+  });
+
   it("appends the given asset version as a query string on the client bundle script", () => {
     const doc = parse(renderLibraryPage(puzzles, "abc123ef"));
     const script = doc.querySelector('script[type="module"]');
@@ -186,5 +198,13 @@ describe("renderLibraryPage", () => {
     const css = doc.querySelector("style")?.textContent ?? "";
 
     expect(css).toMatch(/li a\{[^}]*min-height:44px/);
+  });
+
+  it("renders the solved badge as a bordered, rotated stamp instead of plain text", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/\.solved-badge\{[^}]*border:/);
+    expect(css).toMatch(/\.solved-badge\{[^}]*transform:rotate\(-?\d+deg\)/);
   });
 });
