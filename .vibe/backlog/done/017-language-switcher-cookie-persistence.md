@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 depends_on: [015]
 ---
 # Language Switcher With Browser Detection And Cookie Persistence
