@@ -1,5 +1,5 @@
 ---
-status: in_progress
+status: done
 depends_on: [015]
 ---
 # Check Result Button (Additive To The Automatic Win Banner)
