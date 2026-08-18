@@ -385,6 +385,28 @@ describe("language switcher", () => {
     ).not.toBeNull();
   });
 
+  it("joins the back-link's existing header row instead of adding a new row, when one is present", () => {
+    document.body.innerHTML = `<h1>${soloPuzzle.name}</h1><div class="page-header"><a class="back-link" href="../../">Back to puzzle list</a></div><div class="grid-wrapper"><table><tbody><tr><th scope="row">clue</th><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table></div><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
+
+    hydrate();
+
+    const headerRow = document.querySelector(".page-header");
+    expect(
+      headerRow?.querySelector('[data-role="language-switcher-select"]'),
+    ).not.toBeNull();
+    expect(document.querySelectorAll(".page-header")).toHaveLength(1);
+  });
+
+  it("retranslates the static back-link to the resolved locale on initial load, not just after switching", () => {
+    setNavigatorLanguage("fr-FR");
+    document.body.innerHTML = `<h1>${soloPuzzle.name}</h1><div class="page-header"><a class="back-link" data-i18n="play.backToLibrary" href="../../">Back to puzzle list</a></div><div class="grid-wrapper"><table><tbody><tr><th scope="row">clue</th><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table></div><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
+
+    hydrate();
+
+    const backLink = document.querySelector(".back-link");
+    expect(backLink?.textContent).toBe("Retour à la liste des puzzles");
+  });
+
   it("defaults to the language detected from the browser when there is no saved cookie", () => {
     setNavigatorLanguage("fr-FR");
     buildFixture(soloPuzzle);

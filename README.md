@@ -22,6 +22,8 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - A "Check" button on the puzzle page lets you find out at any time whether your grid is correctly solved, on top of the message that already appears automatically once you solve it.
 - The library and puzzle pages now share a consistent look — fonts, colors, spacing, and button styling.
 - The puzzle grid automatically resizes to fit your screen, so you never have to scroll to see it in full.
+- A "Back to puzzle list" link on every puzzle page lets you return to the library at any time.
+- The library and puzzle pages have a more polished look — puzzles listed as clearly separated cards, toolbar buttons grouped with visible spacing, and the puzzle result shown in a highlighted box, all accented with a muted blue.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

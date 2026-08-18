@@ -20,6 +20,14 @@ export const COLORS = {
   muted: "#555555",
   border: "#000000",
   focusOutline: "#000000",
+  // A single, muted accent used purely as decoration on chrome elements
+  // (the back-link, the result banner, library rows) — never as the sole
+  // carrier of information, and never paired with a second "meaningful"
+  // color, so it stays safe for players on a grayscale Kindle too. Chosen
+  // to render calmly on the Kindle Colorsoft's muted Kaleido color panel
+  // rather than a saturated tone.
+  accent: "#2f5f8a",
+  accentBg: "#eaf1f7",
 } as const;
 
 /**

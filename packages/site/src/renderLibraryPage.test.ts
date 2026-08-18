@@ -165,4 +165,26 @@ describe("renderLibraryPage", () => {
       'font-family:"Helvetica Neue", Helvetica, Arial, sans-serif',
     );
   });
+
+  it("renders each puzzle row as a bordered card instead of a bare list item", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/ul\{[^}]*border:/);
+    expect(css).toMatch(/li\{[^}]*border-bottom:/);
+  });
+
+  it("gives each puzzle row a decorative accent-colored side stripe", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/li\{[^}]*border-left:[^;]*#2f5f8a/);
+  });
+
+  it("gives every row link at least the minimum tap target height", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/li a\{[^}]*min-height:44px/);
+  });
 });

@@ -177,4 +177,24 @@ describe("renderPuzzlePage", () => {
       'font-family:"Helvetica Neue", Helvetica, Arial, sans-serif',
     );
   });
+
+  it("renders a static, translatable link back to the puzzle library", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+    const link = doc.querySelector<HTMLAnchorElement>("a.back-link");
+
+    expect(link).not.toBeNull();
+    expect(link?.getAttribute("data-i18n")).toBe("play.backToLibrary");
+    expect(link?.getAttribute("href")).toBe("../../");
+    expect(link?.textContent).toBe("Back to puzzle list");
+  });
+
+  it("places the back-link in a header row alongside where the language switcher is inserted", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+    const link = doc.querySelector<HTMLAnchorElement>("a.back-link");
+    if (!link) {
+      throw new Error("back-link not found");
+    }
+
+    expect(link.closest(".page-header")).not.toBeNull();
+  });
 });

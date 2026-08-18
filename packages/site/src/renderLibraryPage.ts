@@ -1,6 +1,12 @@
 import type { Puzzle } from "@kindle-nonograms/shared";
 import { embedJson, escapeHtml, versionQuery } from "./htmlEscape.js";
 import { sharedStyles } from "./sharedStyles.js";
+import {
+  BORDER_WIDTH,
+  COLORS,
+  MIN_TAP_TARGET_PX,
+  SPACING_PX,
+} from "./theme.js";
 
 /**
  * Renders the site's home page: a list of every puzzle (name, size, a
@@ -49,6 +55,10 @@ function renderLibraryItem(puzzle: Puzzle): string {
 const STYLE = `
 ${sharedStyles()}
 [hidden]{display:none;}
-li{list-style:none;display:flex;align-items:center;}
-li a{flex:1;display:block;padding:0.5em;min-height:1.6em;}
+ul{list-style:none;padding:0;margin:${SPACING_PX.sm}px ${SPACING_PX.md}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};}
+li{display:flex;align-items:center;border-bottom:${BORDER_WIDTH.thin} solid ${COLORS.border};border-left:${BORDER_WIDTH.thick} solid ${COLORS.accent};}
+li:last-child{border-bottom:none;}
+li a{flex:1;display:block;padding:${SPACING_PX.sm}px ${SPACING_PX.md}px;min-height:${MIN_TAP_TARGET_PX}px;}
+li a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
+.solved-badge{margin-left:auto;padding:2px ${SPACING_PX.xs}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};font-size:0.85em;}
 `;

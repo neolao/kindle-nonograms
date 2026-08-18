@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A "Back to puzzle list" link now sits at the top of every puzzle page, next to the language switcher, so players can return to the library at any time without using the browser's back button.
+
+### Changed
+
+- The library and puzzle pages have a more polished look: proper spacing around text and controls, puzzles in the library listed as clearly separated cards, the play toolbar's buttons grouped with visible spacing, and the puzzle result message shown in a highlighted box — all accented with a muted blue that works well on the Kindle Colorsoft's color e-ink screen.
+
 ## [1.10.0] - 2026-08-18
 
 ### Added

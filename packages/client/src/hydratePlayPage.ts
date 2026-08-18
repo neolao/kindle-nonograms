@@ -361,7 +361,24 @@ function setUpLanguageSwitcher(): Locale {
       writeLocaleCookie(newLocale);
       applyLocale(newLocale);
     });
-    heading.parentNode?.insertBefore(switcher, heading.nextSibling);
+    // Joins the back-link's own header row when the static markup provides
+    // one, rather than always inserting a fresh row right after the
+    // heading: an extra row above the grid would shrink the space
+    // `applyGridFit` has to work with on small screens. Falls back to the
+    // old insertion point when no such row exists (e.g. isolated tests).
+    const headerRow = document.querySelector(".page-header");
+    if (headerRow) {
+      headerRow.append(switcher);
+    } else {
+      heading.parentNode?.insertBefore(switcher, heading.nextSibling);
+    }
+
+    // Retranslates any static `[data-i18n]` markup already on the page (the
+    // back-link) to the resolved locale. The toolbar/banner built below by
+    // `hydrate()` don't exist yet at this point, so this can't double-apply
+    // to them — they get their initial text straight from `translate()`
+    // instead. Same call as `hydrateLibraryPage.ts` makes for its heading.
+    applyLocale(locale);
   }
 
   return locale;
