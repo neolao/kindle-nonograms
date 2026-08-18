@@ -6,28 +6,47 @@
  * the palette-driven `.run-cN` classes in `renderPuzzlePage.ts`.
  */
 
-/** A conservative font stack, widely available without a web font fetch. */
+/** A conservative body-text font stack, widely available without a web font fetch. */
 export const FONT_STACK = '"Helvetica Neue", Helvetica, Arial, sans-serif';
 
 /**
- * A mostly-grayscale color set: the puzzle grid already spends this app's
- * color budget on palette swatches and clue-run colors, so the surrounding
- * chrome (text, borders, focus ring) deliberately stays grayscale instead
- * of introducing a competing "brand" accent.
+ * A second, monospace stack layered on top of `FONT_STACK` for headings,
+ * button/badge labels and section labels only — never body copy or fine
+ * print, where its tighter rendering hurts legibility at Kindle's small
+ * sizes. A system stack, same "no web font fetch" reasoning as `FONT_STACK`.
+ */
+export const LABEL_FONT_STACK =
+  'ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", monospace';
+
+/**
+ * The site's "cabinet" color system (see
+ * .vibe/decisions/013-three-accent-cabinet-reskin.md): a light paper/panel
+ * neutral pair plus three accents, each with one fixed, reused role so the
+ * palette reads as a deliberate system rather than decoration for its own
+ * sake — `amber` for navigating away / an active toggle state, `magenta`
+ * for the primary in-puzzle action, `teal` for "completed" (shared by the
+ * win message and the library's solved stamp, so the two visibly connect).
+ * Library row stripes and the marquee dot row also cycle through all three,
+ * but purely as decorative rhythm — that cycling carries no meaning.
+ * Deliberately never applied to the puzzle grid's own rendering (clue
+ * borders, cell/palette colors): the grid stays the calmest, most legible
+ * element on the page, never competing with its own chrome.
  */
 export const COLORS = {
   text: "#111111",
   muted: "#555555",
   border: "#000000",
   focusOutline: "#000000",
-  // A single, muted accent used purely as decoration on chrome elements
-  // (the back-link, the result banner, library rows) — never as the sole
-  // carrier of information, and never paired with a second "meaningful"
-  // color, so it stays safe for players on a grayscale Kindle too. Chosen
-  // to render calmly on the Kindle Colorsoft's muted Kaleido color panel
-  // rather than a saturated tone.
-  accent: "#2f5f8a",
-  accentBg: "#eaf1f7",
+  paper: "#f5f2fb",
+  panel: "#ffffff",
+  panelEdge: "#ddd4ef",
+  line: "#e4dcf3",
+  amber: "#a85f00",
+  amberSoft: "#f2dcb8",
+  magenta: "#b0165c",
+  magentaSoft: "#f6d8e6",
+  teal: "#0b7a68",
+  tealSoft: "#d3ede7",
 } as const;
 
 /**

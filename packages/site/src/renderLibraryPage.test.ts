@@ -186,11 +186,13 @@ describe("renderLibraryPage", () => {
     expect(css).toMatch(/li\{[^}]*border-bottom:/);
   });
 
-  it("gives each puzzle row a decorative accent-colored side stripe", () => {
+  it("cycles each puzzle row's side stripe through the three decorative accent colors", () => {
     const doc = parse(renderLibraryPage(puzzles));
     const css = doc.querySelector("style")?.textContent ?? "";
 
-    expect(css).toMatch(/li\{[^}]*border-left:[^;]*#2f5f8a/);
+    expect(css).toMatch(/li:nth-child\(4n\+1\)\{[^}]*#a85f00/);
+    expect(css).toMatch(/li:nth-child\(4n\+2\)\{[^}]*#b0165c/);
+    expect(css).toMatch(/li:nth-child\(4n\+3\)\{[^}]*#0b7a68/);
   });
 
   it("gives every row link at least the minimum tap target height", () => {
@@ -206,5 +208,39 @@ describe("renderLibraryPage", () => {
 
     expect(css).toMatch(/\.solved-badge\{[^}]*border:/);
     expect(css).toMatch(/\.solved-badge\{[^}]*transform:rotate\(-?\d+deg\)/);
+  });
+
+  it("colors the solved stamp with the 'completed' accent, matching the win banner's color", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/\.solved-badge\{[^}]*#0b7a68/);
+  });
+
+  it("wraps the page content in a bordered, shadowed panel", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const panel = doc.querySelector(".panel");
+    expect(panel).not.toBeNull();
+    expect(panel?.querySelector("h1")).not.toBeNull();
+    expect(panel?.querySelector("ul")).not.toBeNull();
+  });
+
+  it("shows a decorative dot row before the heading", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const dotRow = doc.querySelector(".dot-row");
+    expect(dotRow).not.toBeNull();
+    expect(dotRow?.getAttribute("aria-hidden")).toBe("true");
+    expect(dotRow?.nextElementSibling?.tagName).toBe("H1");
+  });
+
+  it("labels the puzzle list with a translatable, rule-flanked section label", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const label = doc.querySelector(".section-label");
+    expect(label).not.toBeNull();
+    expect(label?.getAttribute("data-i18n")).toBe("library.sectionLabel");
+    expect(label?.textContent).toBe("Choose a puzzle");
   });
 });

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The library and puzzle pages have a more polished look: proper spacing around text and controls, puzzles in the library listed as clearly separated cards, the play toolbar's buttons grouped with visible spacing, and the puzzle result message shown in a highlighted box — all accented with a muted blue that works well on the Kindle Colorsoft's color e-ink screen.
 - The "Solved" badge on the library page now looks like a little stamp instead of plain text.
+- Both pages now share a bolder "cabinet" look: a bordered, shadowed panel, a title with a printed-style double shadow, a row of small decorative dots, and three accent colors used with intent — amber for leaving/active controls, magenta for the main Check action, and teal for "completed" (shared by the win message and the Solved stamp, so the two visibly connect). The puzzle grid itself keeps its own plain, high-contrast frame — it stays the calmest, easiest to read part of the page.
 
 ## [1.10.0] - 2026-08-18
 

@@ -5,7 +5,7 @@ import {
 } from "@kindle-nonograms/shared";
 import { embedJson, escapeHtml, versionQuery } from "./htmlEscape.js";
 import { sharedStyles } from "./sharedStyles.js";
-import { BORDER_WIDTH, COLORS } from "./theme.js";
+import { BORDER_WIDTH, COLORS, SPACING_PX } from "./theme.js";
 
 // Cycled by palette index so different colors stay distinguishable even
 // where the browser can't render color (Kindle's e-ink is often grayscale).
@@ -46,6 +46,7 @@ export function renderPuzzlePage(
 <style>${renderStyle(puzzle, multiColor)}</style>
 </head>
 <body>
+<div class="dot-row" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
 <h1>${escapeHtml(puzzle.name)}</h1>
 <div class="page-header"><a class="back-link" data-i18n="play.backToLibrary" href="../../">Back to puzzle list</a></div>
 <div class="grid-wrapper">
@@ -130,7 +131,7 @@ function renderStyle(puzzle: Puzzle, multiColor: boolean): string {
 
   return `
 ${sharedStyles()}
-.grid-wrapper{overflow:hidden;}
+.grid-wrapper{overflow:hidden;box-sizing:border-box;border:${BORDER_WIDTH.medium} solid ${COLORS.border};background:${COLORS.panel};margin:${SPACING_PX.sm}px 0 0;}
 table{border-collapse:collapse;}
 th,td{border:${BORDER_WIDTH.thin} solid ${COLORS.border};min-width:1.6em;min-height:1.6em;text-align:center;padding:0.1em 0.2em;}
 td{width:1.6em;height:1.6em;}

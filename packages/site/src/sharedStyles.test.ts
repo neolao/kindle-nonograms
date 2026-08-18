@@ -20,7 +20,7 @@ describe("sharedStyles", () => {
   it("gives a pressed/active button a visibly thicker border, not a color-only cue", () => {
     const css = sharedStyles();
 
-    expect(css).toContain('button[aria-pressed="true"]{border-width:3px;}');
+    expect(css).toMatch(/button\[aria-pressed="true"\]\{[^}]*border-width:3px/);
   });
 
   it("gives a focused button and select a visible, non-color-only outline", () => {
@@ -66,12 +66,58 @@ describe("sharedStyles", () => {
     expect(css).toMatch(/\[data-role="win-banner"\]\{[^}]*border:/);
   });
 
-  it("uses the muted accent color as decoration on the back-link and the result banner", () => {
+  it("uses the amber accent for the back-link, the 'navigate away' role", () => {
     const css = sharedStyles();
 
     // Pinned as a literal, not imported from theme.ts, so a change to the
     // token itself would actually be caught here instead of both sides
     // silently drifting together.
-    expect(css).toContain("#2f5f8a");
+    expect(css).toMatch(/\.back-link\{[^}]*#a85f00/);
+  });
+
+  it("uses the teal accent for the win banner, the 'completed' role shared with the library's solved stamp", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/\[data-role="win-banner"\]\{[^}]*#0b7a68/);
+  });
+
+  it("uses the amber accent for a pressed/active mode button, not just a thicker border", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/button\[aria-pressed="true"\]\{[^}]*#a85f00/);
+  });
+
+  it("gives the page background a subtle static paper texture, never an animated one", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/body\{[^}]*repeating-linear-gradient/);
+    expect(css).not.toMatch(/body\{[^}]*(animation|transition)/);
+  });
+
+  it("gives the page heading a flat duotone shadow instead of a blurred glow", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/h1\{[^}]*text-shadow:[^;]*0 #/);
+    expect(css).not.toMatch(/h1\{[^}]*text-shadow:[^;]*blur/);
+  });
+
+  it("styles a decorative dot row and a rule-flanked section label using the label font", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/\.dot-row\{[^}]*display:flex/);
+    expect(css).toMatch(/\.section-label\{[^}]*font-family:/);
+  });
+
+  it("gives the library page's wrapping panel a bordered, shadowed card look", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/\.panel\{[^}]*border:/);
+    expect(css).toMatch(/\.panel\{[^}]*box-shadow:/);
+  });
+
+  it("never adds animation or transition anywhere in the new cabinet-style rules", () => {
+    const css = sharedStyles();
+
+    expect(css).not.toMatch(/animation|transition/);
   });
 });

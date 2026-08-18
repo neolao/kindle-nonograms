@@ -19,6 +19,7 @@ const ALL_KEYS: TranslationKey[] = [
   "play.winBanner.notSolved",
   "i18n.languageSwitcherLabel",
   "play.backToLibrary",
+  "library.sectionLabel",
 ];
 
 describe("SUPPORTED_LOCALES and DEFAULT_LOCALE", () => {
@@ -45,6 +46,7 @@ describe("translate", () => {
     expect(translate("en", "play.winBanner.notSolved")).toBe("Not solved yet");
     expect(translate("en", "i18n.languageSwitcherLabel")).toBe("Language");
     expect(translate("en", "play.backToLibrary")).toBe("Back to puzzle list");
+    expect(translate("en", "library.sectionLabel")).toBe("Choose a puzzle");
   });
 
   it("returns the exact French string for each key", () => {
@@ -64,6 +66,7 @@ describe("translate", () => {
     expect(translate("fr", "play.backToLibrary")).toBe(
       "Retour à la liste des puzzles",
     );
+    expect(translate("fr", "library.sectionLabel")).toBe("Choisir un puzzle");
   });
 
   it("has a non-empty string for every key in every supported locale", () => {

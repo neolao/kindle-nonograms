@@ -165,8 +165,25 @@ describe("renderPuzzlePage", () => {
     const doc = parse(renderPuzzlePage(multiColorPuzzle));
     const css = doc.querySelector("style")?.textContent ?? "";
 
-    expect(css).toContain(".grid-wrapper{overflow:hidden;}");
+    expect(css).toMatch(/\.grid-wrapper\{[^}]*overflow:hidden/);
     expect(css).not.toContain("overflow-x");
+  });
+
+  it("frames the grid with its own border, sized so the border can't push it past its computed cap", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/\.grid-wrapper\{[^}]*border:/);
+    expect(css).toMatch(/\.grid-wrapper\{[^}]*box-sizing:border-box/);
+  });
+
+  it("shows a decorative dot row before the heading", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+
+    const dotRow = doc.querySelector(".dot-row");
+    expect(dotRow).not.toBeNull();
+    expect(dotRow?.getAttribute("aria-hidden")).toBe("true");
+    expect(dotRow?.nextElementSibling?.tagName).toBe("H1");
   });
 
   it("uses the shared design tokens' font stack instead of a hardcoded font", () => {

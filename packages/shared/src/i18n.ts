@@ -28,7 +28,8 @@ export type TranslationKey =
   | "play.check"
   | "play.winBanner.notSolved"
   | "i18n.languageSwitcherLabel"
-  | "play.backToLibrary";
+  | "play.backToLibrary"
+  | "library.sectionLabel";
 
 const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
   en: {
@@ -42,6 +43,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.winBanner.notSolved": "Not solved yet",
     "i18n.languageSwitcherLabel": "Language",
     "play.backToLibrary": "Back to puzzle list",
+    "library.sectionLabel": "Choose a puzzle",
   },
   fr: {
     "library.title": "Kindle Nonograms",
@@ -54,6 +56,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.winBanner.notSolved": "Pas encore résolu",
     "i18n.languageSwitcherLabel": "Langue",
     "play.backToLibrary": "Retour à la liste des puzzles",
+    "library.sectionLabel": "Choisir un puzzle",
   },
 };
 

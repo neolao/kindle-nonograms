@@ -26,6 +26,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The library and puzzle pages have a more polished look — puzzles listed as clearly separated cards, toolbar buttons grouped with visible spacing, and the puzzle result shown in a highlighted box, all accented with a muted blue.
 - Solving a puzzle reveals a small picture of it on the library page — hidden until you've earned it, like a trophy.
 - The "Solved" badge on the library page now looks like a little stamp.
+- Both pages now share a bolder "cabinet" look — a bordered panel, a printed-style title, and three accent colors used with intent (leaving/active controls, the Check action, and "completed" — the win message and the Solved stamp now share the same color).
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->
