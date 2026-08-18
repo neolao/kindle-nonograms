@@ -48,12 +48,42 @@ function banner(): HTMLElement | null {
   return document.querySelector<HTMLElement>('[data-role="win-banner"]');
 }
 
+function fillButton(): HTMLButtonElement | null {
+  return document.querySelector<HTMLButtonElement>('[data-role="mode-fill"]');
+}
+
+function crossButton(): HTMLButtonElement | null {
+  return document.querySelector<HTMLButtonElement>('[data-role="mode-cross"]');
+}
+
+function switcherSelect(): HTMLSelectElement {
+  const found = document.querySelector<HTMLSelectElement>(
+    '[data-role="language-switcher-select"]',
+  );
+  if (!found) {
+    throw new Error("fixture language switcher select not found");
+  }
+  return found;
+}
+
+const originalNavigatorLanguage = window.navigator.language;
+
+function setNavigatorLanguage(language: string): void {
+  Object.defineProperty(window.navigator, "language", {
+    value: language,
+    configurable: true,
+  });
+}
+
 beforeEach(() => {
   localStorage.clear();
 });
 
 afterEach(() => {
   document.body.innerHTML = "";
+  document.cookie = "kindle-nonograms-locale=; path=/; max-age=0";
+  document.documentElement.lang = "";
+  setNavigatorLanguage(originalNavigatorLanguage);
 });
 
 describe("hydrate", () => {
@@ -268,5 +298,86 @@ describe("hydrate", () => {
     const header = document.querySelector("th");
     expect(() => header?.click()).not.toThrow();
     expect(loadProgress("solo")).toBeUndefined();
+  });
+});
+
+describe("language switcher", () => {
+  it("inserts the language switcher immediately after the page heading", () => {
+    buildFixture(soloPuzzle);
+
+    hydrate();
+
+    const h1 = document.querySelector("h1");
+    expect(
+      h1?.nextElementSibling?.querySelector(
+        '[data-role="language-switcher-select"]',
+      ),
+    ).not.toBeNull();
+  });
+
+  it("defaults to the language detected from the browser when there is no saved cookie", () => {
+    setNavigatorLanguage("fr-FR");
+    buildFixture(soloPuzzle);
+
+    hydrate();
+
+    expect(switcherSelect().value).toBe("fr");
+  });
+
+  it("prefers a saved cookie over the browser-detected language", () => {
+    document.cookie = "kindle-nonograms-locale=fr; path=/";
+    setNavigatorLanguage("en-US");
+    buildFixture(soloPuzzle);
+
+    hydrate();
+
+    expect(switcherSelect().value).toBe("fr");
+  });
+
+  it("labels the Fill/Cross toggle buttons and the win banner in the resolved locale from the start", () => {
+    setNavigatorLanguage("fr-FR");
+    buildFixture(soloPuzzle);
+
+    hydrate();
+
+    expect(fillButton()?.textContent).toBe("Remplir");
+    expect(crossButton()?.textContent).toBe("Croix");
+    expect(banner()?.textContent).toBe("Puzzle résolu !");
+  });
+
+  it("retranslates the Fill/Cross toggle buttons and the win banner immediately, with no reload, when the language changes", () => {
+    buildFixture(soloPuzzle);
+
+    hydrate();
+    expect(fillButton()?.textContent).toBe("Fill");
+
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    expect(fillButton()?.textContent).toBe("Remplir");
+    expect(crossButton()?.textContent).toBe("Croix");
+    expect(banner()?.textContent).toBe("Puzzle résolu !");
+    expect(document.documentElement.lang).toBe("fr");
+  });
+
+  it("saves the chosen language in a cookie, read back as the priority source on the next load", () => {
+    buildFixture(soloPuzzle);
+
+    hydrate();
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    expect(document.cookie).toContain("kindle-nonograms-locale=fr");
+  });
+
+  it("still inserts the switcher when the embedded puzzle JSON is missing, without throwing", () => {
+    document.body.innerHTML =
+      '<h1>Puzzle</h1><table><tbody><tr><td data-row="0" data-col="0"></td></tr></tbody></table>';
+
+    expect(() => hydrate()).not.toThrow();
+    expect(
+      document.querySelector('[data-role="language-switcher-select"]'),
+    ).not.toBeNull();
+    expect(banner()).toBeNull();
   });
 });

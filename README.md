@@ -18,6 +18,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The home page now shows which puzzles you've already solved.
 - The whole site — every puzzle page, the home page, and the interactive bundle — can now be built with a single command and previewed locally before publishing.
 - The game is automatically built and published online whenever a change is pushed.
+- The app's language can be switched between English and Français from a dropdown on the puzzle library and on each puzzle page. It defaults to your browser's language and remembers your choice for next time.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

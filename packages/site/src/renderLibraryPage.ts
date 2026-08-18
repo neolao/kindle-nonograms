@@ -18,7 +18,7 @@ export function renderLibraryPage(
 ): string {
   const body =
     puzzles.length === 0
-      ? "<p>No puzzles are available yet.</p>"
+      ? '<p data-i18n="library.empty">No puzzles are available yet.</p>'
       : `<ul>${puzzles.map(renderLibraryItem).join("")}</ul>`;
 
   return `<!doctype html>
@@ -30,7 +30,7 @@ export function renderLibraryPage(
 <style>${STYLE}</style>
 </head>
 <body>
-<h1>Kindle Nonograms</h1>
+<h1 data-i18n="library.title">Kindle Nonograms</h1>
 ${body}
 <script type="application/json" id="puzzles-data">${embedJson(puzzles)}</script>
 <script type="module" src="./assets/main.js${versionQuery(assetVersion)}"></script>
@@ -42,7 +42,7 @@ function renderLibraryItem(puzzle: Puzzle): string {
   const href = `puzzles/${encodeURIComponent(puzzle.id)}/`;
   const label = `${escapeHtml(puzzle.name)} — ${puzzle.width} × ${puzzle.height}`;
 
-  return `<li data-puzzle-id="${escapeHtml(puzzle.id)}"><a href="${href}">${label}</a><span class="solved-badge" hidden>Solved</span></li>`;
+  return `<li data-puzzle-id="${escapeHtml(puzzle.id)}"><a href="${href}">${label}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span></li>`;
 }
 
 const STYLE = `

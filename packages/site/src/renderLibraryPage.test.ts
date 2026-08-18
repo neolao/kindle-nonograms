@@ -131,4 +131,29 @@ describe("renderLibraryPage", () => {
 
     expect(script?.getAttribute("src")).toBe("./assets/main.js?v=abc123ef");
   });
+
+  it("tags the title with its translation key while keeping the default English text", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const heading = doc.querySelector("h1");
+
+    expect(heading?.getAttribute("data-i18n")).toBe("library.title");
+    expect(heading?.textContent).toBe("Kindle Nonograms");
+  });
+
+  it("tags the empty-state message with its translation key while keeping the default English text", () => {
+    const doc = parse(renderLibraryPage([]));
+    const message = doc.querySelector("[data-i18n='library.empty']");
+
+    expect(message?.textContent).toBe("No puzzles are available yet.");
+  });
+
+  it("tags every solved badge with its translation key while keeping the default English text", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const badges = doc.querySelectorAll("[data-i18n='library.solvedBadge']");
+
+    expect(badges).toHaveLength(puzzles.length);
+    for (const badge of Array.from(badges)) {
+      expect(badge.textContent).toBe("Solved");
+    }
+  });
 });
