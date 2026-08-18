@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Players can now switch the app's language between English and Français from a dropdown on both the puzzle library and the puzzle page. The language is detected automatically from the browser on first visit, and the choice is remembered for next time.
+- A "Check"/"Vérifier" button on the puzzle page lets players ask at any time whether their grid is correctly solved, showing "Puzzle solved!" or "Not solved yet" — on top of the existing banner that already appears automatically once the puzzle is solved.
 
 ### Fixed
 

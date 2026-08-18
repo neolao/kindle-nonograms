@@ -3,6 +3,7 @@ import {
   type PlayerCellMark,
   type Puzzle,
   type PuzzleProgress,
+  type TranslationKey,
   createEmptyProgressGrid,
   createPuzzle,
   isPuzzleSolved,
@@ -109,12 +110,33 @@ function paintExistingProgress(
   }
 }
 
+/**
+ * Sets the banner's text to the solved or not-solved message and updates its
+ * `data-i18n` key to match, so a later language change (which retranslates
+ * every `[data-i18n]` element by its current key) picks the right string
+ * instead of reverting to whichever message was shown first.
+ */
+function setBannerMessage(
+  banner: HTMLElement,
+  locale: Locale,
+  solved: boolean,
+): void {
+  const key: TranslationKey = solved
+    ? "play.winBanner.solved"
+    : "play.winBanner.notSolved";
+  banner.dataset.i18n = key;
+  banner.textContent = translate(locale, key);
+}
+
 function buildBanner(locale: Locale): HTMLElement {
   const banner = document.createElement("p");
   banner.dataset.role = "win-banner";
-  banner.dataset.i18n = "play.winBanner.solved";
+  // Announces its content to assistive tech whenever it becomes visible or
+  // its text changes, since Kindle's UI otherwise gives no non-visual cue
+  // that a check result appeared.
+  banner.setAttribute("aria-live", "polite");
   banner.hidden = true;
-  banner.textContent = translate(locale, "play.winBanner.solved");
+  setBannerMessage(banner, locale, true);
   return banner;
 }
 
@@ -122,6 +144,7 @@ function buildToolbar(
   puzzle: Puzzle,
   state: PlayState,
   locale: Locale,
+  onCheck: () => void,
 ): HTMLElement {
   const toolbar = document.createElement("div");
   toolbar.className = "play-toolbar";
@@ -153,7 +176,14 @@ function buildToolbar(
   });
   refreshModeButtons();
 
-  toolbar.append(fillButton, crossButton);
+  const checkButton = document.createElement("button");
+  checkButton.type = "button";
+  checkButton.dataset.role = "check";
+  checkButton.dataset.i18n = "play.check";
+  checkButton.textContent = translate(locale, "play.check");
+  checkButton.addEventListener("click", onCheck);
+
+  toolbar.append(fillButton, crossButton, checkButton);
 
   if (puzzle.palette.length > 1) {
     const swatchButtons: HTMLButtonElement[] = [];
@@ -207,6 +237,7 @@ function handleGridClick(
   progress: PuzzleProgress,
   state: PlayState,
   banner: HTMLElement,
+  locale: Locale,
 ): void {
   if (!(event.target instanceof HTMLElement)) {
     return;
@@ -228,7 +259,16 @@ function handleGridClick(
   progress.cells[y][x] = toggleMark(progress.cells[y][x], state);
   paintCell(cell, progress.cells[y][x], puzzle);
   saveProgress(puzzle.id, progress);
-  banner.hidden = !isPuzzleSolved(puzzle, progress);
+
+  const solved = isPuzzleSolved(puzzle, progress);
+  // Only reset the message when the automatic banner is about to show
+  // (always the solved one) — this resyncs it away from a "not solved"
+  // message a manual Check click may have left in place. When not solved,
+  // the banner just stays/goes hidden and its text is irrelevant.
+  if (solved) {
+    setBannerMessage(banner, locale, true);
+  }
+  banner.hidden = !solved;
 }
 
 /**
@@ -285,7 +325,10 @@ export function hydrate(): void {
   const state: PlayState = { mode: "fill", activeColor: 0 };
 
   const banner = buildBanner(locale);
-  const toolbar = buildToolbar(puzzle, state, locale);
+  const toolbar = buildToolbar(puzzle, state, locale, () => {
+    setBannerMessage(banner, locale, isPuzzleSolved(puzzle, progress));
+    banner.hidden = false;
+  });
   const anchor = table.closest(".grid-wrapper") ?? table;
   anchor.parentNode?.insertBefore(banner, anchor);
   anchor.parentNode?.insertBefore(toolbar, anchor);
@@ -294,7 +337,7 @@ export function hydrate(): void {
   banner.hidden = !isPuzzleSolved(puzzle, progress);
 
   table.addEventListener("click", (event) =>
-    handleGridClick(event, table, puzzle, progress, state, banner),
+    handleGridClick(event, table, puzzle, progress, state, banner, locale),
   );
 }
 

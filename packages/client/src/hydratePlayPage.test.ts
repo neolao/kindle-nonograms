@@ -56,6 +56,10 @@ function crossButton(): HTMLButtonElement | null {
   return document.querySelector<HTMLButtonElement>('[data-role="mode-cross"]');
 }
 
+function checkButton(): HTMLButtonElement | null {
+  return document.querySelector<HTMLButtonElement>('[data-role="check"]');
+}
+
 function switcherSelect(): HTMLSelectElement {
   const found = document.querySelector<HTMLSelectElement>(
     '[data-role="language-switcher-select"]',
@@ -298,6 +302,72 @@ describe("hydrate", () => {
     const header = document.querySelector("th");
     expect(() => header?.click()).not.toThrow();
     expect(loadProgress("solo")).toBeUndefined();
+  });
+});
+
+describe("check button", () => {
+  it("reveals the banner with an explicit not-solved message when Check is clicked on an unsolved grid", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    expect(banner()?.hidden).toBe(true);
+    checkButton()?.click();
+
+    expect(banner()?.hidden).toBe(false);
+    expect(banner()?.textContent).toBe("Not solved yet");
+  });
+
+  it("reveals the banner with the same solved message as the automatic banner when Check is clicked on an already-solved grid", () => {
+    saveProgress("solo", { cells: [[0, null]] });
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    checkButton()?.click();
+
+    expect(banner()?.hidden).toBe(false);
+    expect(banner()?.textContent).toBe("Puzzle solved!");
+  });
+
+  it("resyncs the banner to the solved message once a tap completes the puzzle after Check showed a not-solved message", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    checkButton()?.click();
+    expect(banner()?.textContent).toBe("Not solved yet");
+
+    cell(0, 0).click();
+
+    expect(banner()?.hidden).toBe(false);
+    expect(banner()?.textContent).toBe("Puzzle solved!");
+  });
+
+  it("marks the banner as a live region so its message is announced to assistive tech", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    expect(banner()?.getAttribute("aria-live")).toBe("polite");
+  });
+
+  it("retranslates a not-solved message shown via Check when the language changes", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    checkButton()?.click();
+    expect(banner()?.textContent).toBe("Not solved yet");
+
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    expect(banner()?.textContent).toBe("Pas encore résolu");
+  });
+
+  it("labels the Check button in the resolved locale from the start", () => {
+    setNavigatorLanguage("fr-FR");
+    buildFixture(soloPuzzle);
+
+    hydrate();
+
+    expect(checkButton()?.textContent).toBe("Vérifier");
   });
 });
 
