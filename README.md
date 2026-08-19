@@ -27,7 +27,8 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - Solving a puzzle reveals a small picture of it on the library page — hidden until you've earned it, like a trophy.
 - The "Solved" badge on the library page now looks like a little stamp.
 - Both pages now share a bolder "cabinet" look — a bordered panel, a printed-style title, and three accent colors used with intent (leaving/active controls, the Check action, and "completed" — the win message and the Solved stamp now share the same color).
-- Buttons and the back-link have a chunky, pressable look, corners are rounded throughout, each puzzle in the library is its own card with a colored top stripe, and the puzzle page's controls sit inside their own bordered panel above the board.
+- Buttons and the back-link have a chunky, pressable look, corners are rounded throughout, each puzzle in the library is its own card, and the puzzle page's controls sit inside their own bordered panel above the board.
+- Each puzzle's card in the library shows a top stripe in its own colors — solid black for a single-color puzzle, one segment per color for a multi-color one — so you can spot a puzzle's palette before opening it.
 - On a multi-color puzzle, the "Fill" button and the color swatches sit inside their own small boxed group, showing at a glance that picking a color is part of the fill action.
 <!-- vibe:end:features -->
 

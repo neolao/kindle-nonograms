@@ -196,13 +196,83 @@ describe("renderLibraryPage", () => {
     expect(css).toMatch(/li\{[^}]*border-top-width:\d+px/);
   });
 
-  it("cycles each puzzle card's top stripe through the three decorative accent colors", () => {
+  it("no longer cycles the top stripe through position-based accent colors", () => {
     const doc = parse(renderLibraryPage(puzzles));
     const css = doc.querySelector("style")?.textContent ?? "";
 
-    expect(css).toMatch(/li:nth-child\(4n\+1\)\{[^}]*border-top-color:#a85f00/);
-    expect(css).toMatch(/li:nth-child\(4n\+2\)\{[^}]*border-top-color:#b0165c/);
-    expect(css).toMatch(/li:nth-child\(4n\+3\)\{[^}]*border-top-color:#0b7a68/);
+    expect(css).not.toMatch(/li:nth-child/);
+  });
+
+  it("constrains the stripe to a fixed-height band pinned to the card's top, not the whole card", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/li\{[^}]*border-top-color:transparent/);
+    expect(css).toMatch(/li\{[^}]*background-repeat:no-repeat/);
+    expect(css).toMatch(/li\{[^}]*background-position:top/);
+    expect(css).toMatch(/li\{[^}]*background-size:100% 6px/);
+  });
+
+  it("gives each card its own stripe class matching its position in the list", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const items = doc.querySelectorAll("li");
+
+    expect(items[0]?.classList.contains("stripe-0")).toBe(true);
+    expect(items[1]?.classList.contains("stripe-1")).toBe(true);
+  });
+
+  it("shows a solid black top stripe for a monochrome puzzle, regardless of its actual palette color", () => {
+    const nonBlackMono: Puzzle = {
+      id: "mono",
+      name: "Mono",
+      width: 3,
+      height: 3,
+      palette: ["#e63946"],
+      cells: Array.from({ length: 3 }, () => Array(3).fill(null)),
+    };
+    const doc = parse(renderLibraryPage([nonBlackMono]));
+    const css = doc.querySelector("style")?.textContent ?? "";
+    const rule = /\.stripe-0\{[^}]*\}/.exec(css)?.[0] ?? "";
+
+    expect(rule).toContain("linear-gradient(#000000, #000000)");
+    expect(rule).not.toContain("#e63946");
+  });
+
+  it("splits the top stripe into equal hard-stop segments in palette order for a multi-color puzzle", () => {
+    const quad: Puzzle = {
+      id: "quad",
+      name: "Quad",
+      width: 4,
+      height: 4,
+      palette: ["#e63946", "#f1a208", "#2a9d8f", "#264653"],
+      cells: Array.from({ length: 4 }, () => Array(4).fill(null)),
+    };
+    const doc = parse(renderLibraryPage([quad]));
+    const css = doc.querySelector("style")?.textContent ?? "";
+    const rule = /\.stripe-0\{[^}]*\}/.exec(css)?.[0] ?? "";
+
+    expect(rule).toContain(
+      "linear-gradient(to right, #e63946 0%, #e63946 25%, #f1a208 25%, #f1a208 50%, #2a9d8f 50%, #2a9d8f 75%, #264653 75%, #264653 100%)",
+    );
+  });
+
+  it("falls back to black for a palette entry that isn't a valid hex color, instead of injecting it into the stylesheet", () => {
+    const malicious: Puzzle = {
+      id: "bad",
+      name: "Bad",
+      width: 2,
+      height: 2,
+      palette: ["#fff", "red;}body{display:none"],
+      cells: Array.from({ length: 2 }, () => Array(2).fill(null)),
+    };
+    const doc = parse(renderLibraryPage([malicious]));
+    const css = doc.querySelector("style")?.textContent ?? "";
+    const rule = /\.stripe-0\{[^}]*\}/.exec(css)?.[0] ?? "";
+
+    expect(css).not.toContain("red;}body{display:none");
+    expect(rule).toContain(
+      "linear-gradient(to right, #fff 0%, #fff 50%, #000000 50%, #000000 100%)",
+    );
   });
 
   it("gives every row link at least the minimum tap target height", () => {

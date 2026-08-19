@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Each puzzle's card in the library now shows a top stripe reflecting its own colors: solid black for a single-color puzzle, or one segment per color for a multi-color puzzle, instead of a decorative color cycling by position.
+
 ### Fixed
 
 - The puzzle grid is now centered on the page instead of sticking to the left with empty space on the right whenever it's smaller than the screen.
