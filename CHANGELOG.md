@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The puzzle page's header no longer eats so much vertical space — the title and the "Back to puzzle list"/language controls now share one row instead of two, and the purely decorative dots were dropped from this page, leaving noticeably more room for the puzzle itself.
 - The "Back to puzzle list" button is now a compact arrow icon next to the title instead of a wide text button — still easy to tap, and still announced by its full name to screen readers.
 - Puzzle names in the library now use the site's label typeface and are properly centered in their row — previously they sat closer to the top of the row than the middle. A very long auto-generated name is now trimmed with "…" instead of throwing off the row's height.
+- Puzzle names in the library no longer show the browser's default link underline or turn a different color once you've visited that puzzle.
 
 ## [1.10.0] - 2026-08-18
 

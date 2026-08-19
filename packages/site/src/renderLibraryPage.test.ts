@@ -212,6 +212,18 @@ describe("renderLibraryPage", () => {
     expect(css).toMatch(/li a\{[^}]*min-height:44px/);
   });
 
+  it("removes the browser's default underline and fixes a neutral text color that never changes once a puzzle page has been visited", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/li a\{[^}]*text-decoration:none/);
+    expect(css).toMatch(/li a\{[^}]*color:#111111/);
+    // The whole point is no color change after a visit — an explicit
+    // :visited override (even one that repeats the same value) would be
+    // a smell that something upstream still expects the default to win.
+    expect(css).not.toContain(":visited");
+  });
+
   it("gives the puzzle name the label font, matching the site's other short UI labels", () => {
     const doc = parse(renderLibraryPage(puzzles));
     const css = doc.querySelector("style")?.textContent ?? "";
