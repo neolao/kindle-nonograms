@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Contributing Guide for Puzzle Submissions
 
