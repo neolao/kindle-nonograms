@@ -1,5 +1,5 @@
 ---
-status: in_progress
+status: done
 ---
 # Puzzle Solvability and Duplicate Validation
 
