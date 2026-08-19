@@ -361,13 +361,20 @@ function setUpLanguageSwitcher(): Locale {
       writeLocaleCookie(newLocale);
       applyLocale(newLocale);
     });
-    // Joins the back-link's own header row when the static markup provides
-    // one, rather than always inserting a fresh row right after the
-    // heading: an extra row above the grid would shrink the space
-    // `applyGridFit` has to work with on small screens. Falls back to the
-    // old insertion point when no such row exists (e.g. isolated tests).
+    // Joins the back-link's own controls cluster when the static markup
+    // provides one, rather than always inserting a fresh row right after
+    // the heading: an extra row above the grid would shrink the space
+    // `applyGridFit` has to work with on small screens. Grouping into
+    // `.page-header-controls` (rather than `.page-header` directly) keeps
+    // the back-link and the switcher wrapping together as one unit on
+    // narrow screens, instead of each getting its own independent wrap
+    // point. Falls back to the old insertion point when neither exists
+    // (e.g. isolated tests).
+    const controls = document.querySelector(".page-header-controls");
     const headerRow = document.querySelector(".page-header");
-    if (headerRow) {
+    if (controls) {
+      controls.append(switcher);
+    } else if (headerRow) {
       headerRow.append(switcher);
     } else {
       heading.parentNode?.insertBefore(switcher, heading.nextSibling);

@@ -151,4 +151,27 @@ describe("sharedStyles", () => {
     expect(css).toMatch(/button,\s*\.back-link\{[^}]*border-radius:\d+px/);
     expect(css).toMatch(/\.dot-row i\{[^}]*border-radius:50%/);
   });
+
+  it("truncates a long heading inside the header row instead of pushing its controls or wrapping", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/\.page-header h1\{[^}]*text-overflow:ellipsis/);
+    expect(css).toMatch(/\.page-header h1\{[^}]*white-space:nowrap/);
+    // min-width:0 is required for ellipsis to actually take effect on a
+    // flex item — without it, a flex child never shrinks below its
+    // content's natural width, so overflow/ellipsis silently never fires.
+    expect(css).toMatch(/\.page-header h1\{[^}]*min-width:0/);
+  });
+
+  it("removes the standalone heading's own margin when it joins the header row, instead of adding to the row's margin", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/\.page-header h1\{[^}]*margin:0/);
+  });
+
+  it("groups the header row's controls in their own flex cluster that wraps together as one unit", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/\.page-header-controls\{[^}]*display:flex/);
+  });
 });

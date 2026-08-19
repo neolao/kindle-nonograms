@@ -196,13 +196,24 @@ describe("renderPuzzlePage", () => {
     expect(css).toMatch(/\.grid-wrapper\{[^}]*border-radius:\d+px/);
   });
 
-  it("shows a decorative dot row before the heading", () => {
+  it("does not render the decorative dot row, to keep the header compact on this space-constrained page", () => {
     const doc = parse(renderPuzzlePage(multiColorPuzzle));
 
-    const dotRow = doc.querySelector(".dot-row");
-    expect(dotRow).not.toBeNull();
-    expect(dotRow?.getAttribute("aria-hidden")).toBe("true");
-    expect(dotRow?.nextElementSibling?.tagName).toBe("H1");
+    expect(doc.querySelector(".dot-row")).toBeNull();
+  });
+
+  it("merges the heading into the header row instead of stacking it in its own row above", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+    const heading = doc.querySelector("h1");
+
+    expect(heading?.closest(".page-header")).not.toBeNull();
+  });
+
+  it("groups the back-link in its own controls cluster inside the header row", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+    const link = doc.querySelector<HTMLAnchorElement>("a.back-link");
+
+    expect(link?.closest(".page-header-controls")).not.toBeNull();
   });
 
   it("uses the shared design tokens' font stack instead of a hardcoded font", () => {

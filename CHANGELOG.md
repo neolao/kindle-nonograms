@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Both pages now share a bolder "cabinet" look: a bordered, shadowed panel, a title with a printed-style double shadow, a row of small decorative dots, and three accent colors used with intent — amber for leaving/active controls, magenta for the main Check action, and teal for "completed" (shared by the win message and the Solved stamp, so the two visibly connect). The puzzle grid itself keeps its own plain, high-contrast frame — it stays the calmest, easiest to read part of the page.
 - Pushed the new look further: buttons and the back-link now have a chunky, pressable look, corners are rounded throughout, each puzzle in the library is its own separate card with a colored top stripe, and the puzzle page's controls sit inside their own bordered, shadowed panel above the board.
 
+### Fixed
+
+- The puzzle page's header no longer eats so much vertical space — the title and the "Back to puzzle list"/language controls now share one row instead of two, and the purely decorative dots were dropped from this page, leaving noticeably more room for the puzzle itself.
+
 ## [1.10.0] - 2026-08-18
 
 ### Added

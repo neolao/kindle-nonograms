@@ -397,6 +397,18 @@ describe("language switcher", () => {
     expect(document.querySelectorAll(".page-header")).toHaveLength(1);
   });
 
+  it("joins the back-link's own controls cluster, not the bare header row, when one is present", () => {
+    document.body.innerHTML = `<div class="page-header"><h1>${soloPuzzle.name}</h1><div class="page-header-controls"><a class="back-link" href="../../">Back to puzzle list</a></div></div><div class="grid-wrapper"><table><tbody><tr><th scope="row">clue</th><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table></div><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
+
+    hydrate();
+
+    const controls = document.querySelector(".page-header-controls");
+    expect(
+      controls?.querySelector('[data-role="language-switcher-select"]'),
+    ).not.toBeNull();
+    expect(document.querySelectorAll(".page-header-controls")).toHaveLength(1);
+  });
+
   it("inserts the toolbar and win banner into the chrome panel when one is present", () => {
     document.body.innerHTML = `<div class="chrome-panel"><h1>${soloPuzzle.name}</h1><div class="page-header"><a class="back-link" href="../../">Back to puzzle list</a></div></div><div class="grid-wrapper"><table><tbody><tr><th scope="row">clue</th><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table></div><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
 
