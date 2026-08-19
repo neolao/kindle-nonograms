@@ -675,6 +675,45 @@ describe("language switcher", () => {
     expect(Number.parseInt(wrapper.style.fontSize, 10)).toBeLessThan(16);
   });
 
+  it("shrinks a wide puzzle enough to actually fit a narrow screen, not just down to the old legibility floor", () => {
+    buildFixture(soloPuzzle);
+
+    // Mirrors a real wide (25-column) puzzle measured on a narrow real
+    // device: a puzzle-still-open scrollWidth of 913px on a 350px-wide
+    // screen. At the previous floor (half size), the grid would still
+    // render at 913 * 0.5 = 456.5px — wider than the 342px the wrapper is
+    // capped to — and get visibly clipped despite `overflow:hidden`.
+    const table = document.querySelector("table");
+    if (!table) {
+      throw new Error("fixture table not found");
+    }
+    Object.defineProperty(table, "scrollWidth", {
+      value: 913,
+      configurable: true,
+    });
+    Object.defineProperty(table, "scrollHeight", {
+      value: 913,
+      configurable: true,
+    });
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      value: 350,
+      configurable: true,
+    });
+    Object.defineProperty(document.documentElement, "clientHeight", {
+      value: 1000,
+      configurable: true,
+    });
+
+    hydrate();
+
+    const wrapper = document.querySelector<HTMLElement>(".grid-wrapper");
+    const fontSizePx = Number.parseInt(wrapper?.style.fontSize ?? "", 10);
+    const maxWidthPx = Number.parseInt(wrapper?.style.maxWidth ?? "", 10);
+    const renderedTableWidth = 913 * (fontSizePx / 16);
+
+    expect(renderedTableWidth).toBeLessThanOrEqual(maxWidthPx);
+  });
+
   it("keeps a valid grid-wrapper font-size after revealing the win banner via Check, without throwing", () => {
     buildFixture(soloPuzzle);
     hydrate();

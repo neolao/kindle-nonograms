@@ -36,7 +36,12 @@ const CROSS_GLYPH = "✖";
 // Grid-fit tuning: the whole grid (cells, clues, borders) is `em`-sized, so
 // a single `font-size` change on the wrapper scales everything together.
 const BASE_FONT_SIZE_PX = 16;
-const MIN_GRID_SCALE = 0.5;
+// A wide puzzle (e.g. 25 columns) measured on a narrow real Kindle screen
+// can need a scale below the previous 0.5 floor to actually fit — that
+// floor existed to protect legibility, but a puzzle clipped by
+// `.grid-wrapper`'s overflow:hidden fail-safe (missing cells/clues
+// entirely) is strictly worse than a puzzle rendered smaller than ideal.
+const MIN_GRID_SCALE = 0.3;
 const MAX_GRID_SCALE = 2;
 // Fixed breathing room (px) kept clear of the viewport edge, on top of
 // computeFitFontSizePx's own proportional safety margin.
