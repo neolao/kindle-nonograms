@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A new CONTRIBUTING.md explains how to submit a puzzle, and pull requests now get a checklist covering the puzzle filename, palette, required checks, and licensing.
+
 ## [1.13.0] - 2026-08-19
 
 ### Added

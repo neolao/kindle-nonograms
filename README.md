@@ -85,3 +85,7 @@ npm run lint
 - [docs/architecture.md](docs/architecture.md) — how the project's packages fit together
 - [docs/configuration.md](docs/configuration.md) — build-time settings
 <!-- vibe:end:docs-index -->
+
+## Contributing
+
+Want to submit a puzzle? See [CONTRIBUTING.md](CONTRIBUTING.md) for the puzzle format, where to put your file, and the checks to run before opening a PR.
