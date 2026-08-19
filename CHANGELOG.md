@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - The puzzle page's header no longer eats so much vertical space — the title and the "Back to puzzle list"/language controls now share one row instead of two, and the purely decorative dots were dropped from this page, leaving noticeably more room for the puzzle itself.
+- The "Back to puzzle list" button is now a compact arrow icon next to the title instead of a wide text button — still easy to tap, and still announced by its full name to screen readers.
 
 ## [1.10.0] - 2026-08-18
 

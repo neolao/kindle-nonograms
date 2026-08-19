@@ -209,11 +209,16 @@ describe("renderPuzzlePage", () => {
     expect(heading?.closest(".page-header")).not.toBeNull();
   });
 
-  it("groups the back-link in its own controls cluster inside the header row", () => {
+  it("places the back-link before the heading, not grouped with the language switcher's controls", () => {
     const doc = parse(renderPuzzlePage(multiColorPuzzle));
     const link = doc.querySelector<HTMLAnchorElement>("a.back-link");
+    const heading = doc.querySelector("h1");
 
-    expect(link?.closest(".page-header-controls")).not.toBeNull();
+    expect(link?.closest(".page-header-controls")).toBeNull();
+    expect(
+      link?.compareDocumentPosition(heading as Node) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it("uses the shared design tokens' font stack instead of a hardcoded font", () => {
@@ -225,14 +230,19 @@ describe("renderPuzzlePage", () => {
     );
   });
 
-  it("renders a static, translatable link back to the puzzle library", () => {
+  it("renders a static link back to the puzzle library, as a compact icon with a visually-hidden accessible label", () => {
     const doc = parse(renderPuzzlePage(multiColorPuzzle));
     const link = doc.querySelector<HTMLAnchorElement>("a.back-link");
 
     expect(link).not.toBeNull();
-    expect(link?.getAttribute("data-i18n")).toBe("play.backToLibrary");
     expect(link?.getAttribute("href")).toBe("../../");
-    expect(link?.textContent).toBe("Back to puzzle list");
+
+    const icon = link?.querySelector('[aria-hidden="true"]');
+    expect(icon?.textContent).toBe("←");
+
+    const label = link?.querySelector(".sr-only");
+    expect(label?.getAttribute("data-i18n")).toBe("play.backToLibrary");
+    expect(label?.textContent).toBe("Back to puzzle list");
   });
 
   it("places the back-link in a header row alongside where the language switcher is inserted", () => {

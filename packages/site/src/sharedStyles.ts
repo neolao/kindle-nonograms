@@ -60,5 +60,6 @@ button[aria-pressed="true"]{border-width:${BORDER_WIDTH.thick};border-color:${CO
 .section-label{display:flex;align-items:center;gap:${SPACING_PX.sm}px;margin:${SPACING_PX.md}px;color:${COLORS.muted};font-family:${LABEL_FONT_STACK};font-size:0.75em;text-transform:uppercase;letter-spacing:0.15em;}
 .section-label::before,.section-label::after{content:"";height:${BORDER_WIDTH.thin};flex:1;background:${COLORS.line};}
 .panel{background:${COLORS.panel};border:${BORDER_WIDTH.medium} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;box-shadow:6px 6px 0 ${COLORS.panelEdge};}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 `;
 }

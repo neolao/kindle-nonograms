@@ -174,4 +174,16 @@ describe("sharedStyles", () => {
 
     expect(css).toMatch(/\.page-header-controls\{[^}]*display:flex/);
   });
+
+  it("hides visually-hidden accessible label text off-screen without removing it from the accessibility tree", () => {
+    const css = sharedStyles();
+
+    // The standard "clip, not display:none" pattern — display:none or
+    // visibility:hidden would remove the text from screen readers too,
+    // defeating the whole point of keeping it in the DOM.
+    expect(css).toMatch(/\.sr-only\{[^}]*position:absolute/);
+    expect(css).toMatch(/\.sr-only\{[^}]*overflow:hidden/);
+    expect(css).not.toMatch(/\.sr-only\{[^}]*display:none/);
+    expect(css).not.toMatch(/\.sr-only\{[^}]*visibility:hidden/);
+  });
 });

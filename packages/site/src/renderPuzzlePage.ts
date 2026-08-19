@@ -48,8 +48,9 @@ export function renderPuzzlePage(
 <body>
 <div class="chrome-panel">
 <div class="page-header">
+<a class="back-link" href="../../"><span aria-hidden="true">←</span><span class="sr-only" data-i18n="play.backToLibrary">Back to puzzle list</span></a>
 <h1>${escapeHtml(puzzle.name)}</h1>
-<div class="page-header-controls"><a class="back-link" data-i18n="play.backToLibrary" href="../../">Back to puzzle list</a></div>
+<div class="page-header-controls"></div>
 </div>
 </div>
 <div class="grid-wrapper">
