@@ -4,6 +4,7 @@ import {
   type Puzzle,
   type PuzzleProgress,
   type TranslationKey,
+  correctWrongCells,
   createEmptyProgressGrid,
   createPuzzle,
   isPuzzleSolved,
@@ -121,7 +122,7 @@ function paintExistingProgress(
 }
 
 /**
- * Sets the banner's text to the solved or not-solved message and updates its
+ * Sets the banner's text to the message for `key` and updates its
  * `data-i18n` key to match, so a later language change (which retranslates
  * every `[data-i18n]` element by its current key) picks the right string
  * instead of reverting to whichever message was shown first.
@@ -129,11 +130,8 @@ function paintExistingProgress(
 function setBannerMessage(
   banner: HTMLElement,
   locale: Locale,
-  solved: boolean,
+  key: TranslationKey,
 ): void {
-  const key: TranslationKey = solved
-    ? "play.winBanner.solved"
-    : "play.winBanner.notSolved";
   banner.dataset.i18n = key;
   banner.textContent = translate(locale, key);
 }
@@ -146,7 +144,7 @@ function buildBanner(locale: Locale): HTMLElement {
   // that a check result appeared.
   banner.setAttribute("aria-live", "polite");
   banner.hidden = true;
-  setBannerMessage(banner, locale, true);
+  setBannerMessage(banner, locale, "play.winBanner.solved");
   return banner;
 }
 
@@ -337,7 +335,7 @@ function handleGridClick(
   // message a manual Check click may have left in place. When not solved,
   // the banner just stays/goes hidden and its text is irrelevant.
   if (solved) {
-    setBannerMessage(banner, locale, true);
+    setBannerMessage(banner, locale, "play.winBanner.solved");
   }
 
   const wasBannerHidden = banner.hidden;
@@ -348,6 +346,60 @@ function handleGridClick(
   // re-fitting on every tap regardless would mean measuring/reflowing the
   // grid on every cell click, which is wasteful and risks a visible jump.
   if (!banner.hidden && wasBannerHidden) {
+    applyGridFit(anchor, table);
+  }
+}
+
+/**
+ * Runs on a Check click: clears every cell that doesn't match the puzzle's
+ * solution back to untouched (never fills in a cell the player hasn't
+ * attempted — see {@link correctWrongCells}), repaints only the cells that
+ * actually changed, persists the result, then shows whichever banner
+ * message applies — solved, "some mistakes were fixed" when cells were
+ * corrected but the puzzle isn't finished yet, or the plain not-solved
+ * message when nothing was wrong to begin with.
+ */
+function handleCheck(
+  table: HTMLTableElement,
+  puzzle: Puzzle,
+  progress: PuzzleProgress,
+  banner: HTMLElement,
+  locale: Locale,
+  anchor: HTMLElement,
+): void {
+  const correction = correctWrongCells(puzzle, progress);
+
+  if (correction.changed) {
+    for (let y = 0; y < puzzle.height; y++) {
+      for (let x = 0; x < puzzle.width; x++) {
+        const correctedMark = correction.cells[y][x];
+        if (progress.cells[y][x] === correctedMark) {
+          continue;
+        }
+
+        progress.cells[y][x] = correctedMark;
+        const cell = table.querySelector<HTMLTableCellElement>(
+          `td[data-row="${y}"][data-col="${x}"]`,
+        );
+        if (cell) {
+          paintCell(cell, correctedMark, puzzle);
+        }
+      }
+    }
+    saveProgress(puzzle.id, progress);
+  }
+
+  const solved = isPuzzleSolved(puzzle, progress);
+  const key: TranslationKey = solved
+    ? "play.winBanner.solved"
+    : correction.changed
+      ? "play.winBanner.corrected"
+      : "play.winBanner.notSolved";
+  setBannerMessage(banner, locale, key);
+
+  const wasBannerHidden = banner.hidden;
+  banner.hidden = false;
+  if (wasBannerHidden) {
     applyGridFit(anchor, table);
   }
 }
@@ -432,14 +484,9 @@ export function hydrate(): void {
     table.closest<HTMLElement>(".grid-wrapper") ?? table;
 
   const banner = buildBanner(locale);
-  const toolbar = buildToolbar(puzzle, state, locale, () => {
-    setBannerMessage(banner, locale, isPuzzleSolved(puzzle, progress));
-    const wasBannerHidden = banner.hidden;
-    banner.hidden = false;
-    if (wasBannerHidden) {
-      applyGridFit(anchor, table);
-    }
-  });
+  const toolbar = buildToolbar(puzzle, state, locale, () =>
+    handleCheck(table, puzzle, progress, banner, locale, anchor),
+  );
   // Prefers the static chrome panel (see
   // .vibe/decisions/014-puzzle-page-chrome-panel-wrapper.md) so the toolbar
   // and banner land inside its bordered/shadowed box alongside the heading

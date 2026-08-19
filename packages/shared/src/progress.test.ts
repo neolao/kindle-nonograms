@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyProgressGrid, isPuzzleSolved } from "./progress.js";
+import {
+  correctWrongCells,
+  createEmptyProgressGrid,
+  isPuzzleSolved,
+} from "./progress.js";
 import type { Puzzle } from "./puzzle.js";
 
 function fixturePuzzle(): Puzzle {
@@ -102,5 +106,133 @@ describe("isPuzzleSolved", () => {
     const progress = { cells: [[0, null]] };
 
     expect(() => isPuzzleSolved(fixturePuzzle(), progress)).toThrow();
+  });
+});
+
+describe("correctWrongCells", () => {
+  it("clears a solution-filled cell that was filled with the wrong color, leaving the rest untouched", () => {
+    const progress = {
+      cells: [
+        [1, null],
+        [null, 1],
+      ],
+    };
+
+    const result = correctWrongCells(fixturePuzzle(), progress);
+
+    expect(result.changed).toBe(true);
+    expect(result.cells).toEqual([
+      [null, null],
+      [null, 1],
+    ]);
+  });
+
+  it("clears a solution-empty cell that was incorrectly filled", () => {
+    const progress = {
+      cells: [
+        [0, 0],
+        [null, 1],
+      ],
+    };
+
+    const result = correctWrongCells(fixturePuzzle(), progress);
+
+    expect(result.changed).toBe(true);
+    expect(result.cells).toEqual([
+      [0, null],
+      [null, 1],
+    ]);
+  });
+
+  it("clears a mark left on a cell the solution actually requires filled", () => {
+    const progress = {
+      cells: [
+        ["marked", null],
+        [null, 1],
+      ] as const,
+    };
+
+    const result = correctWrongCells(fixturePuzzle(), progress);
+
+    expect(result.changed).toBe(true);
+    expect(result.cells).toEqual([
+      [null, null],
+      [null, 1],
+    ]);
+  });
+
+  it("leaves a correct mark on a solution-empty cell untouched", () => {
+    const progress = {
+      cells: [
+        [0, "marked"],
+        [null, 1],
+      ] as const,
+    };
+
+    const result = correctWrongCells(fixturePuzzle(), progress);
+
+    expect(result.changed).toBe(false);
+    expect(result.cells).toEqual([
+      [0, "marked"],
+      [null, 1],
+    ]);
+  });
+
+  it("reports no change and returns an equivalent grid when every cell is already correct", () => {
+    const progress = {
+      cells: [
+        [0, null],
+        [null, 1],
+      ],
+    };
+
+    const result = correctWrongCells(fixturePuzzle(), progress);
+
+    expect(result.changed).toBe(false);
+    expect(result.cells).toEqual([
+      [0, null],
+      [null, 1],
+    ]);
+  });
+
+  it("leaves an untouched cell null and reports no change, even where the solution requires a fill", () => {
+    // A cell the player hasn't attempted is not a mistake to correct — only
+    // an actual wrong mark (a fill or a cross) counts as one.
+    const progress = {
+      cells: [
+        [null, null],
+        [null, 1],
+      ],
+    };
+
+    const result = correctWrongCells(fixturePuzzle(), progress);
+
+    expect(result.changed).toBe(false);
+    expect(result.cells).toEqual([
+      [null, null],
+      [null, 1],
+    ]);
+  });
+
+  it("does not mutate the input progress object", () => {
+    const progress = {
+      cells: [
+        [1, null],
+        [null, 1],
+      ],
+    };
+
+    correctWrongCells(fixturePuzzle(), progress);
+
+    expect(progress.cells).toEqual([
+      [1, null],
+      [null, 1],
+    ]);
+  });
+
+  it("throws when the progress grid dimensions don't match the puzzle", () => {
+    const progress = { cells: [[0, null]] };
+
+    expect(() => correctWrongCells(fixturePuzzle(), progress)).toThrow();
   });
 });

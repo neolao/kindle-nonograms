@@ -19,7 +19,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The whole site — every puzzle page, the home page, and the interactive bundle — can now be built with a single command and previewed locally before publishing.
 - The game is automatically built and published online whenever a change is pushed.
 - The app's language can be switched between English and Français from a dropdown on the puzzle library and on each puzzle page. It defaults to your browser's language and remembers your choice for next time.
-- A "Check" button on the puzzle page lets you find out at any time whether your grid is correctly solved, on top of the message that already appears automatically once you solve it.
+- A "Check" button on the puzzle page tells you at any time whether your grid is correctly solved, and automatically clears any cell you got wrong so you can redo it.
 - The library and puzzle pages now share a consistent look — fonts, colors, spacing, and button styling.
 - The puzzle grid automatically resizes to fit your screen, so you never have to scroll to see it in full.
 - A "Back to puzzle list" link on every puzzle page lets you return to the library at any time.

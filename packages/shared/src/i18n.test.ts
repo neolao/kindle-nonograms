@@ -17,6 +17,7 @@ const ALL_KEYS: TranslationKey[] = [
   "play.winBanner.solved",
   "play.check",
   "play.winBanner.notSolved",
+  "play.winBanner.corrected",
   "i18n.languageSwitcherLabel",
   "play.backToLibrary",
   "library.sectionLabel",
@@ -44,6 +45,9 @@ describe("translate", () => {
     expect(translate("en", "play.winBanner.solved")).toBe("Puzzle solved!");
     expect(translate("en", "play.check")).toBe("Check");
     expect(translate("en", "play.winBanner.notSolved")).toBe("Not solved yet");
+    expect(translate("en", "play.winBanner.corrected")).toBe(
+      "Some mistakes were fixed — keep going!",
+    );
     expect(translate("en", "i18n.languageSwitcherLabel")).toBe("Language");
     expect(translate("en", "play.backToLibrary")).toBe("Back to puzzle list");
     expect(translate("en", "library.sectionLabel")).toBe("Choose a puzzle");
@@ -61,6 +65,9 @@ describe("translate", () => {
     expect(translate("fr", "play.check")).toBe("Vérifier");
     expect(translate("fr", "play.winBanner.notSolved")).toBe(
       "Pas encore résolu",
+    );
+    expect(translate("fr", "play.winBanner.corrected")).toBe(
+      "Certaines erreurs ont été corrigées, continuez !",
     );
     expect(translate("fr", "i18n.languageSwitcherLabel")).toBe("Langue");
     expect(translate("fr", "play.backToLibrary")).toBe(

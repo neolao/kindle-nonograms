@@ -389,6 +389,98 @@ describe("check button", () => {
     expect(banner()?.textContent).toBe("Pas encore résolu");
   });
 
+  it("clears a cell filled with the wrong color and shows a corrected message when the puzzle is still unsolved", () => {
+    buildFixture(duoPuzzle);
+    hydrate();
+
+    // Solution is [[0, 1]]; fill column 0 with the wrong color (1).
+    document
+      .querySelector<HTMLButtonElement>(
+        '[data-role="swatch"][data-color-index="1"]',
+      )
+      ?.click();
+    cell(0, 0).click();
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 255)");
+
+    checkButton()?.click();
+
+    expect(cell(0, 0).textContent).toBe("");
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+    expect(banner()?.hidden).toBe(false);
+    expect(banner()?.textContent).toBe(
+      "Some mistakes were fixed — keep going!",
+    );
+  });
+
+  it("clears a cell incorrectly filled where the solution is empty", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    // Solution is [[0, null]]; incorrectly fill column 1.
+    cell(0, 1).click();
+    expect(cell(0, 1).style.backgroundColor).toBe("rgb(0, 0, 0)");
+
+    checkButton()?.click();
+
+    expect(cell(0, 1).style.backgroundColor).toBe("");
+    expect(banner()?.textContent).toBe(
+      "Some mistakes were fixed — keep going!",
+    );
+  });
+
+  it("clears a mark left on a cell the solution requires filled", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    document
+      .querySelector<HTMLButtonElement>('[data-role="mode-cross"]')
+      ?.click();
+    cell(0, 0).click();
+    expect(cell(0, 0).textContent).toBe("✖");
+
+    checkButton()?.click();
+
+    expect(cell(0, 0).textContent).toBe("");
+  });
+
+  it("shows the solved message, not the corrected one, when clearing the only mistake completes the puzzle", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    // Solution is [[0, null]]: fill both cells, only the second is wrong.
+    cell(0, 0).click();
+    cell(0, 1).click();
+    expect(banner()?.hidden).toBe(true);
+
+    checkButton()?.click();
+
+    expect(cell(0, 1).style.backgroundColor).toBe("");
+    expect(banner()?.textContent).toBe("Puzzle solved!");
+  });
+
+  it("persists the corrected progress, surviving a reload", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    cell(0, 1).click();
+    checkButton()?.click();
+
+    expect(loadProgress("solo")).toEqual({
+      cells: [[null, null]],
+    } satisfies PuzzleProgress);
+  });
+
+  it("leaves the not-solved message unchanged when Check finds nothing wrong to correct", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    checkButton()?.click();
+    expect(banner()?.textContent).toBe("Not solved yet");
+
+    checkButton()?.click();
+    expect(banner()?.textContent).toBe("Not solved yet");
+  });
+
   it("labels the Check button in the resolved locale from the start", () => {
     setNavigatorLanguage("fr-FR");
     buildFixture(soloPuzzle);

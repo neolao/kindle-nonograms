@@ -27,6 +27,7 @@ export type TranslationKey =
   | "play.winBanner.solved"
   | "play.check"
   | "play.winBanner.notSolved"
+  | "play.winBanner.corrected"
   | "i18n.languageSwitcherLabel"
   | "play.backToLibrary"
   | "library.sectionLabel";
@@ -41,6 +42,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.winBanner.solved": "Puzzle solved!",
     "play.check": "Check",
     "play.winBanner.notSolved": "Not solved yet",
+    "play.winBanner.corrected": "Some mistakes were fixed — keep going!",
     "i18n.languageSwitcherLabel": "Language",
     "play.backToLibrary": "Back to puzzle list",
     "library.sectionLabel": "Choose a puzzle",
@@ -54,6 +56,8 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.winBanner.solved": "Puzzle résolu !",
     "play.check": "Vérifier",
     "play.winBanner.notSolved": "Pas encore résolu",
+    "play.winBanner.corrected":
+      "Certaines erreurs ont été corrigées, continuez !",
     "i18n.languageSwitcherLabel": "Langue",
     "play.backToLibrary": "Retour à la liste des puzzles",
     "library.sectionLabel": "Choisir un puzzle",
