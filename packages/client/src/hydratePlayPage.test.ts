@@ -271,6 +271,34 @@ describe("hydrate", () => {
     expect(blueSwatch?.textContent).toBe("");
   });
 
+  it("groups the fill button and its color swatches in a shared visual container", () => {
+    buildFixture(duoPuzzle);
+    hydrate();
+
+    const swatch = document.querySelector<HTMLButtonElement>(
+      '[data-role="swatch"][data-color-index="0"]',
+    );
+    const group = fillButton()?.closest(".fill-color-group");
+
+    expect(group).not.toBeNull();
+    expect(swatch?.closest(".fill-color-group")).toBe(group);
+  });
+
+  it("does not group the cross or check buttons with the fill/swatch container", () => {
+    buildFixture(duoPuzzle);
+    hydrate();
+
+    expect(crossButton()?.closest(".fill-color-group")).toBeNull();
+    expect(checkButton()?.closest(".fill-color-group")).toBeNull();
+  });
+
+  it("still wraps the fill button in its own container for a single-color puzzle with no swatches", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    expect(fillButton()?.closest(".fill-color-group")).not.toBeNull();
+  });
+
   it("does nothing and does not throw when the embedded puzzle JSON is missing", () => {
     document.body.innerHTML =
       '<table><tbody><tr><td data-row="0" data-col="0"></td></tr></tbody></table>';

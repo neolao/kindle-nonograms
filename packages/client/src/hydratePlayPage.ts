@@ -193,7 +193,16 @@ function buildToolbar(
   checkButton.textContent = translate(locale, "play.check");
   checkButton.addEventListener("click", onCheck);
 
-  toolbar.append(fillButton, crossButton, checkButton);
+  // Fill and its color swatches are one action ("what am I about to paint,
+  // and with which color") — grouped in their own bordered sub-container so
+  // they read together, distinct from Cross/Check. Always wraps, even for a
+  // single-color puzzle with no swatches, so the DOM shape stays consistent
+  // rather than branching on palette length.
+  const fillColorGroup = document.createElement("div");
+  fillColorGroup.className = "fill-color-group";
+  fillColorGroup.append(fillButton);
+
+  toolbar.append(fillColorGroup, crossButton, checkButton);
 
   if (puzzle.palette.length > 1) {
     const swatchButtons: HTMLButtonElement[] = [];
@@ -223,7 +232,7 @@ function buildToolbar(
         refreshSwatches();
       });
       swatchButtons.push(button);
-      toolbar.append(button);
+      fillColorGroup.append(button);
     });
 
     refreshSwatches();
