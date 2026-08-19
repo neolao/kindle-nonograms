@@ -196,6 +196,18 @@ describe("renderPuzzlePage", () => {
     expect(css).toMatch(/\.grid-wrapper\{[^}]*border-radius:\d+px/);
   });
 
+  it("wraps the grid frame in a centering container instead of letting it stretch full-width with the grid stuck on the left", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+    const css = doc.querySelector("style")?.textContent ?? "";
+    const gridWrapper = doc.querySelector(".grid-wrapper");
+
+    expect(gridWrapper?.parentElement?.classList.contains("grid-center")).toBe(
+      true,
+    );
+    expect(css).toMatch(/\.grid-center\{[^}]*text-align:center/);
+    expect(css).toMatch(/\.grid-wrapper\{[^}]*display:inline-block/);
+  });
+
   it("does not render the decorative dot row, to keep the header compact on this space-constrained page", () => {
     const doc = parse(renderPuzzlePage(multiColorPuzzle));
 

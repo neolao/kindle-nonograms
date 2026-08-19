@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The puzzle grid is now centered on the page instead of sticking to the left with empty space on the right whenever it's smaller than the screen.
+
 ## [1.11.0] - 2026-08-19
 
 ### Added
