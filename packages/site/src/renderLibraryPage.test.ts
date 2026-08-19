@@ -212,6 +212,34 @@ describe("renderLibraryPage", () => {
     expect(css).toMatch(/li a\{[^}]*min-height:44px/);
   });
 
+  it("gives the puzzle name the label font, matching the site's other short UI labels", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/li a\{[^}]*font-family:ui-monospace/);
+  });
+
+  it("vertically centers the row link's text instead of letting it sit at the top of the row", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/li a\{[^}]*display:flex/);
+    expect(css).toMatch(/li a\{[^}]*align-items:center/);
+  });
+
+  it("truncates a long puzzle name with an ellipsis instead of wrapping and inflating that row's height", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/li a\{[^}]*white-space:nowrap/);
+    expect(css).toMatch(/li a\{[^}]*text-overflow:ellipsis/);
+    // min-width:0 is required for ellipsis to take effect on a flex
+    // item — without it, a flex child never shrinks below its content's
+    // natural width, so overflow/ellipsis silently never fires (same
+    // gotcha already fixed for the puzzle page's own heading).
+    expect(css).toMatch(/li a\{[^}]*min-width:0/);
+  });
+
   it("renders the solved badge as a bordered, rotated stamp instead of plain text", () => {
     const doc = parse(renderLibraryPage(puzzles));
     const css = doc.querySelector("style")?.textContent ?? "";
