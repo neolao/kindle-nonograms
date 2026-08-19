@@ -1,5 +1,5 @@
 ---
-status: in_progress
+status: done
 ---
 # Card Top Stripe Reflects Puzzle Palette
 
