@@ -20,4 +20,10 @@ describe("demo content in data/puzzles/", () => {
 
     expect(puzzles.some((puzzle) => puzzle.palette.length > 1)).toBe(true);
   });
+
+  it("includes at least one puzzle with exactly four palette colors", async () => {
+    const puzzles = await loadPuzzleSources(PUZZLES_DIR);
+
+    expect(puzzles.some((puzzle) => puzzle.palette.length === 4)).toBe(true);
+  });
 });

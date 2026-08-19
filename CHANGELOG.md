@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - On a multi-color puzzle, the "Fill" button and the color swatches now sit inside their own small boxed group in the toolbar, showing at a glance that picking a color is part of the fill action.
 - The "Check" button now actually helps: it clears any cell you got wrong (a wrong color, an unnecessary fill, or a wrongly crossed-out cell) so you can redo it, and tells you when it found and fixed a mistake.
+- A new demo puzzle, "Target", shows off what the game looks like with four colors instead of just one or two.
 - A "Back to puzzle list" link now sits at the top of every puzzle page, next to the language switcher, so players can return to the library at any time without using the browser's back button.
 - Solving a puzzle now reveals a small picture of it right on the library page, next to its name — a little trophy that stays hidden until you've actually earned it by solving that puzzle.
 
