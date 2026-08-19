@@ -31,6 +31,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - Each puzzle's card in the library shows a top stripe in its own colors — solid black for a single-color puzzle, one segment per color for a multi-color one — so you can spot a puzzle's palette before opening it.
 - On a multi-color puzzle, the "Fill" button and the color swatches sit inside their own small boxed group, showing at a glance that picking a color is part of the fill action.
 - The library page has filter controls to narrow the puzzle list by size (small/medium/large) and by color type (monochrome only or multi-color only).
+- New puzzles are now checked automatically: a submission is rejected if it can't be solved without guessing, or if it's an exact duplicate of a puzzle already in the library.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

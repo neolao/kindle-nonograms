@@ -30,6 +30,11 @@ A supported display language for the app's UI text — currently English or Fren
 **Do not confuse with:** TranslationKey, the identifier used to look a string up; Locale is the language it is looked up *in*.
 _Sources: `packages/shared/src/i18n.ts`, `packages/client/src/i18n.ts`_
 
+## Solvability (fairness check)
+Whether a puzzle's solution can be fully worked out from its row/column clues by logical deduction alone, with no cell requiring a guess. Checked by repeatedly deriving each row's and column's forced cells from its clue until nothing new is forced; a puzzle is fair only if every cell ends up determined this way and matches its stored solution. A submitted puzzle failing this check is rejected the same way a structurally invalid one is.
+**Do not confuse with:** Clue, the per-row/per-column data this check reasons over; Puzzle, the content being checked.
+_Sources: `packages/shared/src/solvability.ts`_
+
 ## Boolean grid export
 The plain puzzle format produced by the sibling `remarkable-nonogram-generator` project: dimensions plus a boolean solution grid, with no palette and no id. It is converted into this project's Puzzle before use, with `true` cells becoming the single palette color and `false` cells becoming empty.
 **Do not confuse with:** Puzzle, the format it is converted into.

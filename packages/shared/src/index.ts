@@ -9,3 +9,5 @@ export * from "./adapters.js";
 export * from "./i18n.js";
 export * from "./thumbnail.js";
 export * from "./libraryFilters.js";
+export * from "./solvability.js";
+export * from "./duplicatePuzzles.js";

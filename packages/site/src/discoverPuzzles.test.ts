@@ -11,8 +11,8 @@ const nativePuzzle = {
   height: 2,
   palette: ["#000000"],
   cells: [
+    [0, 0],
     [0, null],
-    [null, 0],
   ],
 };
 
@@ -48,8 +48,8 @@ describe("loadPuzzleSources", () => {
         height: 2,
         palette: ["#000000"],
         cells: [
+          [0, 0],
           [0, null],
-          [null, 0],
         ],
       },
       {
@@ -108,5 +108,32 @@ describe("loadPuzzleSources", () => {
     );
 
     await expect(loadPuzzleSources(dir)).rejects.toThrow(/invalid\.json/);
+  });
+
+  it("throws a descriptive error naming the file when its solution requires guessing", async () => {
+    const ambiguous = {
+      id: "ignored",
+      name: "Ambiguous",
+      width: 2,
+      height: 2,
+      palette: ["#000000"],
+      cells: [
+        [0, null],
+        [null, 0],
+      ],
+    };
+    await writeFile(join(dir, "ambiguous.json"), JSON.stringify(ambiguous));
+
+    await expect(loadPuzzleSources(dir)).rejects.toThrow(/ambiguous\.json/);
+  });
+
+  it("throws a descriptive error naming both files when a puzzle duplicates an earlier one's content", async () => {
+    await writeFile(join(dir, "cat.json"), JSON.stringify(nativePuzzle));
+    await writeFile(
+      join(dir, "copycat.json"),
+      JSON.stringify({ ...nativePuzzle, name: "Copycat" }),
+    );
+
+    await expect(loadPuzzleSources(dir)).rejects.toThrow(/copycat\.json.*cat/);
   });
 });

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- New puzzles are now checked automatically: a submission is rejected if it can't be solved without guessing, or if it's an exact duplicate of a puzzle already in the library.
+
+### Removed
+
+- Two puzzles that were exact duplicates of existing ones, and the "Eiffel Tower" puzzle (which turned out to require guessing to solve), were removed from the library; a fair redesign of the Eiffel Tower puzzle is planned.
+
 ## [1.14.0] - 2026-08-19
 
 ### Added

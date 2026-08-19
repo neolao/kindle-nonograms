@@ -3,7 +3,9 @@ import { basename, extname, join } from "node:path";
 import {
   type BooleanGridExport,
   type Puzzle,
+  checkSolvability,
   createPuzzle,
+  findDuplicatePuzzle,
   fromBooleanGridExport,
 } from "@kindle-nonograms/shared";
 
@@ -16,8 +18,14 @@ import {
  * native-format files that already declare their own `id` — see
  * `.vibe/decisions/001-puzzle-id-from-filename.md`.
  *
- * Fails fast: the first invalid or malformed file throws, and no puzzles
- * are returned — never a partial, silently-truncated list.
+ * Beyond structural validation, every puzzle must also be fair (its
+ * solution fully derivable by logical deduction, see `checkSolvability`)
+ * and not a content duplicate of an earlier file in `dir` (see
+ * `findDuplicatePuzzle`) — see .vibe/backlog/done/023-puzzle-solvability-and-duplicate-validation.md.
+ *
+ * Fails fast: the first invalid, unfair, duplicate, or malformed file
+ * throws, and no puzzles are returned — never a partial, silently-truncated
+ * list.
  */
 export async function loadPuzzleSources(dir: string): Promise<Puzzle[]> {
   const entries = (await readdir(dir))
@@ -30,7 +38,23 @@ export async function loadPuzzleSources(dir: string): Promise<Puzzle[]> {
     const filePath = join(dir, entry);
     const id = basename(entry, ".json");
 
-    puzzles.push(await loadPuzzleFile(filePath, id));
+    const puzzle = await loadPuzzleFile(filePath, id);
+
+    const solvability = checkSolvability(puzzle);
+    if (!solvability.ok) {
+      throw new Error(
+        `Puzzle file ${filePath} is not fairly solvable: ${solvability.reason}`,
+      );
+    }
+
+    const duplicate = findDuplicatePuzzle(puzzle, puzzles);
+    if (duplicate) {
+      throw new Error(
+        `Puzzle file ${filePath} duplicates the solution of puzzle "${duplicate.id}"`,
+      );
+    }
+
+    puzzles.push(puzzle);
   }
 
   return puzzles;
