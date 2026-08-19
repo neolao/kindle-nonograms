@@ -30,7 +30,17 @@ export type TranslationKey =
   | "play.winBanner.corrected"
   | "i18n.languageSwitcherLabel"
   | "play.backToLibrary"
-  | "library.sectionLabel";
+  | "library.sectionLabel"
+  | "library.filterSizeLabel"
+  | "library.filterSizeAll"
+  | "library.filterSizeSmall"
+  | "library.filterSizeMedium"
+  | "library.filterSizeLarge"
+  | "library.filterColorLabel"
+  | "library.filterColorAll"
+  | "library.filterColorMono"
+  | "library.filterColorMulti"
+  | "library.filterNoResults";
 
 const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
   en: {
@@ -46,6 +56,16 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "i18n.languageSwitcherLabel": "Language",
     "play.backToLibrary": "Back to puzzle list",
     "library.sectionLabel": "Choose a puzzle",
+    "library.filterSizeLabel": "Size",
+    "library.filterSizeAll": "All sizes",
+    "library.filterSizeSmall": "Small",
+    "library.filterSizeMedium": "Medium",
+    "library.filterSizeLarge": "Large",
+    "library.filterColorLabel": "Color",
+    "library.filterColorAll": "All colors",
+    "library.filterColorMono": "Monochrome only",
+    "library.filterColorMulti": "Multi-color only",
+    "library.filterNoResults": "No puzzles match these filters.",
   },
   fr: {
     "library.title": "Kindle Nonograms",
@@ -61,6 +81,16 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "i18n.languageSwitcherLabel": "Langue",
     "play.backToLibrary": "Retour à la liste des puzzles",
     "library.sectionLabel": "Choisir un puzzle",
+    "library.filterSizeLabel": "Taille",
+    "library.filterSizeAll": "Toutes les tailles",
+    "library.filterSizeSmall": "Petit",
+    "library.filterSizeMedium": "Moyen",
+    "library.filterSizeLarge": "Grand",
+    "library.filterColorLabel": "Couleur",
+    "library.filterColorAll": "Toutes les couleurs",
+    "library.filterColorMono": "Monochrome uniquement",
+    "library.filterColorMulti": "Multicolore uniquement",
+    "library.filterNoResults": "Aucun puzzle ne correspond à ces filtres.",
   },
 };
 

@@ -45,6 +45,10 @@ Defined in: `packages/shared/src/progress.ts`
 Just enough of a `Puzzle` to list and link to it on the library page; deliberately excludes `palette`/`cells` so no solution data reaches that renderer.
 Defined in: `packages/site/src/renderLibraryPage.ts`
 
+## SizeBucket
+Type alias: `"small" | "medium" | "large"` — the size category a puzzle's library card is grouped under for the library page's size filter, derived from its total cell count (`width * height`) by `puzzleSizeBucket`.
+Defined in: `packages/shared/src/libraryFilters.ts`
+
 ## BooleanGridExport
 | Field | Type | Notes |
 |---|---|---|

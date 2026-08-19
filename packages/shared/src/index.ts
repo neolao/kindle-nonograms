@@ -8,3 +8,4 @@ export * from "./progress.js";
 export * from "./adapters.js";
 export * from "./i18n.js";
 export * from "./thumbnail.js";
+export * from "./libraryFilters.js";

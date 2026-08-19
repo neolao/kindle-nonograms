@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The library page now has filter controls to narrow the puzzle list by size (small/medium/large) and by color type (monochrome only or multi-color only).
+
 ## [1.12.0] - 2026-08-19
 
 ### Added

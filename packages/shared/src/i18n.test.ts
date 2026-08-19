@@ -21,6 +21,16 @@ const ALL_KEYS: TranslationKey[] = [
   "i18n.languageSwitcherLabel",
   "play.backToLibrary",
   "library.sectionLabel",
+  "library.filterSizeLabel",
+  "library.filterSizeAll",
+  "library.filterSizeSmall",
+  "library.filterSizeMedium",
+  "library.filterSizeLarge",
+  "library.filterColorLabel",
+  "library.filterColorAll",
+  "library.filterColorMono",
+  "library.filterColorMulti",
+  "library.filterNoResults",
 ];
 
 describe("SUPPORTED_LOCALES and DEFAULT_LOCALE", () => {
@@ -51,6 +61,20 @@ describe("translate", () => {
     expect(translate("en", "i18n.languageSwitcherLabel")).toBe("Language");
     expect(translate("en", "play.backToLibrary")).toBe("Back to puzzle list");
     expect(translate("en", "library.sectionLabel")).toBe("Choose a puzzle");
+    expect(translate("en", "library.filterSizeLabel")).toBe("Size");
+    expect(translate("en", "library.filterSizeAll")).toBe("All sizes");
+    expect(translate("en", "library.filterSizeSmall")).toBe("Small");
+    expect(translate("en", "library.filterSizeMedium")).toBe("Medium");
+    expect(translate("en", "library.filterSizeLarge")).toBe("Large");
+    expect(translate("en", "library.filterColorLabel")).toBe("Color");
+    expect(translate("en", "library.filterColorAll")).toBe("All colors");
+    expect(translate("en", "library.filterColorMono")).toBe("Monochrome only");
+    expect(translate("en", "library.filterColorMulti")).toBe(
+      "Multi-color only",
+    );
+    expect(translate("en", "library.filterNoResults")).toBe(
+      "No puzzles match these filters.",
+    );
   });
 
   it("returns the exact French string for each key", () => {
@@ -74,6 +98,24 @@ describe("translate", () => {
       "Retour à la liste des puzzles",
     );
     expect(translate("fr", "library.sectionLabel")).toBe("Choisir un puzzle");
+    expect(translate("fr", "library.filterSizeLabel")).toBe("Taille");
+    expect(translate("fr", "library.filterSizeAll")).toBe("Toutes les tailles");
+    expect(translate("fr", "library.filterSizeSmall")).toBe("Petit");
+    expect(translate("fr", "library.filterSizeMedium")).toBe("Moyen");
+    expect(translate("fr", "library.filterSizeLarge")).toBe("Grand");
+    expect(translate("fr", "library.filterColorLabel")).toBe("Couleur");
+    expect(translate("fr", "library.filterColorAll")).toBe(
+      "Toutes les couleurs",
+    );
+    expect(translate("fr", "library.filterColorMono")).toBe(
+      "Monochrome uniquement",
+    );
+    expect(translate("fr", "library.filterColorMulti")).toBe(
+      "Multicolore uniquement",
+    );
+    expect(translate("fr", "library.filterNoResults")).toBe(
+      "Aucun puzzle ne correspond à ces filtres.",
+    );
   });
 
   it("has a non-empty string for every key in every supported locale", () => {

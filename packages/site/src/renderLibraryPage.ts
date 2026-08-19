@@ -1,4 +1,8 @@
-import type { Puzzle } from "@kindle-nonograms/shared";
+import {
+  type Puzzle,
+  isMultiColorPuzzle,
+  puzzleSizeBucket,
+} from "@kindle-nonograms/shared";
 import { embedJson, escapeHtml, versionQuery } from "./htmlEscape.js";
 import { sharedStyles } from "./sharedStyles.js";
 import {
@@ -68,7 +72,11 @@ function stripeGradient(palette: string[]): string {
  * (see .vibe/decisions/006-library-page-embeds-full-puzzles-for-solved-checking.md).
  * The whole page sits inside one bordered/shadowed `.panel`, safe to wrap
  * everything here (unlike the puzzle page) since this page has no
- * fit-to-viewport measurement that padding could throw off.
+ * fit-to-viewport measurement that padding could throw off. Each row also
+ * carries its `puzzleSizeBucket`/`isMultiColorPuzzle` result as
+ * `data-size-bucket`/`data-color-type` attributes — the size/color filter
+ * controls that `hydrateLibraryPage.ts` builds read those directly rather
+ * than re-deriving them from the embedded puzzle JSON.
  */
 export function renderLibraryPage(
   puzzles: Puzzle[],
@@ -115,8 +123,10 @@ const THUMBNAIL_PLACEHOLDER = `<span class="thumb" aria-hidden="true"><span clas
 function renderLibraryItem(puzzle: Puzzle, index: number): string {
   const href = `puzzles/${encodeURIComponent(puzzle.id)}/`;
   const label = `${escapeHtml(puzzle.name)} — ${puzzle.width} × ${puzzle.height}`;
+  const sizeBucket = puzzleSizeBucket(puzzle);
+  const colorType = isMultiColorPuzzle(puzzle) ? "multi" : "mono";
 
-  return `<li class="stripe-${index}" data-puzzle-id="${escapeHtml(puzzle.id)}">${THUMBNAIL_PLACEHOLDER}<a href="${href}">${label}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span></li>`;
+  return `<li class="stripe-${index}" data-puzzle-id="${escapeHtml(puzzle.id)}" data-size-bucket="${sizeBucket}" data-color-type="${colorType}">${THUMBNAIL_PLACEHOLDER}<a href="${href}">${label}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span></li>`;
 }
 
 const STYLE = `
@@ -131,4 +141,9 @@ li a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 .thumb-lock{color:${COLORS.muted};font-weight:bold;}
 .thumb-row{display:flex;}
 .thumb-cell{width:4px;height:4px;}
+.library-filters{display:flex;flex-wrap:wrap;gap:${SPACING_PX.md}px;margin:0 ${SPACING_PX.md}px ${SPACING_PX.sm}px;}
+.library-filters > div{display:flex;align-items:center;gap:${SPACING_PX.sm}px;}
+.library-filters select{font-family:${LABEL_FONT_STACK};min-height:${MIN_TAP_TARGET_PX}px;padding:0 ${SPACING_PX.sm}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};}
+.library-filters select:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
+.filter-no-results{margin:${SPACING_PX.md}px;color:${COLORS.muted};}
 `;

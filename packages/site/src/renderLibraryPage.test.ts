@@ -371,4 +371,43 @@ describe("renderLibraryPage", () => {
     expect(label?.getAttribute("data-i18n")).toBe("library.sectionLabel");
     expect(label?.textContent).toBe("Choose a puzzle");
   });
+
+  it("tags every row with its size bucket and color type for client-side filtering", () => {
+    const filterablePuzzles: Puzzle[] = [
+      {
+        id: "small-mono",
+        name: "Small Mono",
+        width: 4,
+        height: 4,
+        palette: ["#000000"],
+        cells: Array.from({ length: 4 }, () => Array(4).fill(null)),
+      },
+      {
+        id: "medium-multi",
+        name: "Medium Multi",
+        width: 15,
+        height: 15,
+        palette: ["#000000", "#ff0000"],
+        cells: Array.from({ length: 15 }, () => Array(15).fill(null)),
+      },
+      {
+        id: "large-mono",
+        name: "Large Mono",
+        width: 25,
+        height: 25,
+        palette: ["#000000"],
+        cells: Array.from({ length: 25 }, () => Array(25).fill(null)),
+      },
+    ];
+
+    const doc = parse(renderLibraryPage(filterablePuzzles));
+    const items = doc.querySelectorAll("li");
+
+    expect(items[0]?.getAttribute("data-size-bucket")).toBe("small");
+    expect(items[0]?.getAttribute("data-color-type")).toBe("mono");
+    expect(items[1]?.getAttribute("data-size-bucket")).toBe("medium");
+    expect(items[1]?.getAttribute("data-color-type")).toBe("multi");
+    expect(items[2]?.getAttribute("data-size-bucket")).toBe("large");
+    expect(items[2]?.getAttribute("data-color-type")).toBe("mono");
+  });
 });
