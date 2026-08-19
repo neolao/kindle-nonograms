@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-08-19
+
 ### Added
 
 - On a multi-color puzzle, the "Fill" button and the color swatches now sit inside their own small boxed group in the toolbar, showing at a glance that picking a color is part of the fill action.
@@ -134,7 +136,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v1.10.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v1.11.0...HEAD
+[1.11.0]: https://github.com/neolao/kindle-nonograms/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/neolao/kindle-nonograms/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/neolao/kindle-nonograms/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/neolao/kindle-nonograms/compare/v1.7.1...v1.8.0
