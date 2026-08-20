@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Pull requests now get an automated pass/fail check (lint, tests, and a full site build) before merging, instead of only finding out after.
+
 ## [2.1.0] - 2026-08-20
 
 ### Added

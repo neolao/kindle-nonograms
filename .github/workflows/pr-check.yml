@@ -1,0 +1,50 @@
+name: PR Check
+
+on:
+  pull_request:
+    # `closed` is listed here only as the hook point for a future cleanup
+    # step (see .vibe/backlog/025-automatic-puzzle-preview-on-pull-requests.md)
+    # — the validate job below skips entirely for it, since a closed PR has
+    # nothing left to validate.
+    types: [opened, synchronize, reopened, closed]
+    branches: [main]
+
+# Job-only permissions: this workflow neither deploys nor writes anything,
+# and `pull_request` (not `pull_request_target`) already gives a fork PR's
+# checkout a read-only, no-secrets token, so this is a ceiling, not a
+# workaround.
+permissions:
+  contents: read
+
+# Scoped per PR so a rapid string of pushes to the same PR cancels the
+# stale run instead of queuing redundant ones racing to report a result.
+concurrency:
+  group: pr-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build site
+        run: npm run build

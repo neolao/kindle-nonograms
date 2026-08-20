@@ -73,4 +73,6 @@ cell values are inconsistent.
 
 Open a PR against `main` with your puzzle file. The PR template will walk you
 through a short checklist covering the filename, palette, the commands
-above, and content licensing.
+above, and content licensing. The same commands also run automatically once
+the PR is open, so you'll see a pass/fail check on the PR itself even if you
+skipped running them locally.
