@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-08-20
+
 ### Added
 
 - A new "Create a puzzle" page (linked from the library) lets a contributor set a grid size, build a color palette, paint the solution cell by cell, name the puzzle, and export a ready-to-submit puzzle file — no more hand-writing the JSON by hand.
@@ -172,7 +174,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/neolao/kindle-nonograms/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/neolao/kindle-nonograms/compare/v1.14.0...v2.0.0
 [1.14.0]: https://github.com/neolao/kindle-nonograms/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/neolao/kindle-nonograms/compare/v1.12.0...v1.13.0
