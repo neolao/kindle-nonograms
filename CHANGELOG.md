@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A new "Create a puzzle" page (linked from the library) lets a contributor set a grid size, build a color palette, paint the solution cell by cell, name the puzzle, and export a ready-to-submit puzzle file — no more hand-writing the JSON by hand.
+
 ## [2.0.0] - 2026-08-20
 
 ### Added

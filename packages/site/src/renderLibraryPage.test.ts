@@ -65,6 +65,17 @@ describe("renderLibraryPage", () => {
     expect(doc.body.textContent).toMatch(/no puzzles/i);
   });
 
+  it("links to the puzzle editor even when the library is empty", () => {
+    const withPuzzles = parse(renderLibraryPage(puzzles));
+    const empty = parse(renderLibraryPage([]));
+
+    for (const doc of [withPuzzles, empty]) {
+      const link = doc.querySelector('a[href="editor/"]');
+      expect(link).not.toBeNull();
+      expect(link?.getAttribute("data-i18n")).toBe("library.createPuzzleLink");
+    }
+  });
+
   it("escapes special characters in a puzzle's name instead of injecting markup", () => {
     const doc = parse(
       renderLibraryPage([

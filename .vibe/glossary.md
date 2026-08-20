@@ -35,6 +35,11 @@ Whether a puzzle's solution can be fully worked out from its row/column clues by
 **Do not confuse with:** Clue, the per-row/per-column data this check reasons over; Puzzle, the content being checked.
 _Sources: `packages/shared/src/solvability.ts`_
 
+## Puzzle editor
+A contributor-facing page, distinct from the library and play pages, where a puzzle is authored rather than played: set a grid size, build a color palette, paint the solution cell by cell, name the puzzle, and export it as a ready-to-submit `Puzzle` JSON file. Runs entirely client-side in a normal desktop browser (not on Kindle) — there is no server to hand the exported file to, so the contributor still commits it manually.
+**Do not confuse with:** Library page, which lists already-authored puzzles to play, not create.
+_Sources: `packages/site/src/renderEditorPage.ts`, `packages/client/src/hydrateEditorPage.ts`_
+
 ## Boolean grid export
 The plain puzzle format produced by the sibling `remarkable-nonogram-generator` project: dimensions plus a boolean solution grid, with no palette and no id. It is converted into this project's Puzzle before use, with `true` cells becoming the single palette color and `false` cells becoming empty.
 **Do not confuse with:** Puzzle, the format it is converted into.

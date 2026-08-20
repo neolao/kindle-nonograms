@@ -32,6 +32,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - On a multi-color puzzle, the "Fill" button and the color swatches sit inside their own small boxed group, showing at a glance that picking a color is part of the fill action.
 - The library page has filter controls to narrow the puzzle list by size (small/medium/large) and by color type (monochrome only or multi-color only).
 - New puzzles are now checked automatically: a submission is rejected if it can't be solved without guessing, or if it's an exact duplicate of a puzzle already in the library.
+- A "Create a puzzle" page, linked from the library, lets you set a grid size, build a color palette, paint the solution cell by cell, name your puzzle, and export a ready-to-submit puzzle file.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

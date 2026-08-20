@@ -40,7 +40,24 @@ export type TranslationKey =
   | "library.filterColorAll"
   | "library.filterColorMono"
   | "library.filterColorMulti"
-  | "library.filterNoResults";
+  | "library.filterNoResults"
+  | "library.createPuzzleLink"
+  | "editor.title"
+  | "editor.sizeLabel"
+  | "editor.widthLabel"
+  | "editor.heightLabel"
+  | "editor.paletteLabel"
+  | "editor.canvasLabel"
+  | "editor.metaLabel"
+  | "editor.nameLabel"
+  | "editor.filenameLabel"
+  | "editor.export"
+  | "editor.addColor"
+  | "editor.modePaint"
+  | "editor.modeErase"
+  | "editor.selectColorAriaLabel"
+  | "editor.editColorAriaLabel"
+  | "editor.removeColorAriaLabel";
 
 const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
   en: {
@@ -66,6 +83,23 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.filterColorMono": "Monochrome only",
     "library.filterColorMulti": "Multi-color only",
     "library.filterNoResults": "No puzzles match these filters.",
+    "library.createPuzzleLink": "Create a puzzle",
+    "editor.title": "Puzzle Editor",
+    "editor.sizeLabel": "Grid size",
+    "editor.widthLabel": "Width",
+    "editor.heightLabel": "Height",
+    "editor.paletteLabel": "Palette",
+    "editor.canvasLabel": "Canvas",
+    "editor.metaLabel": "Name and export",
+    "editor.nameLabel": "Puzzle name",
+    "editor.filenameLabel": "Filename (id)",
+    "editor.export": "Export",
+    "editor.addColor": "Add color",
+    "editor.modePaint": "Paint",
+    "editor.modeErase": "Erase",
+    "editor.selectColorAriaLabel": "Select color",
+    "editor.editColorAriaLabel": "Edit color",
+    "editor.removeColorAriaLabel": "Remove color",
   },
   fr: {
     "library.title": "Kindle Nonograms",
@@ -91,6 +125,23 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.filterColorMono": "Monochrome uniquement",
     "library.filterColorMulti": "Multicolore uniquement",
     "library.filterNoResults": "Aucun puzzle ne correspond à ces filtres.",
+    "library.createPuzzleLink": "Créer un puzzle",
+    "editor.title": "Éditeur de puzzle",
+    "editor.sizeLabel": "Taille de la grille",
+    "editor.widthLabel": "Largeur",
+    "editor.heightLabel": "Hauteur",
+    "editor.paletteLabel": "Palette",
+    "editor.canvasLabel": "Grille",
+    "editor.metaLabel": "Nom et export",
+    "editor.nameLabel": "Nom du puzzle",
+    "editor.filenameLabel": "Nom de fichier (id)",
+    "editor.export": "Exporter",
+    "editor.addColor": "Ajouter une couleur",
+    "editor.modePaint": "Peindre",
+    "editor.modeErase": "Effacer",
+    "editor.selectColorAriaLabel": "Choisir la couleur",
+    "editor.editColorAriaLabel": "Modifier la couleur",
+    "editor.removeColorAriaLabel": "Retirer la couleur",
   },
 };
 

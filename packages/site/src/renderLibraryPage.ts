@@ -106,6 +106,7 @@ export function renderLibraryPage(
 ${DOT_ROW}
 <h1 data-i18n="library.title">Kindle Nonograms</h1>
 ${body}
+<p><a href="editor/" data-i18n="library.createPuzzleLink">Create a puzzle</a></p>
 </div>
 <script type="application/json" id="puzzles-data">${embedJson(puzzles)}</script>
 <script type="module" src="./assets/main.js${versionQuery(assetVersion)}"></script>

@@ -4,6 +4,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as buildClientBundle } from "vite";
 import { loadPuzzleSources } from "./discoverPuzzles.js";
+import { renderEditorPage } from "./renderEditorPage.js";
 import { renderLibraryPage } from "./renderLibraryPage.js";
 import { renderPuzzlePage } from "./renderPuzzlePage.js";
 
@@ -65,6 +66,13 @@ export async function buildSite({
   await writeFile(
     join(absOutDir, "index.html"),
     renderLibraryPage(puzzles, assetVersion),
+  );
+
+  const editorDir = join(absOutDir, "editor");
+  await mkdir(editorDir, { recursive: true });
+  await writeFile(
+    join(editorDir, "index.html"),
+    renderEditorPage(assetVersion),
   );
 
   for (const puzzle of puzzles) {
