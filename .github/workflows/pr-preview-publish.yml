@@ -1,0 +1,87 @@
+name: Publish Puzzle Preview
+
+on:
+  workflow_run:
+    workflows: ["PR Check"]
+    types: [completed]
+
+# The privileged half of the two-workflow split (see pr-check.yml and
+# .vibe/decisions/018-pr-preview-trusts-only-workflow-expressions.md):
+# `workflow_run` always executes this file's copy committed to the default
+# branch, never the triggering PR's own version, which is what makes it
+# safe to grant elevated access here even though the run that triggered it
+# may have just built untrusted fork code.
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+# workflow_run.pull_requests[] is unreliable for fork-originated PRs
+# (typically empty), so it can't be used to scope this — head_repository +
+# head_branch are always populated and still collapse repeated pushes to
+# the same PR into a single queued run.
+concurrency:
+  group: puzzle-preview-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  # A superseded run is cancelled outright, same as pr-check.yml — git's
+  # own push protocol only updates a remote ref after receiving a complete
+  # packfile, so an interrupted `git push` just fails without touching the
+  # branch; it never leaves a half-written ref behind. Collapsing rapid
+  # pushes down to the single latest run (rather than queuing every one of
+  # them to run in full) is the actual point of this group.
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Deliberately no `ref:` override here — this checks out the default
+      # branch's own copy of this repo (its scripts, its package-lock.json),
+      # never the PR head's content. That's the whole safety property this
+      # job depends on; do not add one.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download render artifact
+        id: download-render
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: puzzle-preview-render
+          path: preview-artifact
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Only attempted if there was no render artifact — the two are
+      # mutually exclusive outputs of pr-check.yml's own two jobs.
+      - name: Download cleanup artifact
+        id: download-cleanup
+        if: steps.download-render.outcome != 'success'
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: puzzle-preview-cleanup
+          path: preview-artifact
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Neither artifact existing is a normal, expected outcome (e.g. a PR
+      # that never touched data/puzzles/) — not an error.
+      - name: Publish preview
+        if: steps.download-render.outcome == 'success' || steps.download-cleanup.outcome == 'success'
+        run: npx vite-node packages/site/src/publish-preview-cli.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ARTIFACT_DIR: preview-artifact
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}

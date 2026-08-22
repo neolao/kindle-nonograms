@@ -30,6 +30,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history, not the default shallow single commit — the diff
+          # step below needs both the PR's base and head commits reachable
+          # to compare against.
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -48,3 +53,56 @@ jobs:
 
       - name: Build site
         run: npm run build
+
+      # Everything below only runs once lint/test/build have already
+      # passed (plain sequential steps in the same job — a step only runs
+      # once every earlier one in the job succeeded).
+      - name: Diff changed puzzle files
+        id: diff
+        run: |
+          git diff --name-only --diff-filter=ACM \
+            "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" \
+            -- 'data/puzzles/*.json' > changed-puzzles.txt
+          if [ -s changed-puzzles.txt ]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Render puzzle previews
+        if: steps.diff.outputs.has_changes == 'true'
+        run: |
+          mkdir -p preview-artifact
+          files=$(xargs -n1 basename < changed-puzzles.txt)
+          npx vite-node packages/site/src/render-preview-artifact-cli.ts \
+            data/puzzles preview-artifact "${{ github.event.pull_request.number }}" $files
+
+      - name: Upload puzzle preview artifact
+        if: steps.diff.outputs.has_changes == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: puzzle-preview-render
+          path: preview-artifact
+          retention-days: 7
+
+  # A closed PR has nothing to validate (see the job above), but its
+  # previews still need to be cleaned up — that write access is privileged
+  # (see pr-preview-publish.yml), so this job only ever hands off the PR
+  # number, itself read from a trusted Actions expression, never repo
+  # content (see .vibe/decisions/018-pr-preview-trusts-only-workflow-expressions.md).
+  cleanup-artifact:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Write PR number
+        run: |
+          mkdir -p cleanup-artifact
+          echo "${{ github.event.pull_request.number }}" > cleanup-artifact/pr-number.txt
+
+      - name: Upload cleanup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: puzzle-preview-cleanup
+          path: cleanup-artifact
+          retention-days: 7

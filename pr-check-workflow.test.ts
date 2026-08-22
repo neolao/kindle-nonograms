@@ -99,4 +99,32 @@ describe("PR check workflow", () => {
     expect(workflow).toMatch(/cancel-in-progress:\s*true/);
     expect(workflow).toContain("github.event.pull_request.number");
   });
+
+  it("renders puzzle previews only after lint/test/build, uploading them as a named artifact", async () => {
+    const workflow = await readWorkflow();
+
+    const buildIndex = workflow.indexOf("npm run build");
+    const renderIndex = workflow.indexOf("render-preview-artifact-cli.ts");
+    const uploadIndex = workflow.indexOf("puzzle-preview-render");
+
+    expect(buildIndex).toBeGreaterThan(-1);
+    expect(renderIndex).toBeGreaterThan(-1);
+    expect(buildIndex).toBeLessThan(renderIndex);
+    expect(uploadIndex).toBeGreaterThan(-1);
+    expect(workflow).toContain("actions/upload-artifact@v4");
+  });
+
+  it("uploads a minimal cleanup artifact naming just the PR number when a PR closes", async () => {
+    const workflow = await readWorkflow();
+    const cleanupJobIndex = workflow.indexOf("cleanup-artifact:");
+
+    expect(cleanupJobIndex).toBeGreaterThan(-1);
+    const cleanupJob = workflow.slice(cleanupJobIndex);
+    expect(cleanupJob).toMatch(/if:.*action.*==.*closed/);
+    expect(cleanupJob).toContain("puzzle-preview-cleanup");
+    expect(cleanupJob).toContain("github.event.pull_request.number");
+    // The cleanup job never checks out or renders anything — only a
+    // number, from a trusted expression, never repo content.
+    expect(cleanupJob).not.toContain("actions/checkout");
+  });
 });

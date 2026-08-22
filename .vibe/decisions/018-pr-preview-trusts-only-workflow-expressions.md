@@ -1,0 +1,13 @@
+---
+date: 2026-08-23
+status: accepted
+---
+# PR preview trusts only Actions-expression data, never artifact content, for identity
+
+**Context:** Posting a rendered puzzle preview on a pull request (backlog item 025) needs a privileged `workflow_run` companion workflow, since `pr-check.yml` itself gets a read-only token for fork PRs no matter what `permissions:` it declares. That companion workflow decides which PR to push previews for and comment on based on data produced by the low-privileged workflow.
+
+**Decision:** The PR number used anywhere in the privileged workflow is written into the render artifact only from the trusted expression `${{ github.event.pull_request.number }}` in `pr-check.yml` (never read from repo content), and the privileged workflow independently cross-checks that number against `GET /repos/{owner}/{repo}/commits/{workflow_run.head_sha}/pulls` before pushing files or posting a comment. Every filename read back from the artifact is validated against a strict allowlist (must resolve to a bare `<puzzle-id>.png`, no path separators or `..`) before it's used to build a filesystem path on the `puzzle-previews` branch. The `concurrency:` group for the privileged workflow uses `workflow_run.head_repository.full_name` + `workflow_run.head_branch` (both always populated, fork or not) rather than `workflow_run.pull_requests[]`, which GitHub leaves empty for fork-originated PRs — with `cancel-in-progress: true`, same as `pr-check.yml`, so a burst of pushes collapses down to the single latest run rather than queuing every one of them to run in full; this is safe because git only updates a remote ref after receiving a complete push, so a cancelled mid-push run simply fails without leaving the `puzzle-previews` branch in a half-written state.
+
+**Reason:** This is the actual security boundary the two-workflow split exists to enforce — a malicious fork PR must not be able to forge a PR number or a filename inside the artifact it controls and redirect the privileged workflow's write access (branch push, PR comment) at an unrelated PR or path. `workflow_run.pull_requests[]` looked like the obvious source for the PR number but is documented as unreliable for exactly the fork case this pattern is meant to protect against.
+
+**Rejected alternatives:** Trusting `workflow_run.pull_requests[0].number` directly (rejected: empty for fork PRs, the primary case this whole pattern exists for). Falling back to `workflow_run.id` for the concurrency group when the PR list is empty (rejected: a new run id is minted on every push, so it never actually collapses rapid pushes to the same PR — defeats the point of the concurrency group).

@@ -60,7 +60,18 @@ export async function loadPuzzleSources(dir: string): Promise<Puzzle[]> {
   return puzzles;
 }
 
-async function loadPuzzleFile(filePath: string, id: string): Promise<Puzzle> {
+/**
+ * Loads and structurally validates a single puzzle file, auto-detecting
+ * its shape the same way `loadPuzzleSources` does for a whole directory.
+ * Exported for reuse by the PR-preview render script (see
+ * `renderPreviewArtifact.ts`), which renders only the specific
+ * added/changed files a PR's diff names, not every puzzle in the
+ * directory.
+ */
+export async function loadPuzzleFile(
+  filePath: string,
+  id: string,
+): Promise<Puzzle> {
   try {
     const raw = await readFile(filePath, "utf-8");
     const parsed: unknown = JSON.parse(raw);

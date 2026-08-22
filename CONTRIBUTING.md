@@ -75,4 +75,6 @@ Open a PR against `main` with your puzzle file. The PR template will walk you
 through a short checklist covering the filename, palette, the commands
 above, and content licensing. The same commands also run automatically once
 the PR is open, so you'll see a pass/fail check on the PR itself even if you
-skipped running them locally.
+skipped running them locally. If your PR adds or changes a puzzle, a small
+preview picture of it is also posted as a comment on the PR shortly after —
+a quick way to confirm it looks right without pulling the branch.

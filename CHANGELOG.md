@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Every pull request adding or changing a puzzle now gets a small preview picture of it posted as a comment, so a submission can be checked at a glance without pulling the branch — and the preview is cleaned up automatically once the pull request closes.
+
 ## [2.2.0] - 2026-08-20
 
 ### Added

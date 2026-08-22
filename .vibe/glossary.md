@@ -40,6 +40,11 @@ A contributor-facing page, distinct from the library and play pages, where a puz
 **Do not confuse with:** Library page, which lists already-authored puzzles to play, not create.
 _Sources: `packages/site/src/renderEditorPage.ts`, `packages/client/src/hydrateEditorPage.ts`_
 
+## Puzzle preview (PR preview)
+A small picture of a puzzle's full solution, rendered server-side and posted as a comment on the pull request that added or changed it — lets a maintainer judge whether a submission looks right without pulling the branch. Removed automatically once the pull request closes.
+**Do not confuse with:** the solved-puzzle thumbnail on the library page, which is a player's own reward for solving a puzzle themselves, built client-side only once solved, and never shown to anyone who hasn't earned it — a PR preview shows the solution to a reviewer regardless of whether it's ever been played.
+_Sources: `packages/site/src/renderPuzzlePreview.ts`, `.github/workflows/pr-check.yml`, `.github/workflows/pr-preview-publish.yml`_
+
 ## Boolean grid export
 The plain puzzle format produced by the sibling `remarkable-nonogram-generator` project: dimensions plus a boolean solution grid, with no palette and no id. It is converted into this project's Puzzle before use, with `true` cells becoming the single palette color and `false` cells becoming empty.
 **Do not confuse with:** Puzzle, the format it is converted into.
