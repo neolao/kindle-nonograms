@@ -1,0 +1,23 @@
+---
+status: done
+---
+# Automatic Puzzle Preview on Pull Requests
+
+## Description
+Even with CI green, judging whether a submitted puzzle "looks right" — matches its name, uses a sensible palette, isn't visually broken — currently means pulling the branch and running the site locally. Post a rendered preview image of every puzzle a PR adds or changes directly as a PR comment, so it can be validated at a glance from the GitHub UI, and clean it up automatically once the PR is no longer open.
+
+## Acceptance Criteria
+- [x] A script (e.g. in `packages/site`) renders a given `Puzzle`'s solution grid to a static PNG image — each cell colored per its `palette` index, `null` cells left blank/background — reusing `buildThumbnail`-style downsampling from `packages/shared/src/thumbnail.ts` when the grid exceeds a reasonable render size. This also caps the worst-case image size regardless of what `width`/`height` a submitted puzzle claims.
+- [x] `pr-check.yml` (from [[024-pull-request-ci-check]]) gains a step, gated on lint/test/build passing, that diffs `data/puzzles/` against the PR's base ref, renders one PNG per added/changed puzzle, and uploads them as a build artifact together with the PR number and the list of rendered filenames. Stays `contents: read` only — this step runs even for PRs from forks.
+- [x] The same workflow also reacts to `pull_request` events of type `closed`: instead of rendering, it uploads a minimal "cleanup" artifact containing just the PR number.
+- [x] A new, separate workflow `pr-preview-publish.yml` triggers on `workflow_run` for `pr-check.yml` completions. Because `workflow_run` always executes the copy of the workflow file committed to `main` — never the PR's version — it's safe to grant it elevated permissions even though `pr-check.yml` may have just run against untrusted fork code. This is a hard requirement, not a style choice: a `pull_request`-triggered workflow gets a read-only `GITHUB_TOKEN` for fork PRs no matter what `permissions:` it declares, so the privileged part cannot live in `pr-check.yml` itself.
+- [x] On a "publish" artifact: downloads it, pushes the images to `previews/pr-<number>/<puzzle-id>.png` on a dedicated `puzzle-previews` branch, and creates/updates a single PR comment (via a stable marker so re-runs edit it instead of piling up) linking each image through a `raw.githubusercontent.com` URL.
+- [x] On a "cleanup" artifact (PR closed, merged or not): deletes `previews/pr-<number>/` from `puzzle-previews` and updates the PR comment to note the preview was removed — so the branch never accumulates images for PRs that are no longer open, and repeatedly opening/closing PRs can't be used to fill up the repo.
+- [x] Both workflows set `concurrency: group: puzzle-preview-${{ <pr-number> }}` with `cancel-in-progress: true`, so rapid successive pushes to the same PR collapse into one run instead of racing to push the preview branch.
+
+## Notes
+Depends on [[024-pull-request-ci-check]]'s `pr-check.yml` existing — this item extends it with the render/diff/upload step rather than replacing it, and adds the one new privileged workflow described above. Keep the render script itself plain, testable Node code (no browser/canvas dependency required if done via a minimal PNG encoder or an SVG-to-PNG library), fully separate from the CI/workflow glue that invokes it.
+
+**On `GITHUB_TOKEN`**: nothing to create or store manually — GitHub mints a fresh `GITHUB_TOKEN` for every workflow run and it expires with the job. Access is granted purely by each workflow file's own `permissions:` block: `pr-check.yml` declares `contents: read`; `pr-preview-publish.yml` declares `contents: write` + `pull-requests: write`. No PAT, no repo secret. Worth a one-time check that the org/repo doesn't hard-disable write permissions at a level that would override an explicit workflow declaration — if it doesn't, no further setup is needed.
+
+**On spam / repo growth**: the close-triggered cleanup above keeps `puzzle-previews` bounded to currently-open PRs. The strongest line of defense costs no code at all — public repos require a maintainer's manual approval before *any* workflow run (including `pr-check.yml`) starts for a first-time outside contributor's PR (`Settings → Actions → General → Fork pull request workflows`); leave that enabled, since it means no image is ever generated or pushed without an explicit click from you. Don't add branch protection to `puzzle-previews` — the publish/cleanup workflow needs to push to it directly. No bespoke rate-limiting beyond the `concurrency:` groups above is needed at this project's realistic scale.
