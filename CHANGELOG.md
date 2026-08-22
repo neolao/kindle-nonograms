@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-08-23
+
 ### Added
 
 - Every pull request adding or changing a puzzle now gets a small preview picture of it posted as a comment, so a submission can be checked at a glance without pulling the branch — and the preview is cleaned up automatically once the pull request closes.
@@ -184,7 +186,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/neolao/kindle-nonograms/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/neolao/kindle-nonograms/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/neolao/kindle-nonograms/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/neolao/kindle-nonograms/compare/v1.14.0...v2.0.0
