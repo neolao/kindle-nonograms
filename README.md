@@ -8,7 +8,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - Player progress on a puzzle can be tracked and checked to confirm it was solved correctly.
 - Player progress is saved in the browser, so it survives closing and reopening the page.
 - Puzzles exported from the reMarkable nonogram generator project can be converted into this project's puzzle format.
-- 18 black-and-white puzzles converted from the reMarkable nonogram generator are included in the puzzle library.
+- 16 black-and-white puzzles converted from the reMarkable nonogram generator are included in the puzzle library.
 - Small demo puzzles — black-and-white, two colors, and four colors — are included, ready to try the whole game end to end right away.
 - All puzzle files, whether in the game's own format or exported from the reMarkable nonogram generator, are automatically discovered and validated when the site is built.
 - Each puzzle has its own page showing its color-coded clues and an empty grid, viewable even without loading any interactive code.
