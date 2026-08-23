@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Redesign the "Eiffel Tower" Puzzle to Be Fairly Solvable
 
