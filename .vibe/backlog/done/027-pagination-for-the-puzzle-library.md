@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Pagination for the Puzzle Library
 
