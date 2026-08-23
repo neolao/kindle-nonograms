@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-08-23
+
 ### Added
 
 - The puzzle editor can now import a local image (PNG/JPG): it's fitted to the current grid size, reduced to a chosen number of colors, and pixels close to a chosen background color become blank — giving a starting grid to refine by hand instead of drawing everything from scratch.
@@ -212,7 +214,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.6.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.7.0...HEAD
+[2.7.0]: https://github.com/neolao/kindle-nonograms/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/neolao/kindle-nonograms/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/neolao/kindle-nonograms/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/neolao/kindle-nonograms/compare/v2.3.0...v2.4.0
