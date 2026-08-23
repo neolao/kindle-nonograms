@@ -41,6 +41,9 @@ export type TranslationKey =
   | "library.filterColorMono"
   | "library.filterColorMulti"
   | "library.filterNoResults"
+  | "library.paginationPrev"
+  | "library.paginationNext"
+  | "library.paginationStatusLabel"
   | "library.createPuzzleLink"
   | "library.contributeLink"
   | "editor.title"
@@ -84,6 +87,9 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.filterColorMono": "Monochrome only",
     "library.filterColorMulti": "Multi-color only",
     "library.filterNoResults": "No puzzles match these filters.",
+    "library.paginationPrev": "Previous",
+    "library.paginationNext": "Next",
+    "library.paginationStatusLabel": "Page",
     "library.createPuzzleLink": "Create a puzzle",
     "library.contributeLink": "Contribute a puzzle on GitHub",
     "editor.title": "Puzzle Editor",
@@ -127,6 +133,9 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.filterColorMono": "Monochrome uniquement",
     "library.filterColorMulti": "Multicolore uniquement",
     "library.filterNoResults": "Aucun puzzle ne correspond à ces filtres.",
+    "library.paginationPrev": "Précédent",
+    "library.paginationNext": "Suivant",
+    "library.paginationStatusLabel": "Page",
     "library.createPuzzleLink": "Créer un puzzle",
     "library.contributeLink": "Contribuer un puzzle sur GitHub",
     "editor.title": "Éditeur de puzzle",

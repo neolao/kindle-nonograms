@@ -31,6 +31,9 @@ const ALL_KEYS: TranslationKey[] = [
   "library.filterColorMono",
   "library.filterColorMulti",
   "library.filterNoResults",
+  "library.paginationPrev",
+  "library.paginationNext",
+  "library.paginationStatusLabel",
 ];
 
 describe("SUPPORTED_LOCALES and DEFAULT_LOCALE", () => {
@@ -75,6 +78,9 @@ describe("translate", () => {
     expect(translate("en", "library.filterNoResults")).toBe(
       "No puzzles match these filters.",
     );
+    expect(translate("en", "library.paginationPrev")).toBe("Previous");
+    expect(translate("en", "library.paginationNext")).toBe("Next");
+    expect(translate("en", "library.paginationStatusLabel")).toBe("Page");
   });
 
   it("returns the exact French string for each key", () => {
@@ -116,6 +122,9 @@ describe("translate", () => {
     expect(translate("fr", "library.filterNoResults")).toBe(
       "Aucun puzzle ne correspond à ces filtres.",
     );
+    expect(translate("fr", "library.paginationPrev")).toBe("Précédent");
+    expect(translate("fr", "library.paginationNext")).toBe("Suivant");
+    expect(translate("fr", "library.paginationStatusLabel")).toBe("Page");
   });
 
   it("has a non-empty string for every key in every supported locale", () => {

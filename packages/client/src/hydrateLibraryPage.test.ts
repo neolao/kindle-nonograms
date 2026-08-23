@@ -116,6 +116,63 @@ function thumbFor(puzzleId: string): HTMLElement {
   return found;
 }
 
+// Generates `count` distinct, valid, small monochrome puzzles ("p0".."pN-1")
+// — enough to exercise pagination's >25-item path without the noise of
+// varied sizes/colors (those are already covered by the filter fixtures
+// above).
+function buildPuzzles(count: number): Puzzle[] {
+  return Array.from({ length: count }, (_, index) => ({
+    id: `p${index}`,
+    name: `Puzzle ${index}`,
+    width: 1,
+    height: 1,
+    palette: ["#000000"],
+    cells: [[0]],
+  }));
+}
+
+function paginationContainer(): HTMLElement {
+  const found = document.querySelector<HTMLElement>(".library-pagination");
+  if (!found) {
+    throw new Error("fixture pagination container not found");
+  }
+  return found;
+}
+
+function paginationPrevButton(): HTMLButtonElement {
+  const found = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-pagination-prev"]',
+  );
+  if (!found) {
+    throw new Error("fixture pagination prev button not found");
+  }
+  return found;
+}
+
+function paginationNextButton(): HTMLButtonElement {
+  const found = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-pagination-next"]',
+  );
+  if (!found) {
+    throw new Error("fixture pagination next button not found");
+  }
+  return found;
+}
+
+function paginationStatusText(): string {
+  const found = document.querySelector<HTMLElement>(
+    '[data-role="library-pagination-status"]',
+  );
+  if (!found) {
+    throw new Error("fixture pagination status not found");
+  }
+  return found.textContent ?? "";
+}
+
+function click(button: HTMLButtonElement): void {
+  button.dispatchEvent(new Event("click", { bubbles: true }));
+}
+
 function sizeFilterSelect(): HTMLSelectElement {
   const found = document.querySelector<HTMLSelectElement>(
     '[data-role="library-filter-size-select"]',
@@ -464,5 +521,137 @@ describe("library filters on the empty library page", () => {
     hydrate();
 
     expect(document.querySelector(".library-filters")).toBeNull();
+  });
+});
+
+describe("library pagination", () => {
+  it("hides the pagination controls and shows every puzzle when the total is 25 or fewer", () => {
+    buildFixture(buildPuzzles(25));
+
+    hydrate();
+
+    expect(paginationContainer().hidden).toBe(true);
+    for (let index = 0; index < 25; index++) {
+      expect(isRowVisible(`p${index}`)).toBe(true);
+    }
+  });
+
+  it("shows only the first 25 puzzles and enables only the relevant nav button", () => {
+    buildFixture(buildPuzzles(30));
+
+    hydrate();
+
+    expect(paginationContainer().hidden).toBe(false);
+    for (let index = 0; index < 25; index++) {
+      expect(isRowVisible(`p${index}`)).toBe(true);
+    }
+    for (let index = 25; index < 30; index++) {
+      expect(isRowVisible(`p${index}`)).toBe(false);
+    }
+    expect(paginationPrevButton().disabled).toBe(true);
+    expect(paginationNextButton().disabled).toBe(false);
+    expect(paginationStatusText()).toContain("1");
+    expect(paginationStatusText()).toContain("2");
+  });
+
+  it("reveals the next page and hides the previous one when Next is clicked", () => {
+    buildFixture(buildPuzzles(30));
+    hydrate();
+
+    click(paginationNextButton());
+
+    for (let index = 0; index < 25; index++) {
+      expect(isRowVisible(`p${index}`)).toBe(false);
+    }
+    for (let index = 25; index < 30; index++) {
+      expect(isRowVisible(`p${index}`)).toBe(true);
+    }
+    expect(paginationPrevButton().disabled).toBe(false);
+    expect(paginationNextButton().disabled).toBe(true);
+  });
+
+  it("returns to the first page when Previous is clicked from the second page", () => {
+    buildFixture(buildPuzzles(30));
+    hydrate();
+    click(paginationNextButton());
+
+    click(paginationPrevButton());
+
+    expect(isRowVisible("p0")).toBe(true);
+    expect(isRowVisible("p25")).toBe(false);
+    expect(paginationPrevButton().disabled).toBe(true);
+  });
+
+  it("does nothing when Next is clicked while already on the last page", () => {
+    buildFixture(buildPuzzles(30));
+    hydrate();
+    click(paginationNextButton());
+
+    expect(() => click(paginationNextButton())).not.toThrow();
+    expect(isRowVisible("p25")).toBe(true);
+    expect(paginationNextButton().disabled).toBe(true);
+  });
+
+  it("does nothing when Previous is clicked while already on the first page", () => {
+    buildFixture(buildPuzzles(30));
+    hydrate();
+
+    expect(() => click(paginationPrevButton())).not.toThrow();
+    expect(isRowVisible("p0")).toBe(true);
+    expect(paginationPrevButton().disabled).toBe(true);
+  });
+
+  it("resets to the first page and hides pagination once a filter narrows the result set below the page size", () => {
+    const puzzles = [
+      ...buildPuzzles(30),
+      mediumMultiPuzzle, // the only non-small, non-mono puzzle in the mix
+    ];
+    buildFixture(puzzles);
+    hydrate();
+    click(paginationNextButton());
+
+    selectValue(sizeFilterSelect(), "medium");
+
+    expect(paginationContainer().hidden).toBe(true);
+    expect(isRowVisible("medium-multi")).toBe(true);
+    expect(isRowVisible("p0")).toBe(false);
+  });
+
+  it("shows pagination again once a filter narrowing below the page size is cleared", () => {
+    buildFixture(buildPuzzles(30));
+    hydrate();
+    selectValue(sizeFilterSelect(), "large");
+    expect(paginationContainer().hidden).toBe(true);
+
+    selectValue(sizeFilterSelect(), "all");
+
+    expect(paginationContainer().hidden).toBe(false);
+    expect(isRowVisible("p0")).toBe(true);
+    expect(paginationPrevButton().disabled).toBe(true);
+  });
+
+  it("keeps the current page position and its digits when the language is changed", () => {
+    buildFixture(buildPuzzles(30));
+    hydrate();
+    click(paginationNextButton());
+
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    expect(isRowVisible("p25")).toBe(true);
+    expect(isRowVisible("p0")).toBe(false);
+    expect(paginationStatusText()).toContain("2");
+    expect(paginationPrevButton().textContent).toBe("Précédent");
+    expect(paginationNextButton().textContent).toBe("Suivant");
+  });
+
+  it("keeps a puzzle solved-checkable after paging to the row it's on", () => {
+    saveProgress("p25", { cells: [[0]] });
+    buildFixture(buildPuzzles(30));
+    hydrate();
+
+    click(paginationNextButton());
+
+    expect(badgeFor("p25").hidden).toBe(false);
   });
 });

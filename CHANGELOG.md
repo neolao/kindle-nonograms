@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The puzzle library page now shows at most 25 puzzles per page, with Previous/Next controls to move between pages — kept in sync with the size/color filters, and hidden entirely when the library is small enough to fit on one page.
+
 ## [2.4.0] - 2026-08-23
 
 ### Added
