@@ -17,6 +17,12 @@ import {
 // Purely decorative — see .vibe/decisions/013-three-accent-cabinet-reskin.md.
 const DOT_ROW = `<div class="dot-row" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>`;
 
+// The project's own CONTRIBUTING.md, viewed on GitHub — the footer's
+// "explains how to contribute a puzzle" link (see .vibe/backlog/done/
+// 026-language-switcher-and-contribution-footer.md).
+const CONTRIBUTING_URL =
+  "https://github.com/neolao/kindle-nonograms/blob/main/CONTRIBUTING.md";
+
 // Height (px) of the top stripe band, matching the `li` rule's own
 // border-top-width below — kept in one place so the two can't drift apart.
 const STRIPE_HEIGHT_PX = 6;
@@ -106,7 +112,12 @@ export function renderLibraryPage(
 ${DOT_ROW}
 <h1 data-i18n="library.title">Kindle Nonograms</h1>
 ${body}
-<p><a href="editor/" data-i18n="library.createPuzzleLink">Create a puzzle</a></p>
+<footer class="page-footer">
+<div class="page-footer-links">
+<a href="editor/" data-i18n="library.createPuzzleLink">Create a puzzle</a>
+<a href="${CONTRIBUTING_URL}" target="_blank" rel="noopener noreferrer"><span data-i18n="library.contributeLink">Contribute a puzzle on GitHub</span><span aria-hidden="true"> ↗</span></a>
+</div>
+</footer>
 </div>
 <script type="application/json" id="puzzles-data">${embedJson(puzzles)}</script>
 <script type="module" src="./assets/main.js${versionQuery(assetVersion)}"></script>
@@ -147,4 +158,9 @@ li a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 .library-filters select{font-family:${LABEL_FONT_STACK};min-height:${MIN_TAP_TARGET_PX}px;padding:0 ${SPACING_PX.sm}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};}
 .library-filters select:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 .filter-no-results{margin:${SPACING_PX.md}px;color:${COLORS.muted};}
+.page-footer{display:flex;flex-wrap:wrap;align-items:center;gap:${SPACING_PX.md}px;border-top:${BORDER_WIDTH.thin} solid ${COLORS.line};margin:${SPACING_PX.md}px ${SPACING_PX.md}px 0;padding:${SPACING_PX.sm}px 0 ${SPACING_PX.md}px;}
+.page-footer .language-switcher{margin:0;}
+.page-footer-links{display:flex;flex-wrap:wrap;align-items:center;gap:${SPACING_PX.md}px;margin-left:auto;}
+.page-footer-links a{display:inline-flex;align-items:center;min-height:${MIN_TAP_TARGET_PX}px;color:${COLORS.text};text-decoration:none;}
+.page-footer-links a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 `;

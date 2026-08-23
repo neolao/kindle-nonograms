@@ -42,6 +42,7 @@ export type TranslationKey =
   | "library.filterColorMulti"
   | "library.filterNoResults"
   | "library.createPuzzleLink"
+  | "library.contributeLink"
   | "editor.title"
   | "editor.sizeLabel"
   | "editor.widthLabel"
@@ -84,6 +85,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.filterColorMulti": "Multi-color only",
     "library.filterNoResults": "No puzzles match these filters.",
     "library.createPuzzleLink": "Create a puzzle",
+    "library.contributeLink": "Contribute a puzzle on GitHub",
     "editor.title": "Puzzle Editor",
     "editor.sizeLabel": "Grid size",
     "editor.widthLabel": "Width",
@@ -126,6 +128,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.filterColorMulti": "Multicolore uniquement",
     "library.filterNoResults": "Aucun puzzle ne correspond à ces filtres.",
     "library.createPuzzleLink": "Créer un puzzle",
+    "library.contributeLink": "Contribuer un puzzle sur GitHub",
     "editor.title": "Éditeur de puzzle",
     "editor.sizeLabel": "Taille de la grille",
     "editor.widthLabel": "Largeur",

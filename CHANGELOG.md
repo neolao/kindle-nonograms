@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The puzzle library page now has a footer with a link explaining how to contribute a puzzle on GitHub, next to the existing "Create a puzzle" link.
+
+### Changed
+
+- The language switcher is now only available on the puzzle library page, moved into its new footer — the individual puzzle pages still remember and apply your chosen language, but no longer have their own switcher.
+
 ## [2.3.0] - 2026-08-23
 
 ### Added

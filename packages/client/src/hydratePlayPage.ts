@@ -12,13 +12,7 @@ import {
 } from "@kindle-nonograms/shared";
 import { contrastingTextColor } from "./contrastColor.js";
 import { computeFitFontSizePx } from "./fitGrid.js";
-import {
-  applyLocale,
-  buildLanguageSwitcher,
-  readLocaleCookie,
-  resolveLocale,
-  writeLocaleCookie,
-} from "./i18n.js";
+import { applyLocale, readLocaleCookie, resolveLocale } from "./i18n.js";
 import { loadProgress, saveProgress } from "./progressStorage.js";
 
 type Mode = "fill" | "cross";
@@ -410,56 +404,27 @@ function handleCheck(
 }
 
 /**
- * Inserts the FR/EN language switcher right after the page heading and
- * applies the resolved locale (saved cookie, else the browser's detected
- * language, else English) to every element on the page carrying a
- * `data-i18n` key. Runs before the rest of hydration so the switcher is
- * present even if the puzzle data itself turns out to be missing/corrupted.
- * Returns the resolved locale so the caller can build the toolbar/banner
- * already in the right language, with no translation flash.
+ * Resolves the effective locale (saved cookie, else the browser's detected
+ * language, else English) and applies it to every element on the page
+ * carrying a `data-i18n` key. The puzzle page no longer has a language
+ * switcher of its own — only the library page does — but it still has to
+ * honor a choice made there (see .vibe/backlog/done/
+ * 026-language-switcher-and-contribution-footer.md). Runs before the rest
+ * of hydration so static markup (the back-link) is translated even if the
+ * puzzle data itself turns out to be missing/corrupted. Returns the
+ * resolved locale so the caller can build the toolbar/banner already in
+ * the right language, with no translation flash.
  */
-function setUpLanguageSwitcher(): Locale {
+function applyStoredLocale(): Locale {
   const locale = resolveLocale(readLocaleCookie(), navigator.language);
-
-  const heading = document.querySelector("h1");
-  if (heading) {
-    const switcher = buildLanguageSwitcher(locale, (newLocale) => {
-      writeLocaleCookie(newLocale);
-      applyLocale(newLocale);
-    });
-    // Joins the back-link's own controls cluster when the static markup
-    // provides one, rather than always inserting a fresh row right after
-    // the heading: an extra row above the grid would shrink the space
-    // `applyGridFit` has to work with on small screens. Grouping into
-    // `.page-header-controls` (rather than `.page-header` directly) keeps
-    // the back-link and the switcher wrapping together as one unit on
-    // narrow screens, instead of each getting its own independent wrap
-    // point. Falls back to the old insertion point when neither exists
-    // (e.g. isolated tests).
-    const controls = document.querySelector(".page-header-controls");
-    const headerRow = document.querySelector(".page-header");
-    if (controls) {
-      controls.append(switcher);
-    } else if (headerRow) {
-      headerRow.append(switcher);
-    } else {
-      heading.parentNode?.insertBefore(switcher, heading.nextSibling);
-    }
-
-    // Retranslates any static `[data-i18n]` markup already on the page (the
-    // back-link) to the resolved locale. The toolbar/banner built below by
-    // `hydrate()` don't exist yet at this point, so this can't double-apply
-    // to them — they get their initial text straight from `translate()`
-    // instead. Same call as `hydrateLibraryPage.ts` makes for its heading.
-    applyLocale(locale);
-  }
-
+  applyLocale(locale);
   return locale;
 }
 
 /**
- * Hydrates a generated puzzle page: inserts the language switcher, builds
- * the Fill/Cross mode toggle (plus color swatches for multi-color puzzles),
+ * Hydrates a generated puzzle page: applies the previously resolved locale
+ * (no switcher control on this page — see `applyStoredLocale`), builds the
+ * Fill/Cross mode toggle (plus color swatches for multi-color puzzles),
  * restores any saved progress onto the grid, and wires a single delegated
  * click listener that toggles a tapped cell's mark, redraws only that cell,
  * persists progress, and shows or hides a win banner based on whether the
@@ -467,16 +432,16 @@ function setUpLanguageSwitcher(): Locale {
  */
 export function hydrate(): void {
   // A `<table>` is this page type's own self-detection marker (see
-  // main.ts's doc comment) — checked first, before anything else
-  // including the switcher, so this hydration script stays a no-op on
-  // pages of a different shape (e.g. the library page, which has no
-  // table but does have an `<h1>` of its own).
+  // main.ts's doc comment) — checked first, before anything else, so
+  // this hydration script stays a no-op on pages of a different shape
+  // (e.g. the library page, which has no table but does have an `<h1>`
+  // of its own).
   const table = document.querySelector("table");
   if (!table) {
     return;
   }
 
-  const locale = setUpLanguageSwitcher();
+  const locale = applyStoredLocale();
 
   const puzzle = readPuzzle();
   if (!puzzle) {

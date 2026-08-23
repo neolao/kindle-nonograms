@@ -18,7 +18,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The home page now shows which puzzles you've already solved.
 - The whole site — every puzzle page, the home page, and the interactive bundle — can now be built with a single command and previewed locally before publishing.
 - The game is automatically built and published online whenever a change is pushed.
-- The app's language can be switched between English and Français from a dropdown on the puzzle library and on each puzzle page. It defaults to your browser's language and remembers your choice for next time.
+- The app's language can be switched between English and Français from a dropdown on the puzzle library page. It defaults to your browser's language and remembers your choice for next time — puzzle pages honor that choice too.
 - A "Check" button on the puzzle page tells you at any time whether your grid is correctly solved, and automatically clears any cell you got wrong so you can redo it.
 - The library and puzzle pages now share a consistent look — fonts, colors, spacing, and button styling.
 - The puzzle grid automatically resizes to fit your screen, so you never have to scroll to see it in full.
@@ -33,6 +33,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The library page has filter controls to narrow the puzzle list by size (small/medium/large) and by color type (monochrome only or multi-color only).
 - New puzzles are now checked automatically: a submission is rejected if it can't be solved without guessing, or if it's an exact duplicate of a puzzle already in the library.
 - A "Create a puzzle" page, linked from the library, lets you set a grid size, build a color palette, paint the solution cell by cell, name your puzzle, and export a ready-to-submit puzzle file.
+- The library page now has a footer with the language switcher and a link explaining how to contribute a puzzle on GitHub.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

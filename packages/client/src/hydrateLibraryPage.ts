@@ -100,24 +100,29 @@ function revealThumbnail(row: HTMLElement, puzzle: Puzzle): void {
 }
 
 /**
- * Inserts the FR/EN language switcher right after the page heading and
- * applies the resolved locale (saved cookie, else the browser's detected
- * language, else English) to every element on the page carrying a
- * `data-i18n` key. Runs before any other hydration so the switcher and
- * translated strings are present even on the empty library page. Returns
- * the resolved locale so later hydration steps (the filter controls) can
- * build their own initial translated text without re-resolving it.
+ * Inserts the FR/EN language switcher into the page footer (see
+ * `renderLibraryPage.ts`'s `.page-footer`, alongside the contribution
+ * links) and applies the resolved locale (saved cookie, else the browser's
+ * detected language, else English) to every element on the page carrying a
+ * `data-i18n` key. This is the only page that still gets a switcher control
+ * — the puzzle page only applies a previously saved locale, see
+ * `hydratePlayPage.ts` (see .vibe/backlog/done/
+ * 026-language-switcher-and-contribution-footer.md). Runs before any other
+ * hydration so the switcher and translated strings are present even on the
+ * empty library page. Returns the resolved locale so later hydration steps
+ * (the filter controls) can build their own initial translated text
+ * without re-resolving it.
  */
 function setUpLanguageSwitcher(): Locale {
   const locale = resolveLocale(readLocaleCookie(), navigator.language);
 
-  const heading = document.querySelector("h1");
-  if (heading) {
+  const footer = document.querySelector(".page-footer");
+  if (footer) {
     const switcher = buildLanguageSwitcher(locale, (newLocale) => {
       writeLocaleCookie(newLocale);
       applyLocale(newLocale);
     });
-    heading.parentNode?.insertBefore(switcher, heading.nextSibling);
+    footer.prepend(switcher);
   }
 
   applyLocale(locale);

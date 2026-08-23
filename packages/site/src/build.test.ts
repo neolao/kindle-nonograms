@@ -71,12 +71,24 @@ describe("buildSite", () => {
         "utf-8",
       );
 
+      // The library page's footer deliberately links out to the project's
+      // own GitHub repo (see .vibe/backlog/done/
+      // 026-language-switcher-and-contribution-footer.md) — the only
+      // legitimate absolute URL in the built output, allowlisted by exact
+      // value so any other absolute/host-rooted path still fails this check.
+      const KNOWN_EXTERNAL_LINKS = [
+        "https://github.com/neolao/kindle-nonograms/blob/main/CONTRIBUTING.md",
+      ];
+
       for (const html of [home, catPage]) {
         const paths = Array.from(html.matchAll(/(?:href|src)="([^"]+)"/g)).map(
           (match) => match[1],
         );
         expect(paths.length).toBeGreaterThan(0);
         for (const path of paths) {
+          if (KNOWN_EXTERNAL_LINKS.includes(path)) {
+            continue;
+          }
           expect(path.startsWith("/")).toBe(false);
           expect(path.startsWith("http")).toBe(false);
         }

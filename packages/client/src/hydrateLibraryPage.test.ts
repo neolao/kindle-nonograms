@@ -66,13 +66,16 @@ function buildFixture(puzzles: Puzzle[]): void {
     )
     .join("");
 
-  document.body.innerHTML = `<h1 data-i18n="library.title">Kindle Nonograms</h1><ul>${items}</ul><script type="application/json" id="puzzles-data">${JSON.stringify(puzzles)}</script>`;
+  document.body.innerHTML = `<h1 data-i18n="library.title">Kindle Nonograms</h1><ul>${items}</ul>${FOOTER_FIXTURE}<script type="application/json" id="puzzles-data">${JSON.stringify(puzzles)}</script>`;
 }
 
 function buildEmptyFixture(): void {
-  document.body.innerHTML =
-    '<h1 data-i18n="library.title">Kindle Nonograms</h1><p data-i18n="library.empty">No puzzles are available yet.</p><script type="application/json" id="puzzles-data">[]</script>';
+  document.body.innerHTML = `<h1 data-i18n="library.title">Kindle Nonograms</h1><p data-i18n="library.empty">No puzzles are available yet.</p>${FOOTER_FIXTURE}<script type="application/json" id="puzzles-data">[]</script>`;
 }
+
+// Mirrors what renderLibraryPage.ts actually renders for the footer, so the
+// fixture stays representative of real server-rendered markup.
+const FOOTER_FIXTURE = `<footer class="page-footer"><div class="page-footer-links"><a href="editor/" data-i18n="library.createPuzzleLink">Create a puzzle</a><a href="https://github.com/neolao/kindle-nonograms/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><span data-i18n="library.contributeLink">Contribute a puzzle on GitHub</span><span aria-hidden="true"> ↗</span></a></div></footer>`;
 
 function switcherSelect(): HTMLSelectElement {
   const found = document.querySelector<HTMLSelectElement>(
@@ -253,15 +256,36 @@ describe("solved-puzzle thumbnail", () => {
 });
 
 describe("language switcher", () => {
-  it("inserts the language switcher immediately after the page heading", () => {
+  it("inserts the language switcher into the page footer, not right after the heading", () => {
     buildFixture([catPuzzle, dogPuzzle]);
 
     hydrate();
 
+    const footer = document.querySelector(".page-footer");
+    expect(
+      footer?.querySelector('[data-role="language-switcher-select"]'),
+    ).not.toBeNull();
     const h1 = document.querySelector("h1");
     expect(
       h1?.nextElementSibling?.querySelector(
         '[data-role="language-switcher-select"]',
+      ),
+    ).toBeNull();
+  });
+
+  it("keeps the create-puzzle and contribute links present in the footer alongside the switcher", () => {
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    const footer = document.querySelector(".page-footer");
+    expect(
+      footer?.querySelectorAll('[data-role="language-switcher-select"]'),
+    ).toHaveLength(1);
+    expect(footer?.querySelector('a[href="editor/"]')).not.toBeNull();
+    expect(
+      footer?.querySelector(
+        'a[href="https://github.com/neolao/kindle-nonograms/blob/main/CONTRIBUTING.md"]',
       ),
     ).not.toBeNull();
   });

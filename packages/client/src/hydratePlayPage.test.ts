@@ -60,16 +60,6 @@ function checkButton(): HTMLButtonElement | null {
   return document.querySelector<HTMLButtonElement>('[data-role="check"]');
 }
 
-function switcherSelect(): HTMLSelectElement {
-  const found = document.querySelector<HTMLSelectElement>(
-    '[data-role="language-switcher-select"]',
-  );
-  if (!found) {
-    throw new Error("fixture language switcher select not found");
-  }
-  return found;
-}
-
 const originalNavigatorLanguage = window.navigator.language;
 
 function setNavigatorLanguage(language: string): void {
@@ -376,19 +366,6 @@ describe("check button", () => {
     expect(banner()?.getAttribute("aria-live")).toBe("polite");
   });
 
-  it("retranslates a not-solved message shown via Check when the language changes", () => {
-    buildFixture(soloPuzzle);
-    hydrate();
-
-    checkButton()?.click();
-    expect(banner()?.textContent).toBe("Not solved yet");
-
-    switcherSelect().value = "fr";
-    switcherSelect().dispatchEvent(new Event("change"));
-
-    expect(banner()?.textContent).toBe("Pas encore résolu");
-  });
-
   it("clears a cell filled with the wrong color and shows a corrected message when the puzzle is still unsolved", () => {
     buildFixture(duoPuzzle);
     hydrate();
@@ -491,42 +468,15 @@ describe("check button", () => {
   });
 });
 
-describe("language switcher", () => {
-  it("inserts the language switcher immediately after the page heading", () => {
+describe("locale application", () => {
+  it("never renders a language switcher on the puzzle page — it only lives in the library page's footer", () => {
     buildFixture(soloPuzzle);
 
     hydrate();
 
-    const h1 = document.querySelector("h1");
     expect(
-      h1?.nextElementSibling?.querySelector(
-        '[data-role="language-switcher-select"]',
-      ),
-    ).not.toBeNull();
-  });
-
-  it("joins the back-link's existing header row instead of adding a new row, when one is present", () => {
-    document.body.innerHTML = `<h1>${soloPuzzle.name}</h1><div class="page-header"><a class="back-link" href="../../">Back to puzzle list</a></div><div class="grid-wrapper"><table><tbody><tr><th scope="row">clue</th><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table></div><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
-
-    hydrate();
-
-    const headerRow = document.querySelector(".page-header");
-    expect(
-      headerRow?.querySelector('[data-role="language-switcher-select"]'),
-    ).not.toBeNull();
-    expect(document.querySelectorAll(".page-header")).toHaveLength(1);
-  });
-
-  it("joins the back-link's own controls cluster, not the bare header row, when one is present", () => {
-    document.body.innerHTML = `<div class="page-header"><h1>${soloPuzzle.name}</h1><div class="page-header-controls"><a class="back-link" href="../../">Back to puzzle list</a></div></div><div class="grid-wrapper"><table><tbody><tr><th scope="row">clue</th><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table></div><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
-
-    hydrate();
-
-    const controls = document.querySelector(".page-header-controls");
-    expect(
-      controls?.querySelector('[data-role="language-switcher-select"]'),
-    ).not.toBeNull();
-    expect(document.querySelectorAll(".page-header-controls")).toHaveLength(1);
+      document.querySelector('[data-role="language-switcher-select"]'),
+    ).toBeNull();
   });
 
   it("inserts the toolbar and win banner into the chrome panel when one is present", () => {
@@ -553,23 +503,15 @@ describe("language switcher", () => {
     expect(backLink?.textContent).toBe("Retour à la liste des puzzles");
   });
 
-  it("defaults to the language detected from the browser when there is no saved cookie", () => {
-    setNavigatorLanguage("fr-FR");
-    buildFixture(soloPuzzle);
-
-    hydrate();
-
-    expect(switcherSelect().value).toBe("fr");
-  });
-
-  it("prefers a saved cookie over the browser-detected language", () => {
+  it("applies a previously saved locale cookie to the toolbar/banner text, with no switcher present to have set it", () => {
     document.cookie = "kindle-nonograms-locale=fr; path=/";
     setNavigatorLanguage("en-US");
     buildFixture(soloPuzzle);
 
     hydrate();
 
-    expect(switcherSelect().value).toBe("fr");
+    expect(fillButton()?.textContent).toBe("Remplir");
+    expect(crossButton()?.textContent).toBe("Croix");
   });
 
   it("labels the Fill/Cross toggle buttons and the win banner in the resolved locale from the start", () => {
@@ -583,39 +525,19 @@ describe("language switcher", () => {
     expect(banner()?.textContent).toBe("Puzzle résolu !");
   });
 
-  it("retranslates the Fill/Cross toggle buttons and the win banner immediately, with no reload, when the language changes", () => {
-    buildFixture(soloPuzzle);
-
-    hydrate();
-    expect(fillButton()?.textContent).toBe("Fill");
-
-    switcherSelect().value = "fr";
-    switcherSelect().dispatchEvent(new Event("change"));
-
-    expect(fillButton()?.textContent).toBe("Remplir");
-    expect(crossButton()?.textContent).toBe("Croix");
-    expect(banner()?.textContent).toBe("Puzzle résolu !");
-    expect(document.documentElement.lang).toBe("fr");
-  });
-
-  it("saves the chosen language in a cookie, read back as the priority source on the next load", () => {
-    buildFixture(soloPuzzle);
-
-    hydrate();
-    switcherSelect().value = "fr";
-    switcherSelect().dispatchEvent(new Event("change"));
-
-    expect(document.cookie).toContain("kindle-nonograms-locale=fr");
-  });
-
-  it("still inserts the switcher when the embedded puzzle JSON is missing, without throwing", () => {
+  it("still applies the resolved locale when the embedded puzzle JSON is missing, without throwing or inserting a switcher", () => {
+    setNavigatorLanguage("fr-FR");
     document.body.innerHTML =
-      '<h1>Puzzle</h1><table><tbody><tr><td data-row="0" data-col="0"></td></tr></tbody></table>';
+      '<h1>Puzzle</h1><div class="page-header"><a class="back-link" data-i18n="play.backToLibrary" href="../../">Back to puzzle list</a></div><table><tbody><tr><td data-row="0" data-col="0"></td></tr></tbody></table>';
 
     expect(() => hydrate()).not.toThrow();
+
+    expect(document.querySelector(".back-link")?.textContent).toBe(
+      "Retour à la liste des puzzles",
+    );
     expect(
       document.querySelector('[data-role="language-switcher-select"]'),
-    ).not.toBeNull();
+    ).toBeNull();
     expect(banner()).toBeNull();
   });
 
