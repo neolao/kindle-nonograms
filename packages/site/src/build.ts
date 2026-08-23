@@ -46,6 +46,14 @@ export async function buildSite({
   await buildClientBundle({
     configFile: join(CLIENT_ROOT, "vite.config.ts"),
     logLevel: "warn",
+    // Vite's default `publicDir` ("<root>/public") resolves against `root`,
+    // which itself defaults to `process.cwd()` — not this config file's own
+    // directory. Since this function runs from the monorepo root, leaving
+    // `publicDir` unset would silently copy nothing (there's no `public/`
+    // folder there), dropping `packages/client/public/favicon.svg` from
+    // every build. Set explicitly so the static assets in that folder
+    // always land at the site root regardless of the caller's cwd.
+    publicDir: join(CLIENT_ROOT, "public"),
     build: {
       outDir: absOutDir,
       emptyOutDir: false, // already cleaned above — the single source of truth for a fresh outDir

@@ -64,6 +64,11 @@ describe("buildSite", () => {
       expect(files).toContain("main.js");
     });
 
+    it("copies the favicon to the site root", async () => {
+      const favicon = await readFile(join(outDir, "favicon.svg"), "utf-8");
+      expect(favicon).toContain("<svg");
+    });
+
     it("only ever emits relative internal links and asset paths, never absolute or host-rooted", async () => {
       const home = await readFile(join(outDir, "index.html"), "utf-8");
       const catPage = await readFile(
@@ -126,6 +131,9 @@ describe("buildSite", () => {
 
         const files = await readdir(join(outDir, "assets"));
         expect(files).toContain("main.js");
+
+        const favicon = await readFile(join(outDir, "favicon.svg"), "utf-8");
+        expect(favicon).toContain("<svg");
       } finally {
         await rm(puzzlesDir, { recursive: true, force: true });
         await rm(outDir, { recursive: true, force: true });

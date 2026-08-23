@@ -7,6 +7,14 @@ function parse(html: string): Document {
 }
 
 describe("renderEditorPage", () => {
+  it("links a favicon relative to the site root, one level up from the editor page", () => {
+    const doc = parse(renderEditorPage());
+    const icon = doc.querySelector('link[rel="icon"]');
+
+    expect(icon?.getAttribute("href")).toBe("../favicon.svg");
+    expect(icon?.getAttribute("type")).toBe("image/svg+xml");
+  });
+
   it("renders a back-link to the library and a translated heading", () => {
     const doc = parse(renderEditorPage());
     const backLink = doc.querySelector(".back-link");

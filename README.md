@@ -35,6 +35,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - A "Create a puzzle" page, linked from the library, lets you set a grid size, build a color palette, paint the solution cell by cell, name your puzzle, and export a ready-to-submit puzzle file.
 - The library page now has a footer with the language switcher and a link explaining how to contribute a puzzle on GitHub.
 - The library page now shows at most 25 puzzles at a time, with Previous/Next buttons to move between pages once there are more than that.
+- The site now has a favicon, shown in the browser tab on every page.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

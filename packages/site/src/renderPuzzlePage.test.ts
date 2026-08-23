@@ -26,6 +26,14 @@ function runTexts(cell: Element | null): string[] {
 }
 
 describe("renderPuzzlePage", () => {
+  it("links a favicon relative to the site root, two levels up from a puzzle page", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+    const icon = doc.querySelector('link[rel="icon"]');
+
+    expect(icon?.getAttribute("href")).toBe("../../favicon.svg");
+    expect(icon?.getAttribute("type")).toBe("image/svg+xml");
+  });
+
   it("renders the correct row and column clue numbers for a multi-color fixture", () => {
     const doc = parse(renderPuzzlePage(multiColorPuzzle));
 

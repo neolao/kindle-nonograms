@@ -27,6 +27,14 @@ function parse(html: string): Document {
 }
 
 describe("renderLibraryPage", () => {
+  it("links a favicon relative to the site root", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const icon = doc.querySelector('link[rel="icon"]');
+
+    expect(icon?.getAttribute("href")).toBe("./favicon.svg");
+    expect(icon?.getAttribute("type")).toBe("image/svg+xml");
+  });
+
   it("lists every puzzle with a relative link and its size in the accessible link name", () => {
     const doc = parse(renderLibraryPage(puzzles));
     const links = doc.querySelectorAll("li a");
