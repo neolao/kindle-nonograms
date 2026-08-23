@@ -1,5 +1,12 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+// Mocked so image import tests control decoding without a real <canvas> —
+// jsdom doesn't implement real pixel decoding (see decodeImageFile.ts's own
+// doc comment on this exact boundary).
+vi.mock("./decodeImageFile.js", () => ({ decodeImageFile: vi.fn() }));
+
+import { decodeImageFile } from "./decodeImageFile.js";
 import {
   addPaletteColor,
   buildPuzzleCandidate,
@@ -30,6 +37,17 @@ function buildFixture(): void {
 <input type="number" id="editor-width" min="1" data-role="editor-width" />
 <label for="editor-height">Height</label>
 <input type="number" id="editor-height" min="1" data-role="editor-height" />
+</div>
+</div>
+<div class="panel editor-panel">
+<div class="editor-import-controls">
+<label for="editor-import-file">Image file</label>
+<input type="file" accept="image/png,image/jpeg" id="editor-import-file" data-role="editor-import-file" />
+<label for="editor-import-palette-size">Palette size</label>
+<input type="number" id="editor-import-palette-size" min="1" max="16" value="4" data-role="editor-import-palette-size" />
+<label for="editor-import-background">Background color</label>
+<input type="color" id="editor-import-background" value="#ffffff" data-role="editor-import-background" />
+<button type="button" data-role="editor-import-button">Import</button>
 </div>
 </div>
 <div class="panel editor-panel">
@@ -95,6 +113,48 @@ function fireChange(el: HTMLInputElement, value: string): void {
 }
 function fireClick(el: Element): void {
   el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+}
+
+function importFileInput(): HTMLInputElement {
+  return document.querySelector(
+    '[data-role="editor-import-file"]',
+  ) as HTMLInputElement;
+}
+function importPaletteSizeInput(): HTMLInputElement {
+  return document.querySelector(
+    '[data-role="editor-import-palette-size"]',
+  ) as HTMLInputElement;
+}
+function importBackgroundInput(): HTMLInputElement {
+  return document.querySelector(
+    '[data-role="editor-import-background"]',
+  ) as HTMLInputElement;
+}
+function importButton(): HTMLButtonElement {
+  return document.querySelector(
+    '[data-role="editor-import-button"]',
+  ) as HTMLButtonElement;
+}
+
+/** jsdom's `<input type="file">.files` is normally read-only. */
+function setImportFile(file: File | undefined): void {
+  Object.defineProperty(importFileInput(), "files", {
+    value: file ? [file] : [],
+    configurable: true,
+  });
+}
+
+function pngFile(name = "test.png"): File {
+  return new File(["fake-image-bytes"], name, { type: "image/png" });
+}
+
+/** Waits for the microtask/macrotask queue to drain — `handleImport`'s own
+ * click listener isn't awaited by the caller (a DOM event handler can't be
+ * awaited by `fireClick`), and it deliberately yields once via `setTimeout`
+ * before doing any work, so a test must yield too before asserting on its
+ * result. */
+function flushAsync(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 // jsdom implements neither `URL.createObjectURL`/`revokeObjectURL` nor real
@@ -439,5 +499,158 @@ describe("hydrate", () => {
 
     expect(createObjectURL).not.toHaveBeenCalled();
     expect(errorRegion().textContent).toMatch(/name must not be empty/i);
+  });
+});
+
+describe("image import", () => {
+  afterEach(() => {
+    vi.mocked(decodeImageFile).mockReset();
+    vi.unstubAllGlobals();
+  });
+
+  it("shows an inline error and never decodes when no file is chosen", async () => {
+    buildFixture();
+    hydrate();
+
+    fireClick(importButton());
+    await flushAsync();
+
+    expect(decodeImageFile).not.toHaveBeenCalled();
+    expect(errorRegion().textContent).toMatch(/choose an image file/i);
+  });
+
+  it("shows an inline error and never decodes when the palette size is out of range", async () => {
+    buildFixture();
+    hydrate();
+    setImportFile(pngFile());
+    fireChange(importPaletteSizeInput(), "17");
+
+    fireClick(importButton());
+    await flushAsync();
+
+    expect(decodeImageFile).not.toHaveBeenCalled();
+    expect(errorRegion().textContent).toMatch(/palette size/i);
+  });
+
+  it("imports directly with no confirmation when the grid is still empty", async () => {
+    buildFixture();
+    hydrate();
+    setImportFile(pngFile());
+    const confirmSpy = vi.fn(() => false);
+    vi.stubGlobal("confirm", confirmSpy);
+    vi.mocked(decodeImageFile).mockResolvedValueOnce({
+      width: 1,
+      height: 1,
+      data: new Uint8ClampedArray([10, 20, 30, 255]),
+    });
+
+    fireClick(importButton());
+    await flushAsync();
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(swatches()).toHaveLength(1);
+    expect(errorRegion().textContent).toBe("");
+  });
+
+  it("asks for confirmation before overwriting an already-painted grid, and applies nothing when declined", async () => {
+    buildFixture();
+    hydrate();
+    fireClick(cell(0, 0)); // paint something first
+    setImportFile(pngFile());
+    const confirmSpy = vi.fn(() => false);
+    vi.stubGlobal("confirm", confirmSpy);
+
+    fireClick(importButton());
+    await flushAsync();
+
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(decodeImageFile).not.toHaveBeenCalled();
+    expect(cell(0, 0).style.backgroundColor).not.toBe("");
+  });
+
+  it("replaces the palette/cells and switches to paint mode once confirmed", async () => {
+    buildFixture();
+    hydrate();
+    fireClick(cell(0, 0));
+    fireClick(document.querySelector('[data-role="mode-erase"]') as Element);
+    setImportFile(pngFile());
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true),
+    );
+    vi.mocked(decodeImageFile).mockResolvedValueOnce({
+      width: 1,
+      height: 1,
+      data: new Uint8ClampedArray([200, 0, 0, 255]),
+    });
+
+    fireClick(importButton());
+    await flushAsync();
+
+    expect(swatches()).toHaveLength(1);
+    expect(swatches()[0]?.style.backgroundColor).toBe("rgb(200, 0, 0)");
+    expect(
+      (
+        document.querySelector('[data-role="mode-paint"]') as Element
+      ).getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(errorRegion().textContent).toBe("");
+  });
+
+  it("uses the width/height fields' value at click time, not at file-pick time", async () => {
+    buildFixture();
+    hydrate();
+    setImportFile(pngFile());
+    fireChange(widthInput(), "3");
+    fireChange(heightInput(), "2");
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true),
+    );
+    vi.mocked(decodeImageFile).mockResolvedValueOnce({
+      width: 1,
+      height: 1,
+      data: new Uint8ClampedArray([0, 0, 0, 255]),
+    });
+
+    fireClick(importButton());
+    await flushAsync();
+
+    expect(document.querySelectorAll("table td")).toHaveLength(6);
+  });
+
+  it("surfaces a decode failure inline and leaves the previous grid untouched", async () => {
+    buildFixture();
+    hydrate();
+    fireClick(cell(0, 0));
+    const paintedColor = cell(0, 0).style.backgroundColor;
+    setImportFile(pngFile());
+    vi.mocked(decodeImageFile).mockRejectedValueOnce(
+      new Error("Could not read this image file."),
+    );
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true),
+    );
+
+    fireClick(importButton());
+    await flushAsync();
+
+    expect(errorRegion().textContent).toMatch(/could not read this image/i);
+    expect(cell(0, 0).style.backgroundColor).toBe(paintedColor);
+  });
+
+  it("re-enables the import controls after a failed import", async () => {
+    buildFixture();
+    hydrate();
+    setImportFile(pngFile());
+    vi.mocked(decodeImageFile).mockRejectedValueOnce(new Error("broken"));
+
+    fireClick(importButton());
+    await flushAsync();
+
+    expect(importFileInput().disabled).toBe(false);
+    expect(importPaletteSizeInput().disabled).toBe(false);
+    expect(importButton().disabled).toBe(false);
   });
 });

@@ -50,6 +50,12 @@ export type TranslationKey =
   | "editor.sizeLabel"
   | "editor.widthLabel"
   | "editor.heightLabel"
+  | "editor.importLabel"
+  | "editor.importFileLabel"
+  | "editor.importPaletteSizeLabel"
+  | "editor.importBackgroundLabel"
+  | "editor.importButton"
+  | "editor.importHint"
   | "editor.paletteLabel"
   | "editor.canvasLabel"
   | "editor.metaLabel"
@@ -96,6 +102,13 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.sizeLabel": "Grid size",
     "editor.widthLabel": "Width",
     "editor.heightLabel": "Height",
+    "editor.importLabel": "Import image",
+    "editor.importFileLabel": "Image file",
+    "editor.importPaletteSizeLabel": "Palette size",
+    "editor.importBackgroundLabel": "Background color",
+    "editor.importButton": "Import",
+    "editor.importHint":
+      "The image is fitted to the grid size above and reduced to the palette size above; pixels close to the background color become blank.",
     "editor.paletteLabel": "Palette",
     "editor.canvasLabel": "Canvas",
     "editor.metaLabel": "Name and export",
@@ -142,6 +155,13 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.sizeLabel": "Taille de la grille",
     "editor.widthLabel": "Largeur",
     "editor.heightLabel": "Hauteur",
+    "editor.importLabel": "Importer une image",
+    "editor.importFileLabel": "Fichier image",
+    "editor.importPaletteSizeLabel": "Nombre de couleurs",
+    "editor.importBackgroundLabel": "Couleur de fond",
+    "editor.importButton": "Importer",
+    "editor.importHint":
+      "L'image est ajustée à la taille de grille ci-dessus et réduite au nombre de couleurs ci-dessus ; les pixels proches de la couleur de fond deviennent vides.",
     "editor.paletteLabel": "Palette",
     "editor.canvasLabel": "Grille",
     "editor.metaLabel": "Nom et export",

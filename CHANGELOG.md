@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The puzzle editor can now import a local image (PNG/JPG): it's fitted to the current grid size, reduced to a chosen number of colors, and pixels close to a chosen background color become blank — giving a starting grid to refine by hand instead of drawing everything from scratch.
+
 ## [2.6.0] - 2026-08-23
 
 ### Added

@@ -67,6 +67,31 @@ describe("renderEditorPage", () => {
     expect(height?.getAttribute("min")).toBe("1");
   });
 
+  it("renders the image import controls: file, palette size, background color, and an Import button", () => {
+    const doc = parse(renderEditorPage());
+
+    const file = doc.querySelector('[data-role="editor-import-file"]');
+    expect(file?.tagName).toBe("INPUT");
+    expect(file?.getAttribute("type")).toBe("file");
+    expect(file?.getAttribute("accept")).toBe("image/png,image/jpeg");
+
+    const paletteSize = doc.querySelector(
+      '[data-role="editor-import-palette-size"]',
+    );
+    expect(paletteSize?.getAttribute("type")).toBe("number");
+    expect(paletteSize?.getAttribute("min")).toBe("1");
+    expect(paletteSize?.getAttribute("max")).toBe("16");
+
+    const background = doc.querySelector(
+      '[data-role="editor-import-background"]',
+    );
+    expect(background?.getAttribute("type")).toBe("color");
+
+    expect(
+      doc.querySelector('[data-role="editor-import-button"]')?.tagName,
+    ).toBe("BUTTON");
+  });
+
   it("renders name and filename text inputs plus an Export button", () => {
     const doc = parse(renderEditorPage());
 

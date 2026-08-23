@@ -56,6 +56,19 @@ export function renderEditorPage(assetVersion?: string): string {
 </div>
 </div>
 <div class="panel editor-panel">
+<p class="section-label" data-i18n="editor.importLabel">Import image</p>
+<div class="editor-import-controls">
+<label for="editor-import-file" data-i18n="editor.importFileLabel">Image file</label>
+<input type="file" accept="image/png,image/jpeg" id="editor-import-file" data-role="editor-import-file" />
+<label for="editor-import-palette-size" data-i18n="editor.importPaletteSizeLabel">Palette size</label>
+<input type="number" id="editor-import-palette-size" min="1" max="16" value="4" data-role="editor-import-palette-size" />
+<label for="editor-import-background" data-i18n="editor.importBackgroundLabel">Background color</label>
+<input type="color" id="editor-import-background" value="#ffffff" data-role="editor-import-background" />
+<button type="button" data-role="editor-import-button" data-i18n="editor.importButton">Import</button>
+</div>
+<p class="editor-import-hint" data-i18n="editor.importHint">The image is fitted to the grid size above and reduced to the palette size above; pixels close to the background color become blank.</p>
+</div>
+<div class="panel editor-panel">
 <p class="section-label" data-i18n="editor.paletteLabel">Palette</p>
 <div class="editor-palette" data-role="editor-palette"></div>
 </div>
@@ -85,8 +98,11 @@ export function renderEditorPage(assetVersion?: string): string {
 const STYLE = `
 ${sharedStyles()}
 .editor-panel{margin:${SPACING_PX.sm}px ${SPACING_PX.md}px;padding:${SPACING_PX.sm}px ${SPACING_PX.md}px;}
-.editor-size-controls,.editor-meta{display:flex;flex-wrap:wrap;align-items:center;gap:${SPACING_PX.sm}px;}
-.editor-size-controls input[type="number"]{width:4.5em;min-height:${MIN_TAP_TARGET_PX}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;padding:0 ${SPACING_PX.sm}px;}
+.editor-size-controls,.editor-meta,.editor-import-controls{display:flex;flex-wrap:wrap;align-items:center;gap:${SPACING_PX.sm}px;}
+.editor-size-controls input[type="number"],.editor-import-controls input[type="number"]{width:4.5em;min-height:${MIN_TAP_TARGET_PX}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;padding:0 ${SPACING_PX.sm}px;}
+.editor-import-controls input[type="file"]{min-height:${MIN_TAP_TARGET_PX}px;}
+.editor-import-controls input[type="color"]{min-height:${MIN_TAP_TARGET_PX}px;min-width:${MIN_TAP_TARGET_PX}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;padding:0;}
+.editor-import-hint{margin:${SPACING_PX.xs}px 0 0;color:${COLORS.muted};font-size:0.85em;}
 .editor-meta input[type="text"]{flex:1;min-width:10em;min-height:${MIN_TAP_TARGET_PX}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;padding:0 ${SPACING_PX.sm}px;}
 .editor-palette{display:flex;flex-wrap:wrap;align-items:center;gap:${SPACING_PX.xs}px;padding:${SPACING_PX.xs}px;border:${BORDER_WIDTH.thin} solid ${COLORS.panelEdge};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.paper};max-height:11em;overflow-y:auto;}
 .editor-palette-row{display:flex;align-items:center;gap:${SPACING_PX.xs}px;}

@@ -1,6 +1,8 @@
 import { type Puzzle, createPuzzle } from "@kindle-nonograms/shared";
 import { contrastingTextColor } from "./contrastColor.js";
+import { decodeImageFile } from "./decodeImageFile.js";
 import { computeFitFontSizePx } from "./fitGrid.js";
+import { buildImportedGrid } from "./imageQuantize.js";
 
 type EditorMode = "paint" | "erase";
 
@@ -21,6 +23,10 @@ const DEFAULT_HEIGHT = 5;
 const DEFAULT_PALETTE = ["#000000"];
 const NEW_COLOR_DEFAULT = "#888888";
 const HEX_COLOR_PATTERN = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+// Kept in sync with `packages/site/src/renderEditorPage.ts`'s
+// `#editor-import-palette-size` input's own `max`.
+const MAX_IMPORT_PALETTE_SIZE = 16;
 
 // Same grid-fit tuning as hydratePlayPage.ts's own reused constants — this
 // tool isn't a Kindle page, but reusing fitGrid.ts keeps a resizable editor
@@ -389,6 +395,10 @@ interface EditorElements {
   filename: HTMLInputElement;
   exportButton: HTMLButtonElement;
   error: HTMLElement;
+  importFile: HTMLInputElement;
+  importPaletteSize: HTMLInputElement;
+  importBackground: HTMLInputElement;
+  importButton: HTMLButtonElement;
 }
 
 function findElements(): EditorElements | undefined {
@@ -420,6 +430,18 @@ function findElements(): EditorElements | undefined {
   const error = document.querySelector<HTMLElement>(
     '[data-role="editor-error"]',
   );
+  const importFile = document.querySelector<HTMLInputElement>(
+    '[data-role="editor-import-file"]',
+  );
+  const importPaletteSize = document.querySelector<HTMLInputElement>(
+    '[data-role="editor-import-palette-size"]',
+  );
+  const importBackground = document.querySelector<HTMLInputElement>(
+    '[data-role="editor-import-background"]',
+  );
+  const importButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="editor-import-button"]',
+  );
 
   if (
     !root ||
@@ -431,7 +453,11 @@ function findElements(): EditorElements | undefined {
     !name ||
     !filename ||
     !exportButton ||
-    !error
+    !error ||
+    !importFile ||
+    !importPaletteSize ||
+    !importBackground ||
+    !importButton
   ) {
     return undefined;
   }
@@ -447,6 +473,10 @@ function findElements(): EditorElements | undefined {
     filename,
     exportButton,
     error,
+    importFile,
+    importPaletteSize,
+    importBackground,
+    importButton,
   };
 }
 
@@ -467,6 +497,93 @@ function handleResize(
   state.cells = resizeCells(state.cells, state.width, state.height);
   state.hasUnsavedChanges = true;
   render(elements, state);
+}
+
+function parseImportPaletteSize(value: string): number | undefined {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) &&
+    parsed >= 1 &&
+    parsed <= MAX_IMPORT_PALETTE_SIZE
+    ? parsed
+    : undefined;
+}
+
+function hasPaintedContent(cells: (number | null)[][]): boolean {
+  return cells.some((row) => row.some((value) => value !== null));
+}
+
+/**
+ * Decodes the picked file, downsamples/quantizes it to the grid's *current*
+ * width/height (read now, at click time — not whenever the file was picked,
+ * since the size fields stay live-editable in between), and replaces the
+ * editor's palette/cells with the result, switching into normal paint mode
+ * so the contributor can refine it by hand. Outright overwrites — no
+ * merge — so a confirmation is required first whenever the grid already has
+ * painted content to lose; an empty grid needs no confirmation, matching
+ * every other editor action's "changes apply immediately" model since
+ * there's nothing at risk yet. Disables the import controls for the
+ * duration of the (synchronous, potentially slow) decode+quantize work,
+ * yielding one frame first so that disabled state actually paints before
+ * the main thread blocks on it.
+ */
+async function handleImport(
+  elements: EditorElements,
+  state: EditorState,
+): Promise<void> {
+  elements.error.textContent = "";
+
+  const file = elements.importFile.files?.[0];
+  if (!file) {
+    elements.error.textContent = "⚠ Choose an image file first.";
+    return;
+  }
+
+  const paletteSize = parseImportPaletteSize(elements.importPaletteSize.value);
+  if (paletteSize === undefined) {
+    elements.error.textContent = `⚠ Palette size must be a whole number from 1 to ${MAX_IMPORT_PALETTE_SIZE}.`;
+    return;
+  }
+
+  if (
+    hasPaintedContent(state.cells) &&
+    !confirm(
+      "Importing this image will replace the current grid and palette. Continue?",
+    )
+  ) {
+    return;
+  }
+
+  elements.importFile.disabled = true;
+  elements.importPaletteSize.disabled = true;
+  elements.importButton.disabled = true;
+  elements.error.textContent = "Importing…";
+
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  try {
+    const image = await decodeImageFile(file);
+    const imported = buildImportedGrid(image, {
+      targetWidth: state.width,
+      targetHeight: state.height,
+      paletteSize,
+      backgroundColor: elements.importBackground.value,
+    });
+
+    state.palette = imported.palette;
+    state.cells = imported.cells;
+    state.activeColorIndex = 0;
+    state.mode = "paint";
+    state.hasUnsavedChanges = true;
+    elements.error.textContent = "";
+    render(elements, state);
+  } catch (error) {
+    elements.error.textContent =
+      error instanceof Error ? `⚠ ${error.message}` : "⚠ Image import failed.";
+  } finally {
+    elements.importFile.disabled = false;
+    elements.importPaletteSize.disabled = false;
+    elements.importButton.disabled = false;
+  }
 }
 
 function handleExport(elements: EditorElements, state: EditorState): void {
@@ -554,6 +671,10 @@ export function hydrate(): void {
   elements.exportButton.addEventListener("click", () =>
     handleExport(elements, state),
   );
+
+  elements.importButton.addEventListener("click", () => {
+    void handleImport(elements, state);
+  });
 
   // Single delegated listener on the wrapper, which `renderGrid` never
   // replaces itself (only the `<table>` inside it) — so it keeps working
