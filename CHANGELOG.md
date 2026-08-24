@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A puzzle preview left behind by a pull request that closed outside the normal flow (a failed cleanup run, an admin-closed PR) is now automatically swept away by a daily backstop job, independent of the existing per-PR cleanup.
+
 ## [2.8.0] - 2026-08-24
 
 ### Added

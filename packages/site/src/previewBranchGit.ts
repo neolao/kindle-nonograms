@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 function git(repoDir: string, args: string[]): string {
@@ -96,6 +96,30 @@ export async function removePreviewDir(
   const changed = stageIfChanged(repoDir, `previews/pr-${prNumber}`);
 
   return { changed };
+}
+
+/**
+ * Lists every `pr-<number>` directory name directly under `previews/` in
+ * the already-checked-out working tree — the raw material the scheduled
+ * sweep diffs against the currently open PR list (see .vibe/backlog/done/
+ * 032-scheduled-sweep-for-orphaned-puzzle-previews.md). Returns an empty
+ * list rather than throwing when `previews/` doesn't exist yet — a freshly
+ * created orphan branch that has never had anything published to it.
+ */
+export async function listPreviewDirs(repoDir: string): Promise<string[]> {
+  try {
+    const entries = await readdir(join(repoDir, "previews"), {
+      withFileTypes: true,
+    });
+    return entries
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return [];
+    }
+    throw error;
+  }
 }
 
 /**

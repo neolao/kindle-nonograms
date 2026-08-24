@@ -6,9 +6,14 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   commitAndPush,
   ensureBranchCheckout,
+  listPreviewDirs,
   removePreviewDir,
   writePreviewFiles,
 } from "./previewBranchGit.js";
+import {
+  computeOrphanedPreviewNumbers,
+  parsePreviewDirName,
+} from "./previewSweepDecisions.js";
 
 // Exercises the actual `git` orchestration against a real local "remote"
 // (a bare repo on disk) — no network involved, but every git command runs
@@ -107,6 +112,26 @@ describe("previewBranchGit", () => {
     expect(removedAgain.changed).toBe(false); // already gone — nothing to remove
   });
 
+  it("listPreviewDirs lists every previews/pr-<n> directory currently checked out", async () => {
+    await ensureBranchCheckout(workDir, remoteDir, "puzzle-previews");
+    await writePreviewFiles(workDir, 42, [
+      { id: "cat", png: Buffer.from("data") },
+    ]);
+    await writePreviewFiles(workDir, 7, [
+      { id: "dog", png: Buffer.from("data") },
+    ]);
+
+    const dirs = await listPreviewDirs(workDir);
+
+    expect(dirs.sort()).toEqual(["pr-42", "pr-7"]);
+  });
+
+  it("listPreviewDirs returns an empty list when the branch has never published anything", async () => {
+    await ensureBranchCheckout(workDir, remoteDir, "puzzle-previews");
+
+    expect(await listPreviewDirs(workDir)).toEqual([]);
+  });
+
   it("commitAndPush is a no-op (no empty commit) when nothing actually changed", async () => {
     await ensureBranchCheckout(workDir, remoteDir, "puzzle-previews");
 
@@ -118,6 +143,95 @@ describe("previewBranchGit", () => {
     // An orphan branch with zero commits has no HEAD yet — `rev-parse HEAD`
     // itself fails, which is the cleanest available proof no commit was
     // created (an empty `git log` would already error the same way).
+    expect(() => git(workDir, ["rev-parse", "HEAD"])).toThrow();
+  });
+});
+
+// Exercises the scheduled orphaned-preview sweep's full pipeline (see
+// .vibe/backlog/done/032-scheduled-sweep-for-orphaned-puzzle-previews.md) —
+// the same real-git harness as above, wired together the same way
+// sweep-previews-cli.ts itself does, minus the GitHub API call for the
+// open-PR list (passed in directly here).
+describe("orphaned preview sweep (previewBranchGit + previewSweepDecisions)", () => {
+  let remoteDir: string;
+  let workDir: string;
+
+  beforeEach(async () => {
+    remoteDir = await mkdtemp(join(tmpdir(), "preview-remote-"));
+    workDir = await mkdtemp(join(tmpdir(), "preview-work-"));
+    git(remoteDir, ["init", "--bare", "-q"]);
+    git(workDir, ["init", "-q"]);
+    git(workDir, ["config", "user.email", "test@example.com"]);
+    git(workDir, ["config", "user.name", "Test"]);
+  });
+
+  afterEach(async () => {
+    await rm(remoteDir, { recursive: true, force: true });
+    await rm(workDir, { recursive: true, force: true });
+  });
+
+  async function sweep(openPrNumbers: number[]): Promise<number[]> {
+    const previewPrNumbers = (await listPreviewDirs(workDir))
+      .map(parsePreviewDirName)
+      .filter((prNumber): prNumber is number => prNumber !== undefined);
+    const orphaned = computeOrphanedPreviewNumbers(
+      previewPrNumbers,
+      openPrNumbers,
+    );
+    for (const prNumber of orphaned) {
+      await removePreviewDir(workDir, prNumber);
+    }
+    await commitAndPush(
+      workDir,
+      "puzzle-previews",
+      `test: sweep ${orphaned.join(", ") || "nothing"}`,
+    );
+    return orphaned;
+  }
+
+  it("removes only the orphaned preview directories in one combined commit, leaving the open one untouched", async () => {
+    await ensureBranchCheckout(workDir, remoteDir, "puzzle-previews");
+    await writePreviewFiles(workDir, 1, [{ id: "cat", png: Buffer.from("d") }]);
+    await writePreviewFiles(workDir, 2, [{ id: "dog", png: Buffer.from("d") }]);
+    await writePreviewFiles(workDir, 3, [{ id: "fox", png: Buffer.from("d") }]);
+    await commitAndPush(
+      workDir,
+      "puzzle-previews",
+      "test: seed three previews",
+    );
+
+    const orphaned = await sweep([2]);
+
+    expect(orphaned.sort()).toEqual([1, 3]);
+    await expect(readdir(join(workDir, "previews", "pr-1"))).rejects.toThrow();
+    await expect(readdir(join(workDir, "previews", "pr-3"))).rejects.toThrow();
+    expect(await readdir(join(workDir, "previews", "pr-2"))).toEqual([
+      "dog.png",
+    ]);
+    // One sweep commit, not one per removed PR.
+    expect(git(workDir, ["log", "--oneline"]).trim().split("\n")).toHaveLength(
+      2,
+    );
+  });
+
+  it("creates no new commit when every existing preview still has an open PR", async () => {
+    await ensureBranchCheckout(workDir, remoteDir, "puzzle-previews");
+    await writePreviewFiles(workDir, 5, [{ id: "cat", png: Buffer.from("d") }]);
+    await commitAndPush(workDir, "puzzle-previews", "test: seed one preview");
+    const shaBefore = git(workDir, ["rev-parse", "HEAD"]).trim();
+
+    const orphaned = await sweep([5]);
+
+    expect(orphaned).toEqual([]);
+    expect(git(workDir, ["rev-parse", "HEAD"]).trim()).toBe(shaBefore);
+  });
+
+  it("finds nothing to sweep, and creates no commit at all, when the branch has never had a preview published", async () => {
+    await ensureBranchCheckout(workDir, remoteDir, "puzzle-previews");
+
+    const orphaned = await sweep([99]);
+
+    expect(orphaned).toEqual([]);
     expect(() => git(workDir, ["rev-parse", "HEAD"])).toThrow();
   });
 });

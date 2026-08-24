@@ -1,0 +1,50 @@
+name: Sweep Orphaned Puzzle Previews
+
+on:
+  schedule:
+    # Once daily — this is a backstop for the event-driven cleanup in
+    # pr-check.yml/pr-preview-publish.yml, not the primary path, so it
+    # doesn't need to run any more often than that (see .vibe/backlog/done/
+    # 032-scheduled-sweep-for-orphaned-puzzle-previews.md).
+    - cron: "17 3 * * *"
+  workflow_dispatch: {}
+
+# Minimal set this job actually needs: write access to push the
+# puzzle-previews branch, read access to list open PRs. No pull-requests:
+# write — this job never comments on a PR.
+permissions:
+  contents: write
+  pull-requests: read
+
+# A scheduled run and an on-demand workflow_dispatch close together would
+# otherwise both compute the same diff and both race to push — harmless
+# (idempotent) but pure waste and a spurious red check. Cancelling the
+# superseded run mirrors pr-preview-publish.yml's own reasoning: this job
+# never leaves a half-written commit behind (git only updates the branch
+# ref after a complete push).
+concurrency:
+  group: puzzle-previews-sweep
+  cancel-in-progress: true
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sweep orphaned previews
+        run: npx vite-node packages/site/src/sweep-previews-cli.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
