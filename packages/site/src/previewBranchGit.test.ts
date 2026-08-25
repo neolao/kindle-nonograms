@@ -53,6 +53,23 @@ describe("previewBranchGit", () => {
     expect(branch).toBe("puzzle-previews");
   });
 
+  it("works on a plain mkdtemp dir that was never git-init-ed, matching how both CLIs actually call it", async () => {
+    // Both sweep-previews-cli.ts and publish-preview-cli.ts pass a raw
+    // `mkdtemp` result straight into `ensureBranchCheckout` — neither runs
+    // `git init` first. The shared `beforeEach` above does run `git init`
+    // on `workDir`, which would hide that real callers never do; this test
+    // uses its own, deliberately un-init-ed directory instead.
+    const rawDir = await mkdtemp(join(tmpdir(), "preview-work-raw-"));
+    try {
+      await ensureBranchCheckout(rawDir, remoteDir, "puzzle-previews");
+
+      const branch = git(rawDir, ["symbolic-ref", "--short", "HEAD"]).trim();
+      expect(branch).toBe("puzzle-previews");
+    } finally {
+      await rm(rawDir, { recursive: true, force: true });
+    }
+  });
+
   it("writes preview images under previews/pr-<number>/ and reports a change", async () => {
     await ensureBranchCheckout(workDir, remoteDir, "puzzle-previews");
 

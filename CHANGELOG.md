@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The daily orphaned-preview sweep failed on every scheduled run (`fatal: not a git repository`): its git working directory was never initialized before use. Both the sweep and the PR-preview publish step now initialize it correctly.
+
 ## [2.9.0] - 2026-08-24
 
 ### Added

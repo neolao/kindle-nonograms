@@ -30,18 +30,23 @@ function stageIfChanged(repoDir: string, pathspec: string): boolean {
 }
 
 /**
- * Checks out `branch` in `repoDir` (already an empty `git init`-ed working
- * tree), fetching it from `remoteUrl` if it already exists there, or
- * creating it fresh as an orphan branch (no shared history with any other
- * branch, in particular not with `main`) if it doesn't — the
- * `puzzle-previews` branch is pure generated content, unrelated to the
- * site's source history.
+ * Checks out `branch` in `repoDir` (a plain empty directory — typically a
+ * fresh `mkdtemp` result, not yet a git repository), fetching it from
+ * `remoteUrl` if it already exists there, or creating it fresh as an
+ * orphan branch (no shared history with any other branch, in particular
+ * not with `main`) if it doesn't — the `puzzle-previews` branch is pure
+ * generated content, unrelated to the site's source history. `git init` is
+ * run here rather than left to the caller: both CLIs that call this
+ * (`sweep-previews-cli.ts`, `publish-preview-cli.ts`) only ever hand it a
+ * raw `mkdtemp` directory, so requiring them to init it first would just
+ * be a footgun repeated at every call site.
  */
 export async function ensureBranchCheckout(
   repoDir: string,
   remoteUrl: string,
   branch: string,
 ): Promise<void> {
+  git(repoDir, ["init"]);
   git(repoDir, ["remote", "add", "origin", remoteUrl]);
   git(repoDir, ["fetch", "origin"]);
 
