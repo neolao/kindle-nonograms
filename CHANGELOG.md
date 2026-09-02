@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- 26 new black-and-white puzzles converted from the reMarkable nonogram generator: Apple, Balloons, Boat, Candle, Car, Cat, Chameleon, Cow, Crab, Crocodile, Dragon, Duck, Earth, Elephant, Head, Horse, House, Lion, Mushroom, Panda, Pear, Pig, Sitting Cat, Squirrel, Watermelon, and Whale.
+
 ### Fixed
 
 - The daily orphaned-preview sweep failed on every scheduled run (`fatal: not a git repository`): its git working directory was never initialized before use. Both the sweep and the PR-preview publish step now initialize it correctly.
