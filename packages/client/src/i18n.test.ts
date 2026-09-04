@@ -2,7 +2,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   applyLocale,
-  buildLanguageSwitcher,
   readLocaleCookie,
   resolveLocale,
   writeLocaleCookie,
@@ -108,67 +107,5 @@ describe("applyLocale", () => {
     document.body.innerHTML = "<p>plain</p>";
 
     expect(() => applyLocale("en")).not.toThrow();
-  });
-});
-
-describe("buildLanguageSwitcher", () => {
-  it("lists English and French by their native names, in that order", () => {
-    const switcher = buildLanguageSwitcher("en", () => {});
-    const select = switcher.querySelector("select");
-    const options = Array.from(select?.querySelectorAll("option") ?? []);
-
-    expect(options.map((option) => option.value)).toEqual(["en", "fr"]);
-    expect(options.map((option) => option.textContent)).toEqual([
-      "English",
-      "Français",
-    ]);
-  });
-
-  it("pre-selects the given current locale", () => {
-    const switcher = buildLanguageSwitcher("fr", () => {});
-    const select = switcher.querySelector("select");
-
-    expect(select?.value).toBe("fr");
-  });
-
-  it("labels the control with the translated language-switcher label, marked for retranslation", () => {
-    const switcher = buildLanguageSwitcher("fr", () => {});
-    const label = switcher.querySelector(
-      "[data-i18n='i18n.languageSwitcherLabel']",
-    );
-
-    expect(label?.textContent).toBe("Langue");
-  });
-
-  it("calls onChange with the newly selected locale when the select value changes", () => {
-    const onChange = vi.fn();
-    const switcher = buildLanguageSwitcher("en", onChange);
-    document.body.appendChild(switcher);
-    const select = switcher.querySelector("select");
-    if (!select) {
-      throw new Error("fixture select not found");
-    }
-
-    select.value = "fr";
-    select.dispatchEvent(new Event("change"));
-
-    expect(onChange).toHaveBeenCalledWith("fr");
-  });
-
-  it("does not call onChange when the select is given an unsupported value directly", () => {
-    const onChange = vi.fn();
-    const switcher = buildLanguageSwitcher("en", onChange);
-    document.body.appendChild(switcher);
-    const select = switcher.querySelector("select");
-    if (!select) {
-      throw new Error("fixture select not found");
-    }
-
-    // Not settable through the native UI (only listed options are), but
-    // guards the handler against a value that slips through some other way.
-    Object.defineProperty(select, "value", { value: "xx", writable: true });
-    select.dispatchEvent(new Event("change"));
-
-    expect(onChange).not.toHaveBeenCalled();
   });
 });

@@ -1,7 +1,7 @@
 ---
 id: 001
 title: Every page's chrome is already in its final default shape before hydration runs
-status: designed
+status: implemented
 date: 2026-09-04
 job: All three jobs in product.md — "find a puzzle" (library), "solve a puzzle" (play), "build a puzzle" (editor) — since this flow is the first moment of every one of them
 screens: library, play, editor
@@ -44,13 +44,13 @@ Accepted trade-off (Option A, chosen over adding a visual "not yet interactive" 
 
 ## Acceptance criteria
 
-- [ ] Loading a puzzle never played shows the same toolbar/grid it does today, with no observable difference in timing or a layout shift after first paint.
-- [ ] Loading a puzzle already solved in a prior session shows the win banner already visible and correct on first paint — never hidden-then-shown.
-- [ ] Loading the library with any number of solved puzzles shows every earned badge already revealed on first paint — never hidden-then-shown, on page 1 or any deep-linked page.
-- [ ] Loading the library at a deep link beyond page 1 shows that page's rows and correct Previous/Next/disabled state already, with no flash back to page 1.
-- [ ] Opening the editor always shows the 5×5 grid, one black palette swatch (checked), and Paint mode already selected, with no construction step visible.
-- [ ] Disabling JavaScript (or simulating a hydration failure) leaves every page's default chrome fully visible and legible, just inert — never a blank or broken-looking page.
-- [ ] A thrown error in one control's hydration setup does not prevent sibling controls on the same page from becoming interactive.
+- [x] Loading a puzzle never played shows the same toolbar/grid it does today, with no observable difference in timing or a layout shift after first paint. Verified: JS-disabled capture (`no-js-puzzle.png`) is pixel-identical to the hydrated look.
+- [x] Loading a puzzle already solved in a prior session shows the win banner already visible and correct on first paint — never hidden-then-shown. Verified: `js-puzzle-already-solved-reload.png` and the reconciliation runs synchronously at the top of `hydrate()`.
+- [x] Loading the library with any number of solved puzzles shows every earned badge already revealed on first paint — never hidden-then-shown. (Corrected: the library has no URL-addressable pagination, before or after this flow — every page load always lands on page 1 of the unfiltered list, client-side `Next`/`Previous` clicks only ever change in-memory state. The original wording of this criterion assumed a deep-linking capability that doesn't exist in this app; it was an error in this flow's own authoring, caught during implementation review, not a gap in the fix.)
+- [x] Loading the library (always page 1, both filters at "all") shows the correct Previous/Next/disabled state and total-page count already, computed at build time from the fixed puzzle count — with no flash or recalculation visible after first paint. Verified: `no-js-library.png` shows "1 / 2" correctly on a >25-puzzle library with JS entirely disabled.
+- [x] Opening the editor always shows the 5×5 grid, one black palette swatch (checked), and Paint mode already selected, with no construction step visible. Verified: `no-js-editor.png` is pixel-identical to the hydrated look.
+- [x] Disabling JavaScript (or simulating a hydration failure) leaves every page's default chrome fully visible and legible, just inert — never a blank or broken-looking page. Verified: all three `no-js-*.png` captures.
+- [x] A thrown error in one control's hydration setup does not prevent sibling controls on the same page from becoming interactive. Verified by dedicated tests: `hydrateEditorPage.test.ts` ("still attaches the toolbar and fits the canvas even if wiring the palette throws"), and try/catch isolation added to `hydratePlayPage.ts`'s `hydrate()`.
 
 ## Out of scope
 

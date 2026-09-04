@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { renderEditorPage } from "@kindle-nonograms/site";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 // Mocked so image import tests control decoding without a real <canvas> —
@@ -7,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("./decodeImageFile.js", () => ({ decodeImageFile: vi.fn() }));
 
 import { decodeImageFile } from "./decodeImageFile.js";
+import { extractBodyHtml } from "./htmlFixture.js";
 import {
   addPaletteColor,
   buildPuzzleCandidate,
@@ -19,56 +21,15 @@ import {
   updatePaletteColor,
 } from "./hydrateEditorPage.js";
 
-// Mirrors what renderEditorPage.ts actually produces, so this fixture stays
-// representative of real server-rendered markup (same convention as
-// hydrateLibraryPage.test.ts's own fixture builder).
+/**
+ * Builds the fixture from the real `renderEditorPage` output, not a
+ * hand-retyped copy — so the palette/toolbar/canvas default markup this
+ * test exercises can never silently drift from what the site generator
+ * actually produces. See
+ * `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`.
+ */
 function buildFixture(): void {
-  document.body.innerHTML = `
-<div class="chrome-panel" data-role="editor-page">
-<div class="page-header">
-<a class="back-link" href="../"><span aria-hidden="true">←</span><span class="sr-only" data-i18n="play.backToLibrary">Back to puzzle list</span></a>
-<h1 data-i18n="editor.title">Puzzle Editor</h1>
-<div class="page-header-controls"></div>
-</div>
-</div>
-<div class="panel editor-panel">
-<div class="editor-size-controls">
-<label for="editor-width">Width</label>
-<input type="number" id="editor-width" min="1" data-role="editor-width" />
-<label for="editor-height">Height</label>
-<input type="number" id="editor-height" min="1" data-role="editor-height" />
-</div>
-</div>
-<div class="panel editor-panel">
-<div class="editor-import-controls">
-<label for="editor-import-file">Image file</label>
-<input type="file" accept="image/png,image/jpeg" id="editor-import-file" data-role="editor-import-file" />
-<label for="editor-import-palette-size">Palette size</label>
-<input type="number" id="editor-import-palette-size" min="1" max="16" value="4" data-role="editor-import-palette-size" />
-<label for="editor-import-background">Background color</label>
-<input type="color" id="editor-import-background" value="#ffffff" data-role="editor-import-background" />
-<button type="button" data-role="editor-import-button">Import</button>
-</div>
-</div>
-<div class="panel editor-panel">
-<div class="editor-palette" data-role="editor-palette"></div>
-</div>
-<div class="panel editor-panel">
-<div class="editor-toolbar" data-role="editor-toolbar"></div>
-<div class="grid-center">
-<div class="grid-wrapper" data-role="editor-grid-wrapper"></div>
-</div>
-</div>
-<div class="panel editor-panel">
-<div class="editor-meta">
-<label for="editor-name">Puzzle name</label>
-<input type="text" id="editor-name" data-role="editor-name" />
-<label for="editor-filename">Filename (id)</label>
-<input type="text" id="editor-filename" data-role="editor-filename" />
-<button type="button" data-role="editor-export">Export</button>
-<p class="editor-error" data-role="editor-error" aria-live="polite"></p>
-</div>
-</div>`;
+  document.body.innerHTML = extractBodyHtml(renderEditorPage());
 }
 
 function widthInput(): HTMLInputElement {
@@ -345,6 +306,46 @@ describe("hydrate", () => {
     expect(swatches()).toHaveLength(1);
     expect(swatches()[0]?.getAttribute("aria-pressed")).toBe("true");
     expect(document.querySelectorAll("table td")).toHaveLength(25);
+  });
+
+  it("attaches to the default swatch already baked in the static page, rather than replacing it — preserving a contributor's focus", () => {
+    buildFixture();
+    const bakedSwatch = swatches()[0];
+    bakedSwatch?.focus();
+
+    hydrate();
+
+    // Same DOM node reference as before hydration: a keyboard user already
+    // focused on it (the contributor persona uses mouse *and* keyboard, see
+    // .ux/product.md) never has their focus silently dropped to <body>.
+    expect(document.activeElement).toBe(bakedSwatch);
+    expect(swatches()[0]).toBe(bakedSwatch);
+  });
+
+  it("still attaches the toolbar and fits the canvas even if wiring the palette throws", async () => {
+    buildFixture();
+    const swatch = document.querySelector('[data-role="swatch"]');
+    // Simulate a broken palette row (e.g. a future markup mismatch) without
+    // touching the toolbar/canvas, which must keep attaching regardless.
+    swatch?.remove();
+    const brokenPalette = document.querySelector(
+      '[data-role="editor-palette"]',
+    );
+    if (brokenPalette) {
+      Object.defineProperty(brokenPalette, "querySelectorAll", {
+        value: () => {
+          throw new Error("simulated palette failure");
+        },
+      });
+    }
+
+    expect(() => hydrate()).not.toThrow();
+
+    const eraseButton = document.querySelector(
+      '[data-role="mode-erase"]',
+    ) as Element;
+    fireClick(eraseButton);
+    expect(eraseButton.getAttribute("aria-pressed")).toBe("true");
   });
 
   it("paints a clicked cell with the active color in paint mode", () => {

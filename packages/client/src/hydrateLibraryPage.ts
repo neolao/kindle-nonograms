@@ -1,14 +1,12 @@
 import {
-  type Locale,
+  LIBRARY_PAGE_SIZE,
   type Puzzle,
-  type TranslationKey,
   buildThumbnail,
   isPuzzleSolved,
-  translate,
+  isSupportedLocale,
 } from "@kindle-nonograms/shared";
 import {
   applyLocale,
-  buildLanguageSwitcher,
   readLocaleCookie,
   resolveLocale,
   writeLocaleCookie,
@@ -100,217 +98,93 @@ function revealThumbnail(row: HTMLElement, puzzle: Puzzle): void {
 }
 
 /**
- * Inserts the FR/EN language switcher into the page footer (see
- * `renderLibraryPage.ts`'s `.page-footer`, alongside the contribution
- * links) and applies the resolved locale (saved cookie, else the browser's
- * detected language, else English) to every element on the page carrying a
- * `data-i18n` key. This is the only page that still gets a switcher control
- * — the puzzle page only applies a previously saved locale, see
- * `hydratePlayPage.ts` (see .vibe/backlog/done/
- * 026-language-switcher-and-contribution-footer.md). Runs before any other
- * hydration so the switcher and translated strings are present even on the
- * empty library page. Returns the resolved locale so later hydration steps
- * (the filter controls) can build their own initial translated text
- * without re-resolving it.
+ * Locates the FR/EN language switcher `renderLibraryPage.ts` already bakes
+ * into the page footer (English selected by default — the locale itself
+ * isn't known at build time) and attaches its change behavior, then applies
+ * the resolved locale (saved cookie, else the browser's detected language,
+ * else English) to every element on the page carrying a `data-i18n` key —
+ * see .ux/decisions/001-frozen-chrome-blocking-reconciliation.md. This is
+ * the only page that has a switcher control — the puzzle page only applies
+ * a previously saved locale, see `hydratePlayPage.ts` (see
+ * .vibe/backlog/done/026-language-switcher-and-contribution-footer.md).
+ * Runs before any other hydration so the switcher and translated strings
+ * are present even on the empty library page.
  */
-function setUpLanguageSwitcher(): Locale {
+function setUpLanguageSwitcher(): void {
   const locale = resolveLocale(readLocaleCookie(), navigator.language);
 
-  const footer = document.querySelector(".page-footer");
-  if (footer) {
-    const switcher = buildLanguageSwitcher(locale, (newLocale) => {
-      writeLocaleCookie(newLocale);
-      applyLocale(newLocale);
+  const select = document.querySelector<HTMLSelectElement>(
+    '[data-role="language-switcher-select"]',
+  );
+  if (select) {
+    select.value = locale;
+    select.addEventListener("change", () => {
+      if (isSupportedLocale(select.value)) {
+        writeLocaleCookie(select.value);
+        applyLocale(select.value);
+      }
     });
-    footer.prepend(switcher);
   }
 
   applyLocale(locale);
-  return locale;
-}
-
-type SizeFilterValue = "all" | "small" | "medium" | "large";
-type ColorFilterValue = "all" | "mono" | "multi";
-
-const SIZE_FILTER_OPTIONS: ReadonlyArray<{
-  value: SizeFilterValue;
-  key: TranslationKey;
-}> = [
-  { value: "all", key: "library.filterSizeAll" },
-  { value: "small", key: "library.filterSizeSmall" },
-  { value: "medium", key: "library.filterSizeMedium" },
-  { value: "large", key: "library.filterSizeLarge" },
-];
-
-const COLOR_FILTER_OPTIONS: ReadonlyArray<{
-  value: ColorFilterValue;
-  key: TranslationKey;
-}> = [
-  { value: "all", key: "library.filterColorAll" },
-  { value: "mono", key: "library.filterColorMono" },
-  { value: "multi", key: "library.filterColorMulti" },
-];
-
-/**
- * Builds one labeled native `<select>` for the library filter bar — kept
- * native, like the language switcher, for reliable touch/keyboard behavior
- * on Kindle's old WebKit. The label and every `<option>` carry their own
- * `data-i18n` key, so the shared `applyLocale` walker (triggered by the
- * language switcher) retranslates them in place like any other element,
- * with no extra wiring needed here.
- */
-function buildFilterSelect(
-  id: string,
-  labelKey: TranslationKey,
-  dataRole: string,
-  options: ReadonlyArray<{ value: string; key: TranslationKey }>,
-  locale: Locale,
-): { wrapper: HTMLElement; select: HTMLSelectElement } {
-  const wrapper = document.createElement("div");
-
-  const label = document.createElement("label");
-  label.setAttribute("for", id);
-  label.dataset.i18n = labelKey;
-  label.textContent = translate(locale, labelKey);
-
-  const select = document.createElement("select");
-  select.id = id;
-  select.dataset.role = dataRole;
-
-  for (const option of options) {
-    const optionEl = document.createElement("option");
-    optionEl.value = option.value;
-    optionEl.dataset.i18n = option.key;
-    optionEl.textContent = translate(locale, option.key);
-    select.append(optionEl);
-  }
-
-  wrapper.append(label, select);
-  return { wrapper, select };
-}
-
-// Puzzle rows shown per page (see
-// .vibe/backlog/done/027-pagination-for-the-puzzle-library.md). Pagination
-// always operates on the already-filtered result set, never the unfiltered
-// full list — see that item's Notes on interacting with the size/color
-// filter above.
-const PAGE_SIZE = 25;
-
-/**
- * Builds the Previous/Next pagination controls, hidden by default until the
- * first `render()` call decides whether the current (filtered) result set
- * actually needs more than one page. The status text between the two
- * buttons is deliberately never itself marked `data-i18n`: it holds
- * page/total digits rebuilt on every render, and the generic `applyLocale`
- * walker replacing a `data-i18n` element's full text content would wipe
- * those digits on every language switch. Only the buttons' static labels,
- * and the status's screen-reader-only prefix, go through that mechanism —
- * same "icon/short label needs a full name announced" pattern already used
- * by the puzzle page's back-link.
- */
-function buildPaginationControls(locale: Locale): {
-  container: HTMLElement;
-  prevButton: HTMLButtonElement;
-  nextButton: HTMLButtonElement;
-  status: HTMLElement;
-  statusPosition: HTMLElement;
-} {
-  const container = document.createElement("div");
-  container.className = "library-pagination";
-  container.hidden = true;
-
-  const prevButton = document.createElement("button");
-  prevButton.type = "button";
-  prevButton.dataset.role = "library-pagination-prev";
-  prevButton.dataset.i18n = "library.paginationPrev";
-  prevButton.textContent = translate(locale, "library.paginationPrev");
-
-  const status = document.createElement("span");
-  status.className = "pagination-status";
-  status.dataset.role = "library-pagination-status";
-  status.setAttribute("role", "status");
-  status.setAttribute("aria-live", "polite");
-
-  const statusLabel = document.createElement("span");
-  statusLabel.className = "sr-only";
-  statusLabel.dataset.i18n = "library.paginationStatusLabel";
-  statusLabel.textContent = translate(locale, "library.paginationStatusLabel");
-
-  // Holds only the "current / total" digits, rebuilt on every render — kept
-  // as its own element (never marked `data-i18n`) so the generic
-  // `applyLocale` walker, which replaces a `data-i18n` element's entire
-  // text content, can never wipe these numbers on a language switch.
-  const statusPosition = document.createElement("span");
-
-  status.append(statusLabel, document.createTextNode(" "), statusPosition);
-
-  const nextButton = document.createElement("button");
-  nextButton.type = "button";
-  nextButton.dataset.role = "library-pagination-next";
-  nextButton.dataset.i18n = "library.paginationNext";
-  nextButton.textContent = translate(locale, "library.paginationNext");
-
-  container.append(prevButton, status, nextButton);
-  return { container, prevButton, nextButton, status, statusPosition };
 }
 
 /**
- * Inserts the library page's size/color filter controls and pagination
- * controls, and wires them into one shared `render()` pass: a row is
- * visible only if it matches both filters AND falls inside the current
- * page's slice of the *filtered* result set. Rows are only ever toggled via
- * `hidden`, never removed or reordered, so the solved-badge/thumbnail
- * hydration in `hydrate` keeps finding every row regardless of its current
- * filter/page state. Only called once the puzzle list is known to be
- * non-empty (see `hydrate`), so the empty library page never grows these
- * controls with nothing to show.
+ * Locates the library page's already-baked size/color filter selects,
+ * "no results" message, and pagination controls (see
+ * `renderLibraryPage.ts`'s `renderFiltersAndPagination` and
+ * .ux/decisions/001-frozen-chrome-blocking-reconciliation.md), and wires
+ * them into one shared `render()` pass: a row is visible only if it matches
+ * both filters AND falls inside the current page's slice of the *filtered*
+ * result set. Rows are only ever toggled via `hidden`, never removed or
+ * reordered, so the solved-badge/thumbnail hydration in `hydrate` keeps
+ * finding every row regardless of its current filter/page state. `render()`
+ * still runs once at setup even though the static defaults (page 1, both
+ * filters at "all") already match its result — a safe, invisible no-op
+ * that also initializes this closure's own `currentPage`/`totalPages`
+ * state. A missing control (unexpected page shape) leaves this a no-op,
+ * same defensive spirit as `findElements` in `hydrateEditorPage.ts`.
  */
-function setUpFiltersAndPagination(locale: Locale): void {
-  const list = document.querySelector("ul");
-  if (!list) {
+function setUpFiltersAndPagination(): void {
+  const sizeSelect = document.querySelector<HTMLSelectElement>(
+    '[data-role="library-filter-size-select"]',
+  );
+  const colorSelect = document.querySelector<HTMLSelectElement>(
+    '[data-role="library-filter-color-select"]',
+  );
+  const noResultsMessage = document.querySelector<HTMLElement>(
+    '[data-role="library-filter-no-results"]',
+  );
+  const paginationContainer = document.querySelector<HTMLElement>(
+    '[data-role="library-pagination"]',
+  );
+  const prevButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-pagination-prev"]',
+  );
+  const nextButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-pagination-next"]',
+  );
+  const statusPosition = document.querySelector<HTMLElement>(
+    '[data-role="library-pagination-position"]',
+  );
+  if (
+    !sizeSelect ||
+    !colorSelect ||
+    !noResultsMessage ||
+    !paginationContainer ||
+    !prevButton ||
+    !nextButton ||
+    !statusPosition
+  ) {
     return;
   }
-
-  const sizeFilter = buildFilterSelect(
-    "library-filter-size",
-    "library.filterSizeLabel",
-    "library-filter-size-select",
-    SIZE_FILTER_OPTIONS,
-    locale,
-  );
-  const colorFilter = buildFilterSelect(
-    "library-filter-color",
-    "library.filterColorLabel",
-    "library-filter-color-select",
-    COLOR_FILTER_OPTIONS,
-    locale,
-  );
-
-  const filtersContainer = document.createElement("div");
-  filtersContainer.className = "library-filters";
-  filtersContainer.append(sizeFilter.wrapper, colorFilter.wrapper);
-
-  const noResultsMessage = document.createElement("p");
-  noResultsMessage.className = "filter-no-results";
-  noResultsMessage.dataset.i18n = "library.filterNoResults";
-  noResultsMessage.textContent = translate(locale, "library.filterNoResults");
-  noResultsMessage.hidden = true;
-
-  list.parentNode?.insertBefore(filtersContainer, list);
-  list.parentNode?.insertBefore(noResultsMessage, list.nextSibling);
-
-  const pagination = buildPaginationControls(locale);
-  list.parentNode?.insertBefore(
-    pagination.container,
-    noResultsMessage.nextSibling,
-  );
 
   let currentPage = 1;
   let totalPages = 1;
 
   function render(): void {
-    const sizeValue = sizeFilter.select.value;
-    const colorValue = colorFilter.select.value;
+    const sizeValue = sizeSelect?.value;
+    const colorValue = colorSelect?.value;
 
     const allRows = Array.from(
       document.querySelectorAll<HTMLElement>("[data-puzzle-id]"),
@@ -321,25 +195,25 @@ function setUpFiltersAndPagination(locale: Locale): void {
         (colorValue === "all" || row.dataset.colorType === colorValue),
     );
 
-    totalPages = Math.max(1, Math.ceil(matched.length / PAGE_SIZE));
+    totalPages = Math.max(1, Math.ceil(matched.length / LIBRARY_PAGE_SIZE));
     if (currentPage > totalPages) {
       currentPage = totalPages;
     }
 
-    const start = (currentPage - 1) * PAGE_SIZE;
-    const pageRows = new Set(matched.slice(start, start + PAGE_SIZE));
+    const start = (currentPage - 1) * LIBRARY_PAGE_SIZE;
+    const pageRows = new Set(matched.slice(start, start + LIBRARY_PAGE_SIZE));
     for (const row of allRows) {
       row.hidden = !pageRows.has(row);
     }
 
     noResultsMessage.hidden = matched.length > 0;
 
-    const showControls = matched.length > PAGE_SIZE;
-    pagination.container.hidden = !showControls;
+    const showControls = matched.length > LIBRARY_PAGE_SIZE;
+    paginationContainer.hidden = !showControls;
     if (showControls) {
-      pagination.statusPosition.textContent = `${currentPage} / ${totalPages}`;
-      pagination.prevButton.disabled = currentPage <= 1;
-      pagination.nextButton.disabled = currentPage >= totalPages;
+      statusPosition.textContent = `${currentPage} / ${totalPages}`;
+      prevButton.disabled = currentPage <= 1;
+      nextButton.disabled = currentPage >= totalPages;
     }
   }
 
@@ -347,24 +221,30 @@ function setUpFiltersAndPagination(locale: Locale): void {
     currentPage = 1;
     render();
   };
-  sizeFilter.select.addEventListener("change", onFilterChange);
-  colorFilter.select.addEventListener("change", onFilterChange);
+  sizeSelect.addEventListener("change", onFilterChange);
+  colorSelect.addEventListener("change", onFilterChange);
 
-  pagination.prevButton.addEventListener("click", () => {
+  const list = document.querySelector("ul");
+
+  prevButton.addEventListener("click", () => {
     if (currentPage <= 1) {
       return;
     }
     currentPage -= 1;
     render();
-    scrollListIntoView(list);
+    if (list) {
+      scrollListIntoView(list);
+    }
   });
-  pagination.nextButton.addEventListener("click", () => {
+  nextButton.addEventListener("click", () => {
     if (currentPage >= totalPages) {
       return;
     }
     currentPage += 1;
     render();
-    scrollListIntoView(list);
+    if (list) {
+      scrollListIntoView(list);
+    }
   });
 
   render();
@@ -405,14 +285,14 @@ export function hydrate(): void {
     return;
   }
 
-  const locale = setUpLanguageSwitcher();
+  setUpLanguageSwitcher();
 
   const puzzles = readPuzzles();
   if (puzzles.length === 0) {
     return;
   }
 
-  setUpFiltersAndPagination(locale);
+  setUpFiltersAndPagination();
 
   const solvedById = new Map(
     puzzles.filter(isSolved).map((puzzle) => [puzzle.id, puzzle] as const),

@@ -2,7 +2,7 @@
 slug: editor
 title: Editor
 flow: 001
-status: designed
+status: implemented
 source: packages/site/src/renderEditorPage.ts, packages/client/src/hydrateEditorPage.ts
 ---
 

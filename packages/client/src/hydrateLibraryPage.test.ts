@@ -1,10 +1,8 @@
 // @vitest-environment jsdom
-import {
-  type Puzzle,
-  isMultiColorPuzzle,
-  puzzleSizeBucket,
-} from "@kindle-nonograms/shared";
+import type { Puzzle } from "@kindle-nonograms/shared";
+import { renderLibraryPage } from "@kindle-nonograms/site";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { extractBodyHtml } from "./htmlFixture.js";
 import { hydrate } from "./hydrateLibraryPage.js";
 import { saveProgress } from "./progressStorage.js";
 
@@ -56,26 +54,19 @@ const largeMonoPuzzle: Puzzle = {
   cells: Array.from({ length: 25 }, () => Array(25).fill(null)),
 };
 
-// Mirrors what renderLibraryPage.ts actually tags each row with, so the
-// fixture stays representative of real server-rendered markup.
+/**
+ * Builds the fixture from the real `renderLibraryPage` output, not a
+ * hand-retyped copy — so the filter/pagination/switcher markup this test
+ * exercises can never silently drift from what the site generator actually
+ * produces. See `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`.
+ */
 function buildFixture(puzzles: Puzzle[]): void {
-  const items = puzzles
-    .map(
-      (puzzle) =>
-        `<li data-puzzle-id="${puzzle.id}" data-size-bucket="${puzzleSizeBucket(puzzle)}" data-color-type="${isMultiColorPuzzle(puzzle) ? "multi" : "mono"}"><span class="thumb" aria-hidden="true"><span class="thumb-lock">?</span></span><a href="puzzles/${puzzle.id}/">${puzzle.name}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span></li>`,
-    )
-    .join("");
-
-  document.body.innerHTML = `<h1 data-i18n="library.title">Kindle Nonograms</h1><ul>${items}</ul>${FOOTER_FIXTURE}<script type="application/json" id="puzzles-data">${JSON.stringify(puzzles)}</script>`;
+  document.body.innerHTML = extractBodyHtml(renderLibraryPage(puzzles));
 }
 
 function buildEmptyFixture(): void {
-  document.body.innerHTML = `<h1 data-i18n="library.title">Kindle Nonograms</h1><p data-i18n="library.empty">No puzzles are available yet.</p>${FOOTER_FIXTURE}<script type="application/json" id="puzzles-data">[]</script>`;
+  buildFixture([]);
 }
-
-// Mirrors what renderLibraryPage.ts actually renders for the footer, so the
-// fixture stays representative of real server-rendered markup.
-const FOOTER_FIXTURE = `<footer class="page-footer"><div class="page-footer-links"><a href="editor/" data-i18n="library.createPuzzleLink">Create a puzzle</a><a href="https://github.com/neolao/kindle-nonograms/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><span data-i18n="library.contributeLink">Contribute a puzzle on GitHub</span><span aria-hidden="true"> ↗</span></a></div></footer>`;
 
 function switcherSelect(): HTMLSelectElement {
   const found = document.querySelector<HTMLSelectElement>(

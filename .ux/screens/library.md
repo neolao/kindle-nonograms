@@ -2,7 +2,7 @@
 slug: library
 title: Library
 flow: 001
-status: designed
+status: implemented
 source: packages/site/src/renderLibraryPage.ts, packages/client/src/hydrateLibraryPage.ts
 ---
 
@@ -14,13 +14,13 @@ The Player picks a puzzle to play from the full list, optionally narrowed by siz
 
 ## Layout
 
-`.panel` cabinet wrapper → `.page-header` (title + `.language-switcher`) → filter row (`Taille`/`Couleur` `<select>`s, already static and functional today) → `<ul>` of puzzle rows (each: thumbnail-or-placeholder, `<a>` link with name/size, solved badge) → pagination controls (Previous/Next + "n / N" status) → footer (`.language-switcher` again, "Create a puzzle" link, GitHub contribution link). Filters and pagination are the two pieces this flow adds to the static markup — everything else already exists as real HTML.
+`.panel` cabinet wrapper → `.page-header` (title) → filter row (`Taille`/`Couleur` `<select>`s) → `<ul>` of puzzle rows (each: thumbnail-or-placeholder, `<a>` link with name/size, solved badge) → pagination controls (Previous/Next + "n / N" status) → footer (`.language-switcher`, "Create a puzzle" link, GitHub contribution link). Filters, pagination, and the footer's language switcher are the three pieces this flow adds to the static markup (the switcher was added to scope during implementation planning — same pop-in defect, same `buildLanguageSwitcher()` origin, simply not named in the first pass of this spec) — everything else already exists as real HTML.
 
 ## States
 
 | State | Trigger | What the user sees | Primary action |
 |---|---|---|---|
-| Default (this flow's concern) | Any fresh page load, any puzzle count | Full puzzle list already in its target page (page 1, or the deep-linked page), Previous/Next already correctly enabled/disabled, every already-solved puzzle's badge already visible — all baked at build time (page/badge facts are either build-time-fixed or corrected by the pre-paint check in flow 001) | Tap a puzzle to open it, or a filter/pagination control |
+| Default (this flow's concern) | Any fresh page load, any puzzle count | Full puzzle list already on page 1 (the library has no URL-addressable pagination — `Next`/`Previous` are purely client-side, in-memory state), Previous/Next already correctly enabled/disabled, every already-solved puzzle's badge already visible — all baked at build time (page/badge facts are either build-time-fixed or corrected by the pre-paint check in flow 001) | Tap a puzzle to open it, or a filter/pagination control |
 | Empty (filtered) | Filters narrow the list to zero matches | "Aucun puzzle ne correspond à ces filtres." (existing, already handled well) with filters still visible to adjust | Change a filter |
 | Loading | n/a — static site, nothing loads after the initial page fetch | — | — |
 | Partial | Hydration throws while attaching filter/pagination listeners | Per flow 001's failure path: whichever controls attached successfully (e.g. puzzle links, which need no JS) keep working; the rest stay in their static default (unfiltered, page 1) rather than breaking | Reload, or use only the controls that responded |

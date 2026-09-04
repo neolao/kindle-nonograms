@@ -15,6 +15,17 @@ export const SUPPORTED_LOCALES: readonly Locale[] = ["en", "fr"];
 export const DEFAULT_LOCALE: Locale = "en";
 
 /**
+ * Native display name for each supported locale, always shown in its own
+ * language — used to label the language switcher's options, both when the
+ * static site generator bakes its default markup and when the client
+ * hydration bundle reads/attaches to it.
+ */
+export const NATIVE_LOCALE_NAMES: Record<Locale, string> = {
+  en: "English",
+  fr: "Français",
+};
+
+/**
  * Identifier for a single translatable UI string. Grouped by the page/area
  * it belongs to (`library.*`, `play.*`, `i18n.*`).
  */

@@ -429,4 +429,90 @@ describe("renderLibraryPage", () => {
     expect(items[2]?.getAttribute("data-size-bucket")).toBe("large");
     expect(items[2]?.getAttribute("data-color-type")).toBe("mono");
   });
+
+  it("bakes the size/color filters already selected on 'all', and a hidden 'no results' message", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const sizeSelect = doc.querySelector(
+      '[data-role="library-filter-size-select"]',
+    );
+    const colorSelect = doc.querySelector(
+      '[data-role="library-filter-color-select"]',
+    );
+    expect(
+      sizeSelect?.querySelector("option[selected]")?.getAttribute("value"),
+    ).toBe("all");
+    expect(
+      colorSelect?.querySelector("option[selected]")?.getAttribute("value"),
+    ).toBe("all");
+
+    const noResults = doc.querySelector(
+      '[data-i18n="library.filterNoResults"]',
+    );
+    expect(noResults?.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("hides the pagination controls by default when every puzzle already fits on one page", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    expect(
+      doc
+        .querySelector('[data-role="library-pagination"]')
+        ?.hasAttribute("hidden"),
+    ).toBe(true);
+  });
+
+  it("shows correct, already-computed pagination when there are more puzzles than fit on one page", () => {
+    const manyPuzzles: Puzzle[] = Array.from({ length: 30 }, (_, index) => ({
+      id: `p${index}`,
+      name: `Puzzle ${index}`,
+      width: 5,
+      height: 5,
+      palette: ["#000000"],
+      cells: Array.from({ length: 5 }, () => Array(5).fill(null)),
+    }));
+
+    const doc = parse(renderLibraryPage(manyPuzzles));
+
+    const pagination = doc.querySelector('[data-role="library-pagination"]');
+    expect(pagination?.hasAttribute("hidden")).toBe(false);
+    expect(
+      doc.querySelector('[data-role="library-pagination-position"]')
+        ?.textContent,
+    ).toBe("1 / 2");
+    expect(
+      doc
+        .querySelector('[data-role="library-pagination-prev"]')
+        ?.hasAttribute("disabled"),
+    ).toBe(true);
+    expect(
+      doc
+        .querySelector('[data-role="library-pagination-next"]')
+        ?.hasAttribute("disabled"),
+    ).toBe(false);
+
+    const items = doc.querySelectorAll("li");
+    expect(items[24]?.hasAttribute("hidden")).toBe(false);
+    expect(items[25]?.hasAttribute("hidden")).toBe(true);
+    expect(items[29]?.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("bakes the footer language switcher with English selected by default", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const select = doc.querySelector('[data-role="language-switcher-select"]');
+    expect(select).not.toBeNull();
+    const options = Array.from(select?.querySelectorAll("option") ?? []);
+    expect(options.map((option) => option.getAttribute("value"))).toEqual([
+      "en",
+      "fr",
+    ]);
+    expect(options.map((option) => option.textContent)).toEqual([
+      "English",
+      "Français",
+    ]);
+    expect(
+      select?.querySelector("option[selected]")?.getAttribute("value"),
+    ).toBe("en");
+  });
 });

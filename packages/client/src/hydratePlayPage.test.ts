@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import type { Puzzle, PuzzleProgress } from "@kindle-nonograms/shared";
+import { renderPuzzlePage } from "@kindle-nonograms/site";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { extractBodyHtml } from "./htmlFixture.js";
 import { hydrate } from "./hydratePlayPage.js";
 import { loadProgress, saveProgress } from "./progressStorage.js";
 
@@ -22,16 +24,14 @@ const duoPuzzle: Puzzle = {
   cells: [[0, 1]],
 };
 
+/**
+ * Builds the fixture from the real `renderPuzzlePage` output, not a
+ * hand-retyped copy — so the toolbar/banner markup this test exercises can
+ * never silently drift from what the site generator actually produces. See
+ * `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`.
+ */
 function buildFixture(puzzle: Puzzle): void {
-  const rows = Array.from({ length: puzzle.height }, (_, y) => {
-    const cells = Array.from(
-      { length: puzzle.width },
-      (_, x) => `<td data-row="${y}" data-col="${x}"></td>`,
-    ).join("");
-    return `<tr><th scope="row">clue</th>${cells}</tr>`;
-  }).join("");
-
-  document.body.innerHTML = `<h1>${puzzle.name}</h1><div class="grid-wrapper"><table><tbody>${rows}</tbody></table></div><script type="application/json" id="puzzle-data">${JSON.stringify(puzzle)}</script>`;
+  document.body.innerHTML = extractBodyHtml(renderPuzzlePage(puzzle));
 }
 
 function cell(y: number, x: number): HTMLTableCellElement {
@@ -479,8 +479,8 @@ describe("locale application", () => {
     ).toBeNull();
   });
 
-  it("inserts the toolbar and win banner into the chrome panel when one is present", () => {
-    document.body.innerHTML = `<div class="chrome-panel"><h1>${soloPuzzle.name}</h1><div class="page-header"><a class="back-link" href="../../">Back to puzzle list</a></div></div><div class="grid-wrapper"><table><tbody><tr><th scope="row">clue</th><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table></div><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
+  it("finds the toolbar and win banner already baked inside the chrome panel, rather than inserting new ones", () => {
+    buildFixture(soloPuzzle);
 
     hydrate();
 
@@ -491,6 +491,19 @@ describe("locale application", () => {
     ).not.toBeNull();
     // Not duplicated as a stray sibling outside the panel.
     expect(document.querySelectorAll('[data-role="check"]')).toHaveLength(1);
+  });
+
+  it("keeps the grid fully interactive when the page has no baked win banner to find — only the win-confirmation feature degrades", () => {
+    // A page shape decision 001 says should no longer occur in production
+    // (renderPuzzlePage.ts always bakes one), but hydration must degrade
+    // gracefully, not lock out the whole page, if it somehow does.
+    document.body.innerHTML = `<h1>${soloPuzzle.name}</h1><table><tbody><tr><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
+
+    expect(() => hydrate()).not.toThrow();
+    expect(document.querySelector('[data-role="check"]')).toBeNull();
+
+    expect(() => cell(0, 0).click()).not.toThrow();
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
   });
 
   it("retranslates the static back-link to the resolved locale on initial load, not just after switching", () => {
@@ -525,10 +538,15 @@ describe("locale application", () => {
     expect(banner()?.textContent).toBe("Puzzle résolu !");
   });
 
-  it("still applies the resolved locale when the embedded puzzle JSON is missing, without throwing or inserting a switcher", () => {
+  it("still applies the resolved locale when the embedded puzzle JSON is malformed, without throwing or inserting a switcher", () => {
     setNavigatorLanguage("fr-FR");
+    // The `#puzzle-data` script itself must stay present — it's this page's
+    // own self-detection marker (a bare `<table>` no longer is: the editor
+    // page's canvas renders one too, see
+    // .ux/decisions/001-frozen-chrome-blocking-reconciliation.md) — only its
+    // content is broken here.
     document.body.innerHTML =
-      '<h1>Puzzle</h1><div class="page-header"><a class="back-link" data-i18n="play.backToLibrary" href="../../">Back to puzzle list</a></div><table><tbody><tr><td data-row="0" data-col="0"></td></tr></tbody></table>';
+      '<h1>Puzzle</h1><div class="page-header"><a class="back-link" data-i18n="play.backToLibrary" href="../../">Back to puzzle list</a></div><table><tbody><tr><td data-row="0" data-col="0"></td></tr></tbody></table><script type="application/json" id="puzzle-data">not valid json</script>';
 
     expect(() => hydrate()).not.toThrow();
 
@@ -538,6 +556,18 @@ describe("locale application", () => {
     expect(
       document.querySelector('[data-role="language-switcher-select"]'),
     ).toBeNull();
+    expect(banner()).toBeNull();
+  });
+
+  it("stays a no-op on a page with a <table> but no #puzzle-data script, so it never double-hydrates the editor page's own static canvas grid", () => {
+    document.body.innerHTML =
+      '<div data-role="editor-page"><table><tbody><tr><td data-row="0" data-col="0"></td></tr></tbody></table></div>';
+
+    expect(() => hydrate()).not.toThrow();
+
+    expect(fillButton()).toBeNull();
+    expect(crossButton()).toBeNull();
+    expect(checkButton()).toBeNull();
     expect(banner()).toBeNull();
   });
 
@@ -647,7 +677,7 @@ describe("locale application", () => {
   });
 
   it("still fits the grid to a numeric font-size when there is no grid-wrapper element", () => {
-    document.body.innerHTML = `<h1>Solo</h1><table><tbody><tr><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
+    document.body.innerHTML = `<h1>Solo</h1><p data-role="win-banner" hidden></p><table><tbody><tr><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
 
     hydrate();
 

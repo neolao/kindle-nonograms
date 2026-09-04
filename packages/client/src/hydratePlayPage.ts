@@ -1,5 +1,7 @@
 import {
   type Locale,
+  PLAY_DEFAULT_ACTIVE_COLOR_INDEX,
+  PLAY_DEFAULT_MODE,
   type PlayerCellMark,
   type Puzzle,
   type PuzzleProgress,
@@ -10,7 +12,6 @@ import {
   isPuzzleSolved,
   translate,
 } from "@kindle-nonograms/shared";
-import { contrastingTextColor } from "./contrastColor.js";
 import { computeFitFontSizePx } from "./fitGrid.js";
 import { applyLocale, readLocaleCookie, resolveLocale } from "./i18n.js";
 import { loadProgress, saveProgress } from "./progressStorage.js";
@@ -135,38 +136,45 @@ function setBannerMessage(
   banner.textContent = translate(locale, key);
 }
 
-function buildBanner(locale: Locale): HTMLElement {
-  const banner = document.createElement("p");
-  banner.dataset.role = "win-banner";
-  // Announces its content to assistive tech whenever it becomes visible or
-  // its text changes, since Kindle's UI otherwise gives no non-visual cue
-  // that a check result appeared.
-  banner.setAttribute("aria-live", "polite");
-  banner.hidden = true;
-  setBannerMessage(banner, locale, "play.winBanner.solved");
-  return banner;
+/**
+ * Locates the win banner `renderPuzzlePage.ts` already bakes into the
+ * static page (hidden, in its default "solved" wording) — see
+ * `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`. Returns
+ * `undefined` on a page shape that doesn't have one (e.g. an isolated test
+ * fixture), same defensive spirit as `findElements` in
+ * `hydrateEditorPage.ts`.
+ */
+function findBanner(): HTMLElement | undefined {
+  return (
+    document.querySelector<HTMLElement>('[data-role="win-banner"]') ?? undefined
+  );
 }
 
-function buildToolbar(
+/**
+ * Locates the toolbar `renderPuzzlePage.ts` already bakes into the static
+ * page (Fill/Cross buttons, one color swatch button per palette color for a
+ * multi-color puzzle, Check) and attaches this hydration's behavior to it —
+ * see `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`. Returns
+ * `undefined` when the expected controls aren't found, same defensive
+ * spirit as `findElements` in `hydrateEditorPage.ts`.
+ */
+function attachToolbar(
   puzzle: Puzzle,
   state: PlayState,
-  locale: Locale,
   onCheck: () => void,
-): HTMLElement {
-  const toolbar = document.createElement("div");
-  toolbar.className = "play-toolbar";
-
-  const fillButton = document.createElement("button");
-  fillButton.type = "button";
-  fillButton.dataset.role = "mode-fill";
-  fillButton.dataset.i18n = "play.modeFill";
-  fillButton.textContent = translate(locale, "play.modeFill");
-
-  const crossButton = document.createElement("button");
-  crossButton.type = "button";
-  crossButton.dataset.role = "mode-cross";
-  crossButton.dataset.i18n = "play.modeCross";
-  crossButton.textContent = translate(locale, "play.modeCross");
+): void {
+  const fillButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="mode-fill"]',
+  );
+  const crossButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="mode-cross"]',
+  );
+  const checkButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="check"]',
+  );
+  if (!fillButton || !crossButton || !checkButton) {
+    return;
+  }
 
   const refreshModeButtons = (): void => {
     fillButton.setAttribute("aria-pressed", String(state.mode === "fill"));
@@ -181,28 +189,13 @@ function buildToolbar(
     state.mode = "cross";
     refreshModeButtons();
   });
-  refreshModeButtons();
 
-  const checkButton = document.createElement("button");
-  checkButton.type = "button";
-  checkButton.dataset.role = "check";
-  checkButton.dataset.i18n = "play.check";
-  checkButton.textContent = translate(locale, "play.check");
   checkButton.addEventListener("click", onCheck);
 
-  // Fill and its color swatches are one action ("what am I about to paint,
-  // and with which color") — grouped in their own bordered sub-container so
-  // they read together, distinct from Cross/Check. Always wraps, even for a
-  // single-color puzzle with no swatches, so the DOM shape stays consistent
-  // rather than branching on palette length.
-  const fillColorGroup = document.createElement("div");
-  fillColorGroup.className = "fill-color-group";
-  fillColorGroup.append(fillButton);
-
-  toolbar.append(fillColorGroup, crossButton, checkButton);
-
   if (puzzle.palette.length > 1) {
-    const swatchButtons: HTMLButtonElement[] = [];
+    const swatchButtons = Array.from(
+      document.querySelectorAll<HTMLButtonElement>('[data-role="swatch"]'),
+    );
 
     const refreshSwatches = (): void => {
       swatchButtons.forEach((button, index) => {
@@ -217,25 +210,13 @@ function buildToolbar(
       });
     };
 
-    puzzle.palette.forEach((hex, index) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.dataset.role = "swatch";
-      button.dataset.colorIndex = String(index);
-      button.style.backgroundColor = hex;
-      button.style.color = contrastingTextColor(hex);
+    swatchButtons.forEach((button, index) => {
       button.addEventListener("click", () => {
         state.activeColor = index;
         refreshSwatches();
       });
-      swatchButtons.push(button);
-      fillColorGroup.append(button);
     });
-
-    refreshSwatches();
   }
-
-  return toolbar;
 }
 
 /**
@@ -303,7 +284,7 @@ function handleGridClick(
   puzzle: Puzzle,
   progress: PuzzleProgress,
   state: PlayState,
-  banner: HTMLElement,
+  banner: HTMLElement | undefined,
   locale: Locale,
   anchor: HTMLElement,
 ): void {
@@ -327,6 +308,13 @@ function handleGridClick(
   progress.cells[y][x] = toggleMark(progress.cells[y][x], state);
   paintCell(cell, progress.cells[y][x], puzzle);
   saveProgress(puzzle.id, progress);
+
+  // A missing banner (unexpected page shape) only disables the
+  // win-confirmation feature — cell painting above must keep working
+  // regardless. See .ux/decisions/001-frozen-chrome-blocking-reconciliation.md.
+  if (!banner) {
+    return;
+  }
 
   const solved = isPuzzleSolved(puzzle, progress);
   // Only reset the message when the automatic banner is about to show
@@ -362,7 +350,7 @@ function handleCheck(
   table: HTMLTableElement,
   puzzle: Puzzle,
   progress: PuzzleProgress,
-  banner: HTMLElement,
+  banner: HTMLElement | undefined,
   locale: Locale,
   anchor: HTMLElement,
 ): void {
@@ -388,6 +376,13 @@ function handleCheck(
     saveProgress(puzzle.id, progress);
   }
 
+  // A missing banner (unexpected page shape) only disables the
+  // win-confirmation feature — the correction above must still apply and
+  // persist. See .ux/decisions/001-frozen-chrome-blocking-reconciliation.md.
+  if (!banner) {
+    return;
+  }
+
   const solved = isPuzzleSolved(puzzle, progress);
   const key: TranslationKey = solved
     ? "play.winBanner.solved"
@@ -406,14 +401,17 @@ function handleCheck(
 /**
  * Resolves the effective locale (saved cookie, else the browser's detected
  * language, else English) and applies it to every element on the page
- * carrying a `data-i18n` key. The puzzle page no longer has a language
- * switcher of its own — only the library page does — but it still has to
- * honor a choice made there (see .vibe/backlog/done/
+ * carrying a `data-i18n` key — including the toolbar/banner's default text,
+ * already present in the static markup by the time this runs (see
+ * .ux/decisions/001-frozen-chrome-blocking-reconciliation.md), so no extra
+ * step is needed to translate them. The puzzle page no longer has a
+ * language switcher of its own — only the library page does — but it still
+ * has to honor a choice made there (see .vibe/backlog/done/
  * 026-language-switcher-and-contribution-footer.md). Runs before the rest
  * of hydration so static markup (the back-link) is translated even if the
  * puzzle data itself turns out to be missing/corrupted. Returns the
- * resolved locale so the caller can build the toolbar/banner already in
- * the right language, with no translation flash.
+ * resolved locale for the dynamic messages set later (e.g. the check
+ * result), which still need it explicitly.
  */
 function applyStoredLocale(): Locale {
   const locale = resolveLocale(readLocaleCookie(), navigator.language);
@@ -423,19 +421,25 @@ function applyStoredLocale(): Locale {
 
 /**
  * Hydrates a generated puzzle page: applies the previously resolved locale
- * (no switcher control on this page — see `applyStoredLocale`), builds the
- * Fill/Cross mode toggle (plus color swatches for multi-color puzzles),
- * restores any saved progress onto the grid, and wires a single delegated
- * click listener that toggles a tapped cell's mark, redraws only that cell,
- * persists progress, and shows or hides a win banner based on whether the
- * puzzle is currently solved.
+ * (no switcher control on this page — see `applyStoredLocale`), attaches
+ * behavior to the already-baked Fill/Cross mode toggle (plus color swatches
+ * for multi-color puzzles) and win banner, restores any saved progress onto
+ * the grid, and wires a single delegated click listener that toggles a
+ * tapped cell's mark, redraws only that cell, persists progress, and shows
+ * or hides the win banner based on whether the puzzle is currently solved.
  */
 export function hydrate(): void {
-  // A `<table>` is this page type's own self-detection marker (see
-  // main.ts's doc comment) — checked first, before anything else, so
-  // this hydration script stays a no-op on pages of a different shape
-  // (e.g. the library page, which has no table but does have an `<h1>`
-  // of its own).
+  // The embedded `#puzzle-data` script is this page type's own unique
+  // self-detection marker (see main.ts's doc comment) — checked first,
+  // before anything else, so this hydration script stays a no-op on pages
+  // of a different shape. A bare `<table>` stopped being unique to this
+  // page once the editor page's canvas also started rendering one
+  // statically (see `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`),
+  // so it can no longer serve as the marker here.
+  if (!document.getElementById("puzzle-data")) {
+    return;
+  }
+
   const table = document.querySelector("table");
   if (!table) {
     return;
@@ -448,30 +452,49 @@ export function hydrate(): void {
     return;
   }
 
+  // The toolbar and win banner are already real markup, in their default
+  // shape, baked by `renderPuzzlePage.ts` — see
+  // .ux/decisions/001-frozen-chrome-blocking-reconciliation.md. This only
+  // locates them and attaches behavior; `applyStoredLocale` above already
+  // retranslated their default text as part of its full-page `[data-i18n]`
+  // pass, since they exist in the DOM from the very first paint. A missing
+  // banner (unexpected page shape) must only disable the win-confirmation
+  // feature, not the rest of hydration — same per-control isolation as
+  // `attachToolbar`'s own missing-button guard.
+  const banner = findBanner();
+
   const progress = readProgress(puzzle);
-  const state: PlayState = { mode: "fill", activeColor: 0 };
+  const state: PlayState = {
+    mode: PLAY_DEFAULT_MODE,
+    activeColor: PLAY_DEFAULT_ACTIVE_COLOR_INDEX,
+  };
   const anchor: HTMLElement =
     table.closest<HTMLElement>(".grid-wrapper") ?? table;
 
-  const banner = buildBanner(locale);
-  const toolbar = buildToolbar(puzzle, state, locale, () =>
-    handleCheck(table, puzzle, progress, banner, locale, anchor),
-  );
-  // Prefers the static chrome panel (see
-  // .vibe/decisions/014-puzzle-page-chrome-panel-wrapper.md) so the toolbar
-  // and banner land inside its bordered/shadowed box alongside the heading
-  // and back-link, instead of as bare siblings of the grid. Falls back to
-  // the old insertion point when no such panel exists (e.g. isolated tests).
-  const chromePanel = document.querySelector<HTMLElement>(".chrome-panel");
-  if (chromePanel) {
-    chromePanel.append(banner, toolbar);
-  } else {
-    anchor.parentNode?.insertBefore(banner, anchor);
-    anchor.parentNode?.insertBefore(toolbar, anchor);
+  // Each control's setup is isolated in its own try/catch so a throw while
+  // wiring one (e.g. the toolbar) can never dead-end the others (progress
+  // restore, the win banner, the grid's own click listener) — see the
+  // "Exit & failure paths" this flow requires in
+  // .ux/flows/001-frozen-chrome-before-hydration.md.
+  try {
+    attachToolbar(puzzle, state, () =>
+      handleCheck(table, puzzle, progress, banner, locale, anchor),
+    );
+  } catch {
+    // Degrades silently, same spirit as the rest of this client (see
+    // progressStorage.ts) — a broken toolbar must not prevent the grid
+    // itself from becoming interactive below.
   }
 
-  paintExistingProgress(table, puzzle, progress);
-  banner.hidden = !isPuzzleSolved(puzzle, progress);
+  try {
+    paintExistingProgress(table, puzzle, progress);
+    if (banner) {
+      banner.hidden = !isPuzzleSolved(puzzle, progress);
+    }
+  } catch {
+    // Degrades silently — the grid's own click listener (below) must still
+    // attach even if restoring saved progress fails.
+  }
 
   table.addEventListener("click", (event) =>
     handleGridClick(

@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - The daily orphaned-preview sweep failed on every scheduled run (`fatal: not a git repository`): its git working directory was never initialized before use. Both the sweep and the PR-preview publish step now initialize it correctly.
+- The library, puzzle, and puzzle-editor pages no longer visibly redraw right after loading: their toolbar, filters, pagination, language switcher, and (on the editor) palette and canvas now appear in their final shape immediately, instead of popping in a moment later.
+
+### Changed
+
+- A failure setting up one on-page control (e.g. the puzzle toolbar, or the editor's palette) no longer breaks the rest of that page — every other control keeps working.
 
 ## [2.9.0] - 2026-08-24
 

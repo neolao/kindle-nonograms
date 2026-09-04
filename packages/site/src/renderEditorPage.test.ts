@@ -29,30 +29,39 @@ describe("renderEditorPage", () => {
     const doc = parse(renderEditorPage());
 
     expect(doc.querySelector('[data-role="editor-page"]')).not.toBeNull();
-    // Never statically renders a <table> (built later by hydration) or the
-    // other pages' own embedded-data markers, so this page's static shell
-    // can never be mistaken for the play or library page by their own
-    // self-detection checks (see main.ts's doc comment and the project's
-    // own "two page shapes satisfying the same marker" precedent).
-    expect(doc.querySelector("table")).toBeNull();
+    // Renders a <table> now too (the canvas's default grid — see the next
+    // test), so it can no longer be *this* page's distinguishing marker;
+    // the other pages' own embedded-data markers must still be absent so
+    // this page's static shell can never be mistaken for the play or
+    // library page by their own self-detection checks (see main.ts's doc
+    // comment and hydratePlayPage.ts, which now detects the play page via
+    // `#puzzle-data` rather than `<table>` for exactly this reason).
     expect(doc.getElementById("puzzle-data")).toBeNull();
     expect(doc.getElementById("puzzles-data")).toBeNull();
   });
 
-  it("reserves empty containers for hydration to fill: palette, grid wrapper, toolbar", () => {
+  it("bakes the editor's fixed default (5×5, one black color, Paint mode) into the static markup, so it looks complete before hydration runs", () => {
     const doc = parse(renderEditorPage());
 
     const palette = doc.querySelector('[data-role="editor-palette"]');
-    const gridWrapper = doc.querySelector('[data-role="editor-grid-wrapper"]');
-    const toolbar = doc.querySelector('[data-role="editor-toolbar"]');
+    const swatch = palette?.querySelector('[data-role="swatch"]');
+    expect(swatch?.getAttribute("aria-pressed")).toBe("true");
+    expect(swatch?.getAttribute("style")).toContain("background-color:#000000");
+    expect(
+      palette
+        ?.querySelector('[data-role="palette-remove"]')
+        ?.hasAttribute("disabled"),
+    ).toBe(true);
 
-    expect(palette).not.toBeNull();
-    expect(palette?.children).toHaveLength(0);
-    expect(gridWrapper).not.toBeNull();
-    expect(gridWrapper?.children).toHaveLength(0);
+    const gridWrapper = doc.querySelector('[data-role="editor-grid-wrapper"]');
     expect(gridWrapper?.closest(".grid-center")).not.toBeNull();
-    expect(toolbar).not.toBeNull();
-    expect(toolbar?.children).toHaveLength(0);
+    expect(gridWrapper?.querySelectorAll("td")).toHaveLength(25);
+
+    const toolbar = doc.querySelector('[data-role="editor-toolbar"]');
+    const paintButton = toolbar?.querySelector('[data-role="mode-paint"]');
+    const eraseButton = toolbar?.querySelector('[data-role="mode-erase"]');
+    expect(paintButton?.getAttribute("aria-pressed")).toBe("true");
+    expect(eraseButton?.getAttribute("aria-pressed")).toBe("false");
   });
 
   it("renders width/height number inputs with a minimum of 1", () => {

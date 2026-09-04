@@ -1,6 +1,6 @@
 ---
 date: 2026-08-17
-status: accepted
+status: superseded by .ux/decisions/001
 ---
 # Play page hydration builds its own interaction controls and uses glyphs instead of borders for grayscale-safe player marks
 
@@ -10,3 +10,5 @@ status: accepted
 2. A player-filled cell is marked with both its palette color (as text color, matching how clue runs are already colored) AND a shape glyph cycling deterministically by palette index (`● ▲ ■ ◆`) — not a border-style cue like the clue runs use, because a 1–2px border pattern was judged unlikely to stay legible at grid-cell size on e-ink. A crossed cell always renders a single fixed glyph (`✖`) regardless of active color, so "excluded" never visually collides with "filled". The active color swatch is marked with a checkmark glyph plus a thicker border, not color alone.
 **Reason:** A UI/UX consultation confirmed one-time JS construction of inert-without-JS controls is acceptable here specifically (unlike the win banner state itself, which still toggles a pre-built hidden node rather than being re-inserted per tap) as long as it happens before the grid becomes interactive, avoiding a controls-less flash. A frontend-design consultation flagged that the clue border-pattern trick doesn't reliably transfer to small grid cells and that colored backgrounds would need a separate per-color contrast computation — using colored text plus a glyph avoids both problems while staying consistent with the existing clue-rendering convention.
 **Rejected alternatives:** Extending `renderPuzzlePage`'s static markup with pre-built (hidden) toolbar/banner nodes, mirroring decision 004 exactly — rejected because these controls, unlike the badge, have no meaning or fallback content without JavaScript, and backlog item 010 scopes this feature to the client-side hydration script only. Reusing the clue runs' border-style cycle to mean "active swatch" or "filled cell color" — rejected as overloading a vocabulary that already encodes color identity elsewhere on the same page.
+
+**Superseded (see `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`):** point 1 above — the toolbar and win banner are now baked into `renderPuzzlePage.ts`'s static markup, exactly the "rejected alternative" this decision once dismissed, after later analysis found the JS-construction approach didn't actually avoid a controls-less flash (the grid painted alone before the JS-inserted toolbar arrived). Point 2 (glyph-vs-border player marks) is unaffected and still stands.

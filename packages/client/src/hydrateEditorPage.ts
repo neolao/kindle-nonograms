@@ -1,5 +1,14 @@
-import { type Puzzle, createPuzzle } from "@kindle-nonograms/shared";
-import { contrastingTextColor } from "./contrastColor.js";
+import {
+  DEFAULT_LOCALE,
+  EDITOR_DEFAULT_HEIGHT,
+  EDITOR_DEFAULT_MODE,
+  EDITOR_DEFAULT_PALETTE,
+  EDITOR_DEFAULT_WIDTH,
+  type Puzzle,
+  contrastingTextColor,
+  createPuzzle,
+  translate,
+} from "@kindle-nonograms/shared";
 import { decodeImageFile } from "./decodeImageFile.js";
 import { computeFitFontSizePx } from "./fitGrid.js";
 import { buildImportedGrid } from "./imageQuantize.js";
@@ -18,9 +27,6 @@ interface EditorState {
   hasUnsavedChanges: boolean;
 }
 
-const DEFAULT_WIDTH = 5;
-const DEFAULT_HEIGHT = 5;
-const DEFAULT_PALETTE = ["#000000"];
 const NEW_COLOR_DEFAULT = "#888888";
 const HEX_COLOR_PATTERN = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
@@ -208,6 +214,78 @@ function render(elements: EditorElements, state: EditorState): void {
   renderGrid(elements, state);
 }
 
+/**
+ * Attaches one palette row's behavior — active-color selection, color edit,
+ * remove — to `row`'s existing swatch/color-input/remove children, whether
+ * `row` was just created by `renderPalette` (a rebuild after resize/import)
+ * or is the default row `renderEditorPage.ts` already baked into the static
+ * page (see `attachInitialPalette` and
+ * .ux/decisions/001-frozen-chrome-blocking-reconciliation.md). Never builds
+ * or removes DOM itself, so it's safe to call on markup this function
+ * didn't create.
+ */
+function wirePaletteRow(
+  row: HTMLElement,
+  index: number,
+  elements: EditorElements,
+  state: EditorState,
+): void {
+  const swatch = row.querySelector<HTMLButtonElement>('[data-role="swatch"]');
+  const colorInput = row.querySelector<HTMLInputElement>(
+    '[data-role="palette-color-input"]',
+  );
+  const remove = row.querySelector<HTMLButtonElement>(
+    '[data-role="palette-remove"]',
+  );
+  if (!swatch || !colorInput || !remove) {
+    return;
+  }
+
+  swatch.addEventListener("click", () => {
+    state.activeColorIndex = index;
+    state.mode = "paint";
+    render(elements, state);
+  });
+
+  colorInput.addEventListener("change", () => {
+    const updated = updatePaletteColor(state.palette, index, colorInput.value);
+    if (updated !== state.palette) {
+      state.palette = updated;
+      state.hasUnsavedChanges = true;
+      render(elements, state);
+    }
+  });
+
+  remove.addEventListener("click", () => {
+    const result = removePaletteColor(
+      state.palette,
+      state.cells,
+      index,
+      state.activeColorIndex,
+    );
+    if (result.palette !== state.palette) {
+      state.palette = result.palette;
+      state.cells = result.cells;
+      state.activeColorIndex = result.activeColorIndex;
+      state.hasUnsavedChanges = true;
+      render(elements, state);
+    }
+  });
+}
+
+/** Attaches the "add color" button's behavior — see {@link wirePaletteRow}. */
+function wireAddColorButton(
+  button: HTMLButtonElement,
+  elements: EditorElements,
+  state: EditorState,
+): void {
+  button.addEventListener("click", () => {
+    state.palette = addPaletteColor(state.palette, NEW_COLOR_DEFAULT);
+    state.hasUnsavedChanges = true;
+    render(elements, state);
+  });
+}
+
 function renderPalette(elements: EditorElements, state: EditorState): void {
   elements.palette.textContent = "";
 
@@ -219,90 +297,70 @@ function renderPalette(elements: EditorElements, state: EditorState): void {
     swatch.type = "button";
     swatch.dataset.role = "swatch";
     swatch.dataset.colorIndex = String(index);
-    swatch.setAttribute("aria-label", "Select color");
+    // Not tagged `data-i18n`: that mechanism retranslates `textContent`
+    // (see `applyLocale` in `i18n.ts`), which here holds the "✓" glyph, not
+    // this label — only `translate()`'s current-locale value is reused, to
+    // avoid duplicating the dictionary string.
+    swatch.setAttribute(
+      "aria-label",
+      translate(DEFAULT_LOCALE, "editor.selectColorAriaLabel"),
+    );
     const active = index === state.activeColorIndex;
     swatch.setAttribute("aria-pressed", String(active));
     swatch.style.backgroundColor = hex;
     swatch.style.color = contrastingTextColor(hex);
     swatch.textContent = active ? "✓" : "";
-    swatch.addEventListener("click", () => {
-      state.activeColorIndex = index;
-      state.mode = "paint";
-      render(elements, state);
-    });
 
     const colorInput = document.createElement("input");
     colorInput.type = "color";
     colorInput.dataset.role = "palette-color-input";
     colorInput.dataset.colorIndex = String(index);
     colorInput.value = hex;
-    colorInput.setAttribute("aria-label", "Edit color");
-    colorInput.addEventListener("change", () => {
-      const updated = updatePaletteColor(
-        state.palette,
-        index,
-        colorInput.value,
-      );
-      if (updated !== state.palette) {
-        state.palette = updated;
-        state.hasUnsavedChanges = true;
-        render(elements, state);
-      }
-    });
+    colorInput.setAttribute(
+      "aria-label",
+      translate(DEFAULT_LOCALE, "editor.editColorAriaLabel"),
+    );
 
     const remove = document.createElement("button");
     remove.type = "button";
     remove.dataset.role = "palette-remove";
     remove.dataset.colorIndex = String(index);
-    remove.setAttribute("aria-label", "Remove color");
+    remove.setAttribute(
+      "aria-label",
+      translate(DEFAULT_LOCALE, "editor.removeColorAriaLabel"),
+    );
     remove.textContent = "×";
     remove.disabled = state.palette.length <= 1;
-    remove.addEventListener("click", () => {
-      const result = removePaletteColor(
-        state.palette,
-        state.cells,
-        index,
-        state.activeColorIndex,
-      );
-      if (result.palette !== state.palette) {
-        state.palette = result.palette;
-        state.cells = result.cells;
-        state.activeColorIndex = result.activeColorIndex;
-        state.hasUnsavedChanges = true;
-        render(elements, state);
-      }
-    });
 
     row.append(swatch, colorInput, remove);
     elements.palette.append(row);
+    wirePaletteRow(row, index, elements, state);
   });
 
   const addColor = document.createElement("button");
   addColor.type = "button";
   addColor.dataset.role = "editor-add-color";
   addColor.textContent = "+";
-  addColor.setAttribute("aria-label", "Add color");
-  addColor.addEventListener("click", () => {
-    state.palette = addPaletteColor(state.palette, NEW_COLOR_DEFAULT);
-    state.hasUnsavedChanges = true;
-    render(elements, state);
-  });
+  addColor.setAttribute(
+    "aria-label",
+    translate(DEFAULT_LOCALE, "editor.addColor"),
+  );
   elements.palette.append(addColor);
+  wireAddColorButton(addColor, elements, state);
 }
 
-function renderToolbar(elements: EditorElements, state: EditorState): void {
-  elements.toolbar.textContent = "";
-
-  const paintButton = document.createElement("button");
-  paintButton.type = "button";
-  paintButton.dataset.role = "mode-paint";
-  paintButton.textContent = "Paint";
-
-  const eraseButton = document.createElement("button");
-  eraseButton.type = "button";
-  eraseButton.dataset.role = "mode-erase";
-  eraseButton.textContent = "Erase";
-
+/**
+ * Attaches the Paint/Erase mode buttons' behavior to `paintButton`/
+ * `eraseButton`, whether they were just created by `renderToolbar` (a
+ * rebuild) or are the default buttons `renderEditorPage.ts` already baked
+ * into the static page (see `attachInitialToolbar`). Syncs their
+ * `aria-pressed` state immediately, matching `state.mode`.
+ */
+function wireToolbarButtons(
+  paintButton: HTMLButtonElement,
+  eraseButton: HTMLButtonElement,
+  state: EditorState,
+): void {
   const refresh = (): void => {
     paintButton.setAttribute("aria-pressed", String(state.mode === "paint"));
     eraseButton.setAttribute("aria-pressed", String(state.mode === "erase"));
@@ -317,8 +375,25 @@ function renderToolbar(elements: EditorElements, state: EditorState): void {
     refresh();
   });
   refresh();
+}
+
+function renderToolbar(elements: EditorElements, state: EditorState): void {
+  elements.toolbar.textContent = "";
+
+  const paintButton = document.createElement("button");
+  paintButton.type = "button";
+  paintButton.dataset.role = "mode-paint";
+  paintButton.dataset.i18n = "editor.modePaint";
+  paintButton.textContent = translate(DEFAULT_LOCALE, "editor.modePaint");
+
+  const eraseButton = document.createElement("button");
+  eraseButton.type = "button";
+  eraseButton.dataset.role = "mode-erase";
+  eraseButton.dataset.i18n = "editor.modeErase";
+  eraseButton.textContent = translate(DEFAULT_LOCALE, "editor.modeErase");
 
   elements.toolbar.append(paintButton, eraseButton);
+  wireToolbarButtons(paintButton, eraseButton, state);
 }
 
 function paintGridCell(
@@ -382,6 +457,63 @@ function applyGridFit(wrapper: HTMLElement, table: HTMLElement): void {
   wrapper.style.fontSize = `${fontSizePx}px`;
   wrapper.style.maxWidth = `${Math.max(availableWidth, 0)}px`;
   wrapper.style.maxHeight = `${Math.max(availableHeight, 0)}px`;
+}
+
+/**
+ * Attaches this hydration's behavior to the palette/toolbar/canvas
+ * `renderEditorPage.ts` already bakes into the static page in their fixed
+ * default shape (one black color, Paint mode, a 5×5 grid) — see
+ * .ux/decisions/001-frozen-chrome-blocking-reconciliation.md. Each locates
+ * and wires its own already-existing markup instead of calling `render()`,
+ * which would wipe and rebuild it from scratch: on a page a keyboard user
+ * has already started tabbing through (the editor's contributor persona
+ * uses a normal desktop browser, mouse *and* keyboard — see
+ * `.ux/product.md`), that rebuild would silently drop their focus to
+ * `<body>`. Kept as three separate functions, called independently by
+ * `hydrate()`, so a failure attaching one (e.g. the palette) can never
+ * prevent the others (toolbar, canvas fit) from attaching. `render()`
+ * remains the rebuild path for actual state changes afterward (resize,
+ * palette edit, paint, import), which are unaffected by this flow.
+ */
+function attachInitialPalette(
+  elements: EditorElements,
+  state: EditorState,
+): void {
+  const rows = Array.from(
+    elements.palette.querySelectorAll<HTMLElement>(".editor-palette-row"),
+  );
+  rows.forEach((row, index) => wirePaletteRow(row, index, elements, state));
+
+  const addColor = elements.palette.querySelector<HTMLButtonElement>(
+    '[data-role="editor-add-color"]',
+  );
+  if (addColor) {
+    wireAddColorButton(addColor, elements, state);
+  }
+}
+
+/** See {@link attachInitialPalette}. */
+function attachInitialToolbar(
+  elements: EditorElements,
+  state: EditorState,
+): void {
+  const paintButton = elements.toolbar.querySelector<HTMLButtonElement>(
+    '[data-role="mode-paint"]',
+  );
+  const eraseButton = elements.toolbar.querySelector<HTMLButtonElement>(
+    '[data-role="mode-erase"]',
+  );
+  if (paintButton && eraseButton) {
+    wireToolbarButtons(paintButton, eraseButton, state);
+  }
+}
+
+/** See {@link attachInitialPalette}. */
+function attachInitialGridFit(elements: EditorElements): void {
+  const table = elements.gridWrapper.querySelector("table");
+  if (table) {
+    applyGridFit(elements.gridWrapper, table);
+  }
 }
 
 interface EditorElements {
@@ -622,11 +754,11 @@ export function hydrate(): void {
   }
 
   const state: EditorState = {
-    width: DEFAULT_WIDTH,
-    height: DEFAULT_HEIGHT,
-    palette: [...DEFAULT_PALETTE],
-    cells: createEmptyCells(DEFAULT_WIDTH, DEFAULT_HEIGHT),
-    mode: "paint",
+    width: EDITOR_DEFAULT_WIDTH,
+    height: EDITOR_DEFAULT_HEIGHT,
+    palette: [...EDITOR_DEFAULT_PALETTE],
+    cells: createEmptyCells(EDITOR_DEFAULT_WIDTH, EDITOR_DEFAULT_HEIGHT),
+    mode: EDITOR_DEFAULT_MODE,
     activeColorIndex: 0,
     name: "",
     filename: "",
@@ -710,7 +842,24 @@ export function hydrate(): void {
     }
   });
 
-  render(elements, state);
+  // Attaches to the already-baked default palette/toolbar/canvas instead of
+  // calling render() (see attachInitialPalette's doc comment) — each in its
+  // own try/catch so a failure in one can't dead-end the others.
+  try {
+    attachInitialPalette(elements, state);
+  } catch {
+    // Degrades silently, same spirit as the rest of this client.
+  }
+  try {
+    attachInitialToolbar(elements, state);
+  } catch {
+    // Degrades silently.
+  }
+  try {
+    attachInitialGridFit(elements);
+  } catch {
+    // Degrades silently.
+  }
 }
 
 if (typeof document !== "undefined") {

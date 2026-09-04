@@ -1,3 +1,11 @@
+import {
+  DEFAULT_LOCALE,
+  EDITOR_DEFAULT_HEIGHT,
+  EDITOR_DEFAULT_PALETTE,
+  EDITOR_DEFAULT_WIDTH,
+  contrastingTextColor,
+  translate,
+} from "@kindle-nonograms/shared";
 import { versionQuery } from "./htmlEscape.js";
 import { sharedStyles } from "./sharedStyles.js";
 import {
@@ -10,16 +18,52 @@ import {
 } from "./theme.js";
 
 /**
+ * The editor's default palette/toolbar/canvas, baked into the static HTML
+ * so it already looks complete on first paint instead of popping in once
+ * `hydrateEditorPage.ts` builds it — see
+ * `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`. Mirrors
+ * exactly what that script's own `render()` produces for a fresh page (no
+ * persistence exists for this page, so this default never changes); that
+ * script still rebuilds this same markup once at startup, which is a safe,
+ * invisible no-op since both sides start from these same
+ * `EDITOR_DEFAULT_*` values.
+ */
+function renderDefaultPalette(): string {
+  const hex = EDITOR_DEFAULT_PALETTE[0] ?? "#000000";
+  const textColor = contrastingTextColor(hex);
+  return `<div class="editor-palette-row"><button type="button" data-role="swatch" data-color-index="0" aria-label="${translate(DEFAULT_LOCALE, "editor.selectColorAriaLabel")}" aria-pressed="true" style="background-color:${hex};color:${textColor};">✓</button><input type="color" data-role="palette-color-input" data-color-index="0" value="${hex}" aria-label="${translate(DEFAULT_LOCALE, "editor.editColorAriaLabel")}" /><button type="button" data-role="palette-remove" data-color-index="0" aria-label="${translate(DEFAULT_LOCALE, "editor.removeColorAriaLabel")}" disabled>×</button></div><button type="button" data-role="editor-add-color" aria-label="${translate(DEFAULT_LOCALE, "editor.addColor")}">+</button>`;
+}
+
+function renderDefaultToolbar(): string {
+  return `<button type="button" data-role="mode-paint" data-i18n="editor.modePaint" aria-pressed="true">${translate(DEFAULT_LOCALE, "editor.modePaint")}</button><button type="button" data-role="mode-erase" data-i18n="editor.modeErase" aria-pressed="false">${translate(DEFAULT_LOCALE, "editor.modeErase")}</button>`;
+}
+
+function renderDefaultGrid(): string {
+  const rows = Array.from({ length: EDITOR_DEFAULT_HEIGHT }, (_, y) => {
+    const cells = Array.from(
+      { length: EDITOR_DEFAULT_WIDTH },
+      (_, x) => `<td data-row="${y}" data-col="${x}"></td>`,
+    ).join("");
+    return `<tr>${cells}</tr>`;
+  }).join("");
+  return `<table><tbody>${rows}</tbody></table>`;
+}
+
+/**
  * Renders the static shell for the puzzle editor: a contributor-facing tool
  * (run in a normal desktop browser, not on Kindle) that lets someone build a
  * `Puzzle` by hand and export it as a ready-to-submit JSON file — see
- * .vibe/backlog/done/029-web-based-puzzle-editor.md. Unlike the play page,
- * there is no puzzle to render yet, so this only lays out the chrome and a
- * set of empty containers (`data-role="editor-*"`) that `hydrateEditorPage.ts`
- * fills in: the size controls, the palette editor, the paint/erase toolbar,
- * the grid wrapper (built into a real `<table>` only once hydration runs),
- * and the name/filename/export controls plus a reserved, always-present
- * error region.
+ * .vibe/backlog/done/029-web-based-puzzle-editor.md. The size controls, the
+ * name/filename/export controls and the reserved error region are plain
+ * static markup; the palette editor, paint/erase toolbar and grid canvas
+ * (`data-role="editor-*"`) are also real markup now, already showing the
+ * page's fixed default (5×5, one black color, Paint mode — see
+ * `renderDefaultPalette`/`renderDefaultToolbar`/`renderDefaultGrid` above)
+ * instead of empty containers for `hydrateEditorPage.ts` to fill in on
+ * first load — see
+ * `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`. That script
+ * still owns rebuilding all three once the contributor actually changes
+ * anything (resize, palette edit, paint, import).
  *
  * Deliberately never renders a `<table>` or either other page's own embedded
  * `#puzzle-data`/`#puzzles-data` script — `main.ts` imports every hydration
@@ -50,9 +94,9 @@ export function renderEditorPage(assetVersion?: string): string {
 <p class="section-label" data-i18n="editor.sizeLabel">Grid size</p>
 <div class="editor-size-controls">
 <label for="editor-width" data-i18n="editor.widthLabel">Width</label>
-<input type="number" id="editor-width" min="1" data-role="editor-width" />
+<input type="number" id="editor-width" min="1" value="${EDITOR_DEFAULT_WIDTH}" data-role="editor-width" />
 <label for="editor-height" data-i18n="editor.heightLabel">Height</label>
-<input type="number" id="editor-height" min="1" data-role="editor-height" />
+<input type="number" id="editor-height" min="1" value="${EDITOR_DEFAULT_HEIGHT}" data-role="editor-height" />
 </div>
 </div>
 <div class="panel editor-panel">
@@ -70,13 +114,13 @@ export function renderEditorPage(assetVersion?: string): string {
 </div>
 <div class="panel editor-panel">
 <p class="section-label" data-i18n="editor.paletteLabel">Palette</p>
-<div class="editor-palette" data-role="editor-palette"></div>
+<div class="editor-palette" data-role="editor-palette">${renderDefaultPalette()}</div>
 </div>
 <div class="panel editor-panel">
 <p class="section-label" data-i18n="editor.canvasLabel">Canvas</p>
-<div class="editor-toolbar" data-role="editor-toolbar"></div>
+<div class="editor-toolbar" data-role="editor-toolbar">${renderDefaultToolbar()}</div>
 <div class="grid-center">
-<div class="grid-wrapper" data-role="editor-grid-wrapper"></div>
+<div class="grid-wrapper" data-role="editor-grid-wrapper">${renderDefaultGrid()}</div>
 </div>
 </div>
 <div class="panel editor-panel">

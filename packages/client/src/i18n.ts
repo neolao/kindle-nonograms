@@ -1,19 +1,12 @@
 import {
   DEFAULT_LOCALE,
   type Locale,
-  SUPPORTED_LOCALES,
   type TranslationKey,
   isSupportedLocale,
   translate,
 } from "@kindle-nonograms/shared";
 
 const COOKIE_NAME = "kindle-nonograms-locale";
-
-/** Native display name for each supported locale, always shown in its own language. */
-const NATIVE_LOCALE_NAMES: Record<Locale, string> = {
-  en: "English",
-  fr: "Français",
-};
 
 /**
  * Reads the player's saved locale preference from `document.cookie`.
@@ -93,45 +86,4 @@ export function applyLocale(locale: Locale): void {
       element.textContent = translate(locale, key as TranslationKey);
     }
   }
-}
-
-/**
- * Builds the FR/EN language switcher: a native `<select>` (kept native
- * rather than a custom control, for reliable touch/keyboard behavior on
- * Kindle's old WebKit) listing each supported locale by its own native
- * name, paired with a translated label. Calls `onChange` with the newly
- * picked locale whenever the player changes the selection.
- */
-export function buildLanguageSwitcher(
-  currentLocale: Locale,
-  onChange: (locale: Locale) => void,
-): HTMLElement {
-  const container = document.createElement("div");
-  container.className = "language-switcher";
-
-  const label = document.createElement("label");
-  label.setAttribute("for", "language-switcher-select");
-  label.dataset.i18n = "i18n.languageSwitcherLabel";
-  label.textContent = translate(currentLocale, "i18n.languageSwitcherLabel");
-
-  const select = document.createElement("select");
-  select.id = "language-switcher-select";
-  select.dataset.role = "language-switcher-select";
-
-  for (const locale of SUPPORTED_LOCALES) {
-    const option = document.createElement("option");
-    option.value = locale;
-    option.textContent = NATIVE_LOCALE_NAMES[locale];
-    select.append(option);
-  }
-  select.value = currentLocale;
-
-  select.addEventListener("change", () => {
-    if (isSupportedLocale(select.value)) {
-      onChange(select.value);
-    }
-  });
-
-  container.append(label, select);
-  return container;
 }

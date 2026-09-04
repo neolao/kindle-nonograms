@@ -11,3 +11,5 @@ export * from "./thumbnail.js";
 export * from "./libraryFilters.js";
 export * from "./solvability.js";
 export * from "./duplicatePuzzles.js";
+export * from "./contrastColor.js";
+export * from "./uiDefaults.js";

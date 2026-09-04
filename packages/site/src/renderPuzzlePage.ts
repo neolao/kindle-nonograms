@@ -1,11 +1,48 @@
 import {
   type ClueRun,
+  DEFAULT_LOCALE,
+  PLAY_DEFAULT_ACTIVE_COLOR_INDEX,
+  PLAY_DEFAULT_MODE,
   type Puzzle,
   computePuzzleClues,
+  contrastingTextColor,
+  translate,
 } from "@kindle-nonograms/shared";
 import { embedJson, escapeHtml, versionQuery } from "./htmlEscape.js";
 import { sharedStyles } from "./sharedStyles.js";
 import { BORDER_RADIUS_PX, BORDER_WIDTH, COLORS, SPACING_PX } from "./theme.js";
+
+/**
+ * The play page's default toolbar (Fill/Cross mode, color swatches for a
+ * multi-color puzzle, Check) and win banner (hidden), baked into the static
+ * HTML so the page already looks complete on first paint instead of popping
+ * in once `hydratePlayPage.ts` builds it — see
+ * `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`. Mirrors
+ * exactly what that script's `buildToolbar`/`buildBanner` produce for a
+ * fresh page; hydration now locates this same markup by its `data-role`
+ * attributes and attaches behavior to it, rather than building it from
+ * scratch.
+ */
+function renderDefaultToolbar(puzzle: Puzzle): string {
+  const fillActive = PLAY_DEFAULT_MODE === "fill";
+  const swatches =
+    puzzle.palette.length > 1
+      ? puzzle.palette
+          .map((hex, index) => {
+            const active = index === PLAY_DEFAULT_ACTIVE_COLOR_INDEX;
+            const textColor = contrastingTextColor(hex);
+            const borderWidth = active ? BORDER_WIDTH.thick : BORDER_WIDTH.thin;
+            return `<button type="button" data-role="swatch" data-color-index="${index}" aria-pressed="${active}" style="background-color:${hex};color:${textColor};border-width:${borderWidth};">${active ? "✓" : ""}</button>`;
+          })
+          .join("")
+      : "";
+
+  return `<div class="play-toolbar"><div class="fill-color-group"><button type="button" data-role="mode-fill" data-i18n="play.modeFill" aria-pressed="${fillActive}">${translate(DEFAULT_LOCALE, "play.modeFill")}</button>${swatches}</div><button type="button" data-role="mode-cross" data-i18n="play.modeCross" aria-pressed="${!fillActive}">${translate(DEFAULT_LOCALE, "play.modeCross")}</button><button type="button" data-role="check" data-i18n="play.check">${translate(DEFAULT_LOCALE, "play.check")}</button></div>`;
+}
+
+function renderDefaultBanner(): string {
+  return `<p data-role="win-banner" data-i18n="play.winBanner.solved" aria-live="polite" hidden>${translate(DEFAULT_LOCALE, "play.winBanner.solved")}</p>`;
+}
 
 // Cycled by palette index so different colors stay distinguishable even
 // where the browser can't render color (Kindle's e-ink is often grayscale).
@@ -15,9 +52,14 @@ const BORDER_STYLES = ["solid", "dashed", "dotted", "double"];
 /**
  * Renders the full static HTML for one puzzle's page: color-coded (plus a
  * non-color border cue) clue headers, a solution-blind grid of addressable
- * cells, and the puzzle embedded as JSON for later client-side hydration.
- * See .vibe/decisions/002-puzzle-page-embeds-full-solution.md for why the
- * embedded payload includes the solution. `assetVersion`, when given, is
+ * cells, the play toolbar and win banner already in their default shape
+ * (see `renderDefaultToolbar`/`renderDefaultBanner` above), and the puzzle
+ * embedded as JSON for later client-side hydration. See
+ * .vibe/decisions/002-puzzle-page-embeds-full-solution.md for why the
+ * embedded payload includes the solution, and
+ * .ux/decisions/001-frozen-chrome-blocking-reconciliation.md for why the
+ * toolbar/banner are real markup now rather than built by
+ * `hydratePlayPage.ts` from scratch. `assetVersion`, when given, is
  * appended as a `?v=` query string on the client bundle script so a
  * returning browser doesn't keep serving a stale cached bundle after a
  * rebuild (see .vibe/decisions/007-static-site-build-orchestrator-design.md).
@@ -53,6 +95,8 @@ export function renderPuzzlePage(
 <h1>${escapeHtml(puzzle.name)}</h1>
 <div class="page-header-controls"></div>
 </div>
+${renderDefaultBanner()}
+${renderDefaultToolbar(puzzle)}
 </div>
 <div class="grid-center">
 <div class="grid-wrapper">

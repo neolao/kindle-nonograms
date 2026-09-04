@@ -2,7 +2,7 @@
 slug: play
 title: Puzzle (play) page
 flow: 001
-status: designed
+status: implemented
 source: packages/site/src/renderPuzzlePage.ts, packages/client/src/hydratePlayPage.ts
 ---
 
