@@ -21,6 +21,10 @@ describe("saveProgress / loadProgress", () => {
     expect(loadProgress("flag")).toEqual(progress);
   });
 
+  it("returns true when the write succeeds", () => {
+    expect(saveProgress("flag", { cells: [[0]] })).toBe(true);
+  });
+
   it("keeps progress for different puzzle ids independent", () => {
     saveProgress("flag", { cells: [[0]] });
     saveProgress("cat", { cells: [[1]] });
@@ -40,12 +44,13 @@ describe("saveProgress / loadProgress", () => {
     expect(loadProgress("flag")).toBeUndefined();
   });
 
-  it("degrades silently when localStorage.setItem throws (quota, restricted mode)", () => {
+  it("degrades to returning false when localStorage.setItem throws (quota, restricted mode)", () => {
     vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
       throw new Error("QuotaExceededError");
     });
 
     expect(() => saveProgress("flag", { cells: [[0]] })).not.toThrow();
+    expect(saveProgress("flag", { cells: [[0]] })).toBe(false);
   });
 
   it("degrades silently when localStorage.getItem throws (quota, restricted mode)", () => {

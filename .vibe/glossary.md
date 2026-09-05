@@ -18,7 +18,7 @@ _Sources: `packages/shared/src/progress.ts`_
 ## Clue
 The sequence of runs attached to a row or column of a puzzle, each run carrying both a length and the palette color it must be filled with. A run always breaks on a color change, even without an empty cell between the two colors; two runs of the same color still require an empty gap to count as separate. Clues are never stored — they are always derived on demand from a puzzle's solution grid.
 **Do not confuse with:** Puzzle, which owns the solution grid clues are derived from.
-_Sources: `packages/shared/src/clues.ts`, `packages/client/src/main.ts`_
+_Sources: `packages/shared/src/clues.ts`, `packages/site/src/renderPuzzlePage.ts`_
 
 ## Library page
 The site's home page: a list of every puzzle a player can choose from, each linking to its own page, with an empty-state message when there are none, and a badge revealing which ones the player already solved. Its visible markup shows only enough of each puzzle to list and link to it (name, size); each puzzle's full data, including its solution, is also embedded in the page for client-side hydration to check saved progress against.

@@ -44,6 +44,20 @@ function renderDefaultBanner(): string {
   return `<p data-role="win-banner" data-i18n="play.winBanner.solved" aria-live="polite" hidden>${translate(DEFAULT_LOCALE, "play.winBanner.solved")}</p>`;
 }
 
+/**
+ * The one-time "progress can't be saved" warning (see backlog item 033),
+ * baked hidden into the static page the same way the toolbar/banner are —
+ * see `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`. The
+ * dismiss control follows the app's established icon-button convention (an
+ * `aria-hidden` glyph paired with a `.sr-only` translated label) rather than
+ * relying on `aria-label` alone — see `modules/client.md`'s observed
+ * patterns. Uses "×" rather than the play page's own "✖" cross-mode glyph,
+ * so this control is never visually confused with a crossed grid cell.
+ */
+function renderDefaultStorageWarning(): string {
+  return `<div data-role="storage-warning" role="status" aria-live="polite" hidden><span data-i18n="play.storageWarning">${translate(DEFAULT_LOCALE, "play.storageWarning")}</span><button type="button" data-role="storage-warning-dismiss"><span aria-hidden="true">×</span><span class="sr-only" data-i18n="play.dismissWarning">${translate(DEFAULT_LOCALE, "play.dismissWarning")}</span></button></div>`;
+}
+
 // Cycled by palette index so different colors stay distinguishable even
 // where the browser can't render color (Kindle's e-ink is often grayscale).
 // See .vibe/decisions/003-clue-color-plus-pattern-cue.md.
@@ -95,6 +109,7 @@ export function renderPuzzlePage(
 <h1>${escapeHtml(puzzle.name)}</h1>
 <div class="page-header-controls"></div>
 </div>
+${renderDefaultStorageWarning()}
 ${renderDefaultBanner()}
 ${renderDefaultToolbar(puzzle)}
 </div>

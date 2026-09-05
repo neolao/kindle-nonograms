@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - 26 new black-and-white puzzles converted from the reMarkable nonogram generator: Apple, Balloons, Boat, Candle, Car, Cat, Chameleon, Cow, Crab, Crocodile, Dragon, Duck, Earth, Elephant, Head, Horse, House, Lion, Mushroom, Panda, Pear, Pig, Sitting Cat, Squirrel, Watermelon, and Whale.
+- If a device can't save puzzle progress (storage full, private browsing), the player now sees a dismissible warning the first time it happens, instead of silently losing their progress with no notice.
 
 ### Fixed
 

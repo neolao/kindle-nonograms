@@ -3,18 +3,23 @@ import type { PuzzleProgress } from "@kindle-nonograms/shared";
 const STORAGE_KEY_PREFIX = "kindle-nonograms:progress:";
 
 /**
- * Persists a puzzle's progress to `localStorage`. Degrades silently (no
- * error thrown, nothing saved) if storage is unavailable or throws — e.g.
- * quota exceeded or a restricted/private browsing mode.
+ * Persists a puzzle's progress to `localStorage`. Never throws: a write
+ * that fails (quota exceeded, a restricted/private browsing mode) is
+ * reported back as `false` instead of raising, so a caller can react (e.g.
+ * warn the player) rather than the failure being swallowed silently.
  */
-export function saveProgress(puzzleId: string, progress: PuzzleProgress): void {
+export function saveProgress(
+  puzzleId: string,
+  progress: PuzzleProgress,
+): boolean {
   try {
     localStorage.setItem(
       STORAGE_KEY_PREFIX + puzzleId,
       JSON.stringify(progress),
     );
+    return true;
   } catch {
-    // Storage unavailable or throwing — nothing more we can do here.
+    return false;
   }
 }
 

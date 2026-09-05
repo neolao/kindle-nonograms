@@ -37,6 +37,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The library page now shows at most 25 puzzles at a time, with Previous/Next buttons to move between pages once there are more than that.
 - The site now has a favicon, shown in the browser tab on every page.
 - The puzzle editor can now import a local image: it's fitted to your grid size, reduced to a chosen number of colors, and pixels close to a chosen background color become blank — giving you a starting grid to refine by hand.
+- If your device can't save your puzzle progress (storage full, private browsing), you now get a one-time, dismissible warning instead of silently losing your progress.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

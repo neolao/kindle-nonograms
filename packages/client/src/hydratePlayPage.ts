@@ -151,6 +151,19 @@ function findBanner(): HTMLElement | undefined {
 }
 
 /**
+ * Locates the one-time "progress can't be saved" warning
+ * `renderPuzzlePage.ts` already bakes into the static page, hidden — see
+ * `renderDefaultStorageWarning` there. Returns `undefined` on a page shape
+ * that doesn't have one, same defensive spirit as `findBanner`.
+ */
+function findStorageWarning(): HTMLElement | undefined {
+  return (
+    document.querySelector<HTMLElement>('[data-role="storage-warning"]') ??
+    undefined
+  );
+}
+
+/**
  * Locates the toolbar `renderPuzzlePage.ts` already bakes into the static
  * page (Fill/Cross buttons, one color swatch button per palette color for a
  * multi-color puzzle, Check) and attaches this hydration's behavior to it —
@@ -287,6 +300,7 @@ function handleGridClick(
   banner: HTMLElement | undefined,
   locale: Locale,
   anchor: HTMLElement,
+  reportSaveResult: (success: boolean) => void,
 ): void {
   if (!(event.target instanceof HTMLElement)) {
     return;
@@ -307,7 +321,7 @@ function handleGridClick(
 
   progress.cells[y][x] = toggleMark(progress.cells[y][x], state);
   paintCell(cell, progress.cells[y][x], puzzle);
-  saveProgress(puzzle.id, progress);
+  reportSaveResult(saveProgress(puzzle.id, progress));
 
   // A missing banner (unexpected page shape) only disables the
   // win-confirmation feature — cell painting above must keep working
@@ -353,6 +367,7 @@ function handleCheck(
   banner: HTMLElement | undefined,
   locale: Locale,
   anchor: HTMLElement,
+  reportSaveResult: (success: boolean) => void,
 ): void {
   const correction = correctWrongCells(puzzle, progress);
 
@@ -373,7 +388,7 @@ function handleCheck(
         }
       }
     }
-    saveProgress(puzzle.id, progress);
+    reportSaveResult(saveProgress(puzzle.id, progress));
   }
 
   // A missing banner (unexpected page shape) only disables the
@@ -462,6 +477,7 @@ export function hydrate(): void {
   // feature, not the rest of hydration — same per-control isolation as
   // `attachToolbar`'s own missing-button guard.
   const banner = findBanner();
+  const storageWarning = findStorageWarning();
 
   const progress = readProgress(puzzle);
   const state: PlayState = {
@@ -471,6 +487,22 @@ export function hydrate(): void {
   const anchor: HTMLElement =
     table.closest<HTMLElement>(".grid-wrapper") ?? table;
 
+  // Tracks whether the storage warning has already been shown once this
+  // page view (see .vibe/decisions/020-save-failure-warning-scoped-to-page-view.md)
+  // — set synchronously on first failure, before anything else, so two
+  // failed saves in the same tick (a tap immediately followed by Check)
+  // can't both slip through and show/re-fit twice.
+  let storageWarningShown = false;
+
+  function reportSaveResult(success: boolean): void {
+    if (success || storageWarningShown || !storageWarning) {
+      return;
+    }
+    storageWarningShown = true;
+    storageWarning.hidden = false;
+    applyGridFit(anchor, table);
+  }
+
   // Each control's setup is isolated in its own try/catch so a throw while
   // wiring one (e.g. the toolbar) can never dead-end the others (progress
   // restore, the win banner, the grid's own click listener) — see the
@@ -478,7 +510,15 @@ export function hydrate(): void {
   // .ux/flows/001-frozen-chrome-before-hydration.md.
   try {
     attachToolbar(puzzle, state, () =>
-      handleCheck(table, puzzle, progress, banner, locale, anchor),
+      handleCheck(
+        table,
+        puzzle,
+        progress,
+        banner,
+        locale,
+        anchor,
+        reportSaveResult,
+      ),
     );
   } catch {
     // Degrades silently, same spirit as the rest of this client (see
@@ -496,6 +536,20 @@ export function hydrate(): void {
     // attach even if restoring saved progress fails.
   }
 
+  try {
+    const dismissButton = storageWarning?.querySelector<HTMLButtonElement>(
+      '[data-role="storage-warning-dismiss"]',
+    );
+    dismissButton?.addEventListener("click", () => {
+      // Dismissing only hides it early — it must not clear
+      // `storageWarningShown`, so a later failed save doesn't bring it back.
+      storageWarning.hidden = true;
+    });
+  } catch {
+    // Degrades silently — a broken dismiss control must not prevent the
+    // grid itself from becoming interactive below.
+  }
+
   table.addEventListener("click", (event) =>
     handleGridClick(
       event,
@@ -506,6 +560,7 @@ export function hydrate(): void {
       banner,
       locale,
       anchor,
+      reportSaveResult,
     ),
   );
 

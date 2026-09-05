@@ -39,6 +39,8 @@ export type TranslationKey =
   | "play.check"
   | "play.winBanner.notSolved"
   | "play.winBanner.corrected"
+  | "play.storageWarning"
+  | "play.dismissWarning"
   | "i18n.languageSwitcherLabel"
   | "play.backToLibrary"
   | "library.sectionLabel"
@@ -91,6 +93,8 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.check": "Check",
     "play.winBanner.notSolved": "Not solved yet",
     "play.winBanner.corrected": "Some mistakes were fixed — keep going!",
+    "play.storageWarning": "Progress can't be saved on this device.",
+    "play.dismissWarning": "Dismiss",
     "i18n.languageSwitcherLabel": "Language",
     "play.backToLibrary": "Back to puzzle list",
     "library.sectionLabel": "Choose a puzzle",
@@ -144,6 +148,9 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.winBanner.notSolved": "Pas encore résolu",
     "play.winBanner.corrected":
       "Certaines erreurs ont été corrigées, continuez !",
+    "play.storageWarning":
+      "Impossible d'enregistrer la progression sur cet appareil.",
+    "play.dismissWarning": "Ignorer",
     "i18n.languageSwitcherLabel": "Langue",
     "play.backToLibrary": "Retour à la liste des puzzles",
     "library.sectionLabel": "Choisir un puzzle",

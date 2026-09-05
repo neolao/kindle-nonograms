@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import type { Puzzle, PuzzleProgress } from "@kindle-nonograms/shared";
 import { renderPuzzlePage } from "@kindle-nonograms/site";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { extractBodyHtml } from "./htmlFixture.js";
 import { hydrate } from "./hydratePlayPage.js";
 import { loadProgress, saveProgress } from "./progressStorage.js";
@@ -60,6 +60,16 @@ function checkButton(): HTMLButtonElement | null {
   return document.querySelector<HTMLButtonElement>('[data-role="check"]');
 }
 
+function storageWarning(): HTMLElement | null {
+  return document.querySelector<HTMLElement>('[data-role="storage-warning"]');
+}
+
+function storageWarningDismissButton(): HTMLButtonElement | null {
+  return document.querySelector<HTMLButtonElement>(
+    '[data-role="storage-warning-dismiss"]',
+  );
+}
+
 const originalNavigatorLanguage = window.navigator.language;
 
 function setNavigatorLanguage(language: string): void {
@@ -78,6 +88,7 @@ afterEach(() => {
   document.cookie = "kindle-nonograms-locale=; path=/; max-age=0";
   document.documentElement.lang = "";
   setNavigatorLanguage(originalNavigatorLanguage);
+  vi.restoreAllMocks();
 });
 
 describe("hydrate", () => {
@@ -683,5 +694,88 @@ describe("locale application", () => {
 
     const table = document.querySelector<HTMLElement>("table");
     expect(table?.style.fontSize).toMatch(/^\d+px$/);
+  });
+});
+
+describe("storage warning", () => {
+  it("stays hidden when saving progress succeeds", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    cell(0, 0).click();
+
+    expect(storageWarning()?.hidden).toBe(true);
+  });
+
+  it("reveals the storage warning with its message when a tap fails to save", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    cell(0, 0).click();
+
+    expect(storageWarning()?.hidden).toBe(false);
+    expect(storageWarning()?.textContent).toContain(
+      "Progress can't be saved on this device.",
+    );
+  });
+
+  it("reveals the storage warning when a Check click's save fails", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    cell(0, 0).click();
+    checkButton()?.click();
+
+    expect(storageWarning()?.hidden).toBe(false);
+  });
+
+  it("does not re-show the storage warning after it was dismissed, even if another save then fails", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    buildFixture(duoPuzzle);
+    hydrate();
+
+    cell(0, 0).click();
+    expect(storageWarning()?.hidden).toBe(false);
+
+    storageWarningDismissButton()?.click();
+    expect(storageWarning()?.hidden).toBe(true);
+
+    cell(0, 1).click();
+    expect(storageWarning()?.hidden).toBe(true);
+  });
+
+  it("does not show the warning again for a second failed save even while still visible", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    buildFixture(duoPuzzle);
+    hydrate();
+
+    cell(0, 0).click();
+    cell(0, 1).click();
+
+    expect(storageWarning()?.hidden).toBe(false);
+    expect(
+      document.querySelectorAll('[data-role="storage-warning"]').length,
+    ).toBe(1);
+  });
+
+  it("does not throw when the storage-warning element is missing from the page", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    document.body.innerHTML = `<h1>Solo</h1><p data-role="win-banner" hidden></p><table><tbody><tr><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
+
+    hydrate();
+
+    expect(() => cell(0, 0).click()).not.toThrow();
   });
 });
