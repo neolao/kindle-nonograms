@@ -210,6 +210,32 @@ describe("hydrate", () => {
     } satisfies PuzzleProgress);
   });
 
+  it("clears the win banner's hidden attribute before changing its announced text when a tap completes the puzzle, so screen readers don't miss the announcement", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    const bannerEl = banner();
+    if (!bannerEl) {
+      throw new Error("fixture win banner not found");
+    }
+
+    const hiddenSetter = vi.spyOn(bannerEl, "hidden", "set");
+    const textContentSetter = vi.spyOn(bannerEl, "textContent", "set");
+
+    cell(0, 0).click();
+
+    const hiddenFalseCallIndex = hiddenSetter.mock.calls.findIndex(
+      ([value]) => value === false,
+    );
+    expect(hiddenFalseCallIndex).toBeGreaterThanOrEqual(0);
+    expect(textContentSetter).toHaveBeenCalled();
+
+    const hiddenFalseOrder =
+      hiddenSetter.mock.invocationCallOrder[hiddenFalseCallIndex];
+    const textContentOrder = textContentSetter.mock.invocationCallOrder[0];
+    expect(hiddenFalseOrder).toBeLessThan(textContentOrder);
+  });
+
   it("hides the win banner again once a tap makes the puzzle no longer solved", () => {
     buildFixture(soloPuzzle);
     hydrate();
@@ -368,6 +394,32 @@ describe("check button", () => {
 
     expect(banner()?.hidden).toBe(false);
     expect(banner()?.textContent).toBe("Puzzle solved!");
+  });
+
+  it("clears the win banner's hidden attribute before changing its announced text when Check reveals it, so screen readers don't miss the announcement", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    const bannerEl = banner();
+    if (!bannerEl) {
+      throw new Error("fixture win banner not found");
+    }
+
+    const hiddenSetter = vi.spyOn(bannerEl, "hidden", "set");
+    const textContentSetter = vi.spyOn(bannerEl, "textContent", "set");
+
+    checkButton()?.click();
+
+    const hiddenFalseCallIndex = hiddenSetter.mock.calls.findIndex(
+      ([value]) => value === false,
+    );
+    expect(hiddenFalseCallIndex).toBeGreaterThanOrEqual(0);
+    expect(textContentSetter).toHaveBeenCalled();
+
+    const hiddenFalseOrder =
+      hiddenSetter.mock.invocationCallOrder[hiddenFalseCallIndex];
+    const textContentOrder = textContentSetter.mock.invocationCallOrder[0];
+    expect(hiddenFalseOrder).toBeLessThan(textContentOrder);
   });
 
   it("marks the banner as a live region so its message is announced to assistive tech", () => {

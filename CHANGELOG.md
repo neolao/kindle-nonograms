@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Screen readers could silently miss the win banner's announcement, since its message text was updated while the banner was still hidden — the banner is now shown before its text is announced, for both completing a puzzle by tapping and using the Check button.
+
 ## [2.11.0] - 2026-09-06
 
 ### Added

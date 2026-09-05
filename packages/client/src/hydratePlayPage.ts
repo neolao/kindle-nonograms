@@ -331,6 +331,12 @@ function handleGridClick(
   }
 
   const solved = isPuzzleSolved(puzzle, progress);
+  const wasBannerHidden = banner.hidden;
+  // `hidden` is cleared before the text below is (re)set — some assistive
+  // tech only announces an `aria-live` region's content change once the
+  // element is already unhidden, so setting the text first risks a silently
+  // missed announcement. See .vibe/decisions (backlog item 061).
+  banner.hidden = !solved;
   // Only reset the message when the automatic banner is about to show
   // (always the solved one) — this resyncs it away from a "not solved"
   // message a manual Check click may have left in place. When not solved,
@@ -339,8 +345,6 @@ function handleGridClick(
     setBannerMessage(banner, locale, "play.winBanner.solved");
   }
 
-  const wasBannerHidden = banner.hidden;
-  banner.hidden = !solved;
   // Re-fit only on a hidden->visible transition: that's the one that can
   // shrink the space left for the grid and reintroduce a scrollbar. Going
   // the other way just leaves a little slack, which is harmless — and
@@ -404,10 +408,13 @@ function handleCheck(
     : correction.changed
       ? "play.winBanner.corrected"
       : "play.winBanner.notSolved";
-  setBannerMessage(banner, locale, key);
 
   const wasBannerHidden = banner.hidden;
+  // `hidden` is cleared before the text below is set — see the matching
+  // comment in `handleGridClick` (backlog item 061).
   banner.hidden = false;
+  setBannerMessage(banner, locale, key);
+
   if (wasBannerHidden) {
     applyGridFit(anchor, table);
   }
