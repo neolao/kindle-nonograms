@@ -59,7 +59,7 @@ describe("translate", () => {
     expect(translate("en", "play.check")).toBe("Check");
     expect(translate("en", "play.winBanner.notSolved")).toBe("Not solved yet");
     expect(translate("en", "play.winBanner.corrected")).toBe(
-      "Some mistakes were fixed — keep going!",
+      "Some wrong cells were cleared — keep going!",
     );
     expect(translate("en", "i18n.languageSwitcherLabel")).toBe("Language");
     expect(translate("en", "play.backToLibrary")).toBe("Back to puzzle list");
@@ -97,7 +97,7 @@ describe("translate", () => {
       "Pas encore résolu",
     );
     expect(translate("fr", "play.winBanner.corrected")).toBe(
-      "Certaines erreurs ont été corrigées, continuez !",
+      "Certaines cases incorrectes ont été effacées, continuez !",
     );
     expect(translate("fr", "i18n.languageSwitcherLabel")).toBe("Langue");
     expect(translate("fr", "play.backToLibrary")).toBe(
@@ -140,6 +140,18 @@ describe("translate", () => {
     expect(translate(bogusLocale, "play.modeFill")).toBe(
       translate(DEFAULT_LOCALE, "play.modeFill"),
     );
+  });
+});
+
+describe("play.winBanner.corrected wording", () => {
+  it("does not claim wrong cells were fixed or corrected in English", () => {
+    const message = translate("en", "play.winBanner.corrected");
+    expect(message.toLowerCase()).not.toMatch(/fixed|corrected/);
+  });
+
+  it("does not claim wrong cells were corrected in French", () => {
+    const message = translate("fr", "play.winBanner.corrected");
+    expect(message.toLowerCase()).not.toMatch(/corrig/);
   });
 });
 

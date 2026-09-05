@@ -92,7 +92,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.winBanner.solved": "Puzzle solved!",
     "play.check": "Check",
     "play.winBanner.notSolved": "Not solved yet",
-    "play.winBanner.corrected": "Some mistakes were fixed — keep going!",
+    "play.winBanner.corrected": "Some wrong cells were cleared — keep going!",
     "play.storageWarning": "Progress can't be saved on this device.",
     "play.dismissWarning": "Dismiss",
     "i18n.languageSwitcherLabel": "Language",
@@ -147,7 +147,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.check": "Vérifier",
     "play.winBanner.notSolved": "Pas encore résolu",
     "play.winBanner.corrected":
-      "Certaines erreurs ont été corrigées, continuez !",
+      "Certaines cases incorrectes ont été effacées, continuez !",
     "play.storageWarning":
       "Impossible d'enregistrer la progression sur cet appareil.",
     "play.dismissWarning": "Ignorer",

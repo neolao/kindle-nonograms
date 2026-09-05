@@ -356,8 +356,8 @@ function handleGridClick(
  * solution back to untouched (never fills in a cell the player hasn't
  * attempted — see {@link correctWrongCells}), repaints only the cells that
  * actually changed, persists the result, then shows whichever banner
- * message applies — solved, "some mistakes were fixed" when cells were
- * corrected but the puzzle isn't finished yet, or the plain not-solved
+ * message applies — solved, "some wrong cells were cleared" when mistakes
+ * were wiped but the puzzle isn't finished yet, or the plain not-solved
  * message when nothing was wrong to begin with.
  */
 function handleCheck(

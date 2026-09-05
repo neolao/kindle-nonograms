@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The message shown after checking a partially-wrong puzzle no longer says wrong cells were "fixed" — it now says they were cleared, since the game only removes mistakes and never fills in the correct answer for the player.
+
 ## [2.10.0] - 2026-09-05
 
 ### Added

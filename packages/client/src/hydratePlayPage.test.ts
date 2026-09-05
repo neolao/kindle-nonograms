@@ -396,7 +396,7 @@ describe("check button", () => {
     expect(cell(0, 0).style.backgroundColor).toBe("");
     expect(banner()?.hidden).toBe(false);
     expect(banner()?.textContent).toBe(
-      "Some mistakes were fixed — keep going!",
+      "Some wrong cells were cleared — keep going!",
     );
   });
 
@@ -412,7 +412,7 @@ describe("check button", () => {
 
     expect(cell(0, 1).style.backgroundColor).toBe("");
     expect(banner()?.textContent).toBe(
-      "Some mistakes were fixed — keep going!",
+      "Some wrong cells were cleared — keep going!",
     );
   });
 
