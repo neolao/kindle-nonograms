@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Localize Editor Validation And Import Errors
 
