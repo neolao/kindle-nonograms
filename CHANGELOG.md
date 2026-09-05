@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.1] - 2026-09-05
+
 ### Fixed
 
 - The message shown after checking a partially-wrong puzzle no longer says wrong cells were "fixed" — it now says they were cleared, since the game only removes mistakes and never fills in the correct answer for the player.
@@ -246,7 +248,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.10.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.10.1...HEAD
+[2.10.1]: https://github.com/neolao/kindle-nonograms/compare/v2.10.0...v2.10.1
 [2.10.0]: https://github.com/neolao/kindle-nonograms/compare/v2.9.0...v2.10.0
 [2.9.0]: https://github.com/neolao/kindle-nonograms/compare/v2.8.0...v2.9.0
 [2.8.0]: https://github.com/neolao/kindle-nonograms/compare/v2.7.0...v2.8.0
