@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Fix Win Banner Announcement Timing For Screen Readers
 
