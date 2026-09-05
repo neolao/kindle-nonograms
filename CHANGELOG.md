@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.11.1] - 2026-09-06
+
 ### Fixed
 
 - Screen readers could silently miss the win banner's announcement, since its message text was updated while the banner was still hidden — the banner is now shown before its text is announced, for both completing a puzzle by tapping and using the Check button.
@@ -258,7 +260,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.11.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.11.1...HEAD
+[2.11.1]: https://github.com/neolao/kindle-nonograms/compare/v2.11.0...v2.11.1
 [2.11.0]: https://github.com/neolao/kindle-nonograms/compare/v2.10.1...v2.11.0
 [2.10.1]: https://github.com/neolao/kindle-nonograms/compare/v2.10.0...v2.10.1
 [2.10.0]: https://github.com/neolao/kindle-nonograms/compare/v2.9.0...v2.10.0
