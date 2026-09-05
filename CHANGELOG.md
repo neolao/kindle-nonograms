@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-09-05
+
 ### Added
 
 - 26 new black-and-white puzzles converted from the reMarkable nonogram generator: Apple, Balloons, Boat, Candle, Car, Cat, Chameleon, Cow, Crab, Crocodile, Dragon, Duck, Earth, Elephant, Head, Horse, House, Lion, Mushroom, Panda, Pear, Pig, Sitting Cat, Squirrel, Watermelon, and Whale.
@@ -240,7 +242,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.9.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.10.0...HEAD
+[2.10.0]: https://github.com/neolao/kindle-nonograms/compare/v2.9.0...v2.10.0
 [2.9.0]: https://github.com/neolao/kindle-nonograms/compare/v2.8.0...v2.9.0
 [2.8.0]: https://github.com/neolao/kindle-nonograms/compare/v2.7.0...v2.8.0
 [2.7.0]: https://github.com/neolao/kindle-nonograms/compare/v2.6.0...v2.7.0

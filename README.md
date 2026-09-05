@@ -38,6 +38,8 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The site now has a favicon, shown in the browser tab on every page.
 - The puzzle editor can now import a local image: it's fitted to your grid size, reduced to a chosen number of colors, and pixels close to a chosen background color become blank — giving you a starting grid to refine by hand.
 - If your device can't save your puzzle progress (storage full, private browsing), you now get a one-time, dismissible warning instead of silently losing your progress.
+- The library, puzzle, and puzzle-editor pages now show their toolbar, filters, palette, and other controls in their final layout from the moment they load, instead of some of it popping in a moment later.
+- If one part of a page's controls fails to set up, the rest of that page keeps working instead of breaking too.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->
@@ -89,8 +91,8 @@ npm run lint
 ## Documentation
 
 <!-- vibe:begin:docs-index -->
-- [docs/architecture.md](docs/architecture.md) — how the project's packages fit together
-- [docs/configuration.md](docs/configuration.md) — build-time settings
+- [docs/architecture.md](docs/architecture.md) — how the project's packages fit together, and how the site is built, deployed, and kept in sync with pull request previews.
+- [docs/configuration.md](docs/configuration.md) — build-time settings and the environment variables the automated workflows rely on.
 <!-- vibe:end:docs-index -->
 
 ## Contributing
