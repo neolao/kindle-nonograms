@@ -40,6 +40,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - If your device can't save your puzzle progress (storage full, private browsing), you now get a one-time, dismissible warning instead of silently losing your progress.
 - The library, puzzle, and puzzle-editor pages now show their toolbar, filters, palette, and other controls in their final layout from the moment they load, instead of some of it popping in a moment later.
 - If one part of a page's controls fails to set up, the rest of that page keeps working instead of breaking too.
+- The puzzle editor now shows clear, fixed messages for validation and image-import problems (like a missing name or an unreadable image) instead of raw, technical error text.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

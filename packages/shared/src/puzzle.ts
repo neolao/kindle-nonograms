@@ -14,45 +14,91 @@ export interface Puzzle {
   cells: (number | null)[][];
 }
 
+/**
+ * Stable, locale-independent discriminant for why `createPuzzle` rejected
+ * its input — lets a caller (e.g. the puzzle editor) pick its own
+ * user-facing message per failure kind without parsing `Error#message`,
+ * which stays a plain-English, developer-facing description (see
+ * `.vibe/decisions/021-editor-errors-discriminated-by-reason.md`).
+ */
+export type PuzzleValidationReason =
+  | "emptyId"
+  | "emptyName"
+  | "invalidDimensions"
+  | "emptyPalette"
+  | "rowCountMismatch"
+  | "columnCountMismatch"
+  | "colorIndexOutOfRange";
+
+/** Thrown by `createPuzzle` for any structurally invalid input. */
+export class PuzzleValidationError extends Error {
+  readonly reason: PuzzleValidationReason;
+
+  constructor(reason: PuzzleValidationReason, message: string) {
+    super(message);
+    this.name = "PuzzleValidationError";
+    this.reason = reason;
+  }
+}
+
 function isPositiveInteger(value: number): boolean {
   return Number.isInteger(value) && value > 0;
 }
 
 /**
- * Validates and builds a Puzzle. Throws a descriptive error if the input
- * is inconsistent (wrong dimensions, out-of-range colors, empty id/name).
+ * Validates and builds a Puzzle. Throws a descriptive `PuzzleValidationError`
+ * if the input is inconsistent (wrong dimensions, out-of-range colors, empty
+ * id/name).
  */
 export function createPuzzle(input: Puzzle): Puzzle {
   const { id, name, width, height, palette, cells } = input;
 
   if (id.trim() === "") {
-    throw new Error("Puzzle id must not be empty");
+    throw new PuzzleValidationError("emptyId", "Puzzle id must not be empty");
   }
 
   if (name.trim() === "") {
-    throw new Error("Puzzle name must not be empty");
+    throw new PuzzleValidationError(
+      "emptyName",
+      "Puzzle name must not be empty",
+    );
   }
 
   if (!isPositiveInteger(width) || !isPositiveInteger(height)) {
-    throw new Error("Puzzle width and height must be positive integers");
+    throw new PuzzleValidationError(
+      "invalidDimensions",
+      "Puzzle width and height must be positive integers",
+    );
   }
 
   if (palette.length === 0) {
-    throw new Error("Puzzle palette must contain at least one color");
+    throw new PuzzleValidationError(
+      "emptyPalette",
+      "Puzzle palette must contain at least one color",
+    );
   }
 
   if (cells.length !== height) {
-    throw new Error(`Puzzle cells must have exactly ${height} rows`);
+    throw new PuzzleValidationError(
+      "rowCountMismatch",
+      `Puzzle cells must have exactly ${height} rows`,
+    );
   }
 
   for (const row of cells) {
     if (row.length !== width) {
-      throw new Error(`Every puzzle row must have exactly ${width} columns`);
+      throw new PuzzleValidationError(
+        "columnCountMismatch",
+        `Every puzzle row must have exactly ${width} columns`,
+      );
     }
 
     for (const cell of row) {
       if (cell !== null && (cell < 0 || cell >= palette.length)) {
-        throw new Error(`Cell color index ${cell} is out of palette range`);
+        throw new PuzzleValidationError(
+          "colorIndexOutOfRange",
+          `Cell color index ${cell} is out of palette range`,
+        );
       }
     }
   }

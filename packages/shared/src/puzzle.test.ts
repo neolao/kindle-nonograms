@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createPuzzle } from "./puzzle.js";
+import {
+  PuzzleValidationError,
+  type PuzzleValidationReason,
+  createPuzzle,
+} from "./puzzle.js";
 
 function validInput() {
   return {
@@ -13,6 +17,18 @@ function validInput() {
       [null, 0],
     ],
   };
+}
+
+/** Runs `fn` and returns whatever it throws, instead of throwing itself —
+ * lets a test inspect the thrown error's own fields (`reason`, `message`)
+ * rather than only asserting that *something* was thrown. */
+function captureError(fn: () => unknown): unknown {
+  try {
+    fn();
+    return undefined;
+  } catch (error) {
+    return error;
+  }
 }
 
 describe("createPuzzle", () => {
@@ -84,5 +100,52 @@ describe("createPuzzle", () => {
     });
 
     expect(puzzle.cells).toEqual([[0, 1]]);
+  });
+
+  it.each([
+    [{ id: "" }, "emptyId"],
+    [{ name: "" }, "emptyName"],
+    [{ width: 0 }, "invalidDimensions"],
+    [{ height: -1 }, "invalidDimensions"],
+    [{ palette: [] }, "emptyPalette"],
+    [{ cells: [[0, null]] }, "rowCountMismatch"],
+    [
+      {
+        cells: [
+          [0, null, null],
+          [null, 0],
+        ],
+      },
+      "columnCountMismatch",
+    ],
+    [
+      {
+        cells: [
+          [1, null],
+          [null, 0],
+        ],
+      },
+      "colorIndexOutOfRange",
+    ],
+  ] as [Partial<ReturnType<typeof validInput>>, PuzzleValidationReason][])(
+    "tags a %o failure with reason %s",
+    (overrides, reason) => {
+      const error = captureError(() =>
+        createPuzzle({ ...validInput(), ...overrides }),
+      );
+
+      expect(error).toBeInstanceOf(PuzzleValidationError);
+      expect((error as PuzzleValidationError).reason).toBe(reason);
+    },
+  );
+
+  it("keeps the exact developer-facing message discoverPuzzles.ts's build-time diagnostics depend on", () => {
+    const error = captureError(() =>
+      createPuzzle({ ...validInput(), palette: [] }),
+    );
+
+    expect((error as Error).message).toBe(
+      "Puzzle palette must contain at least one color",
+    );
   });
 });

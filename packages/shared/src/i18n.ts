@@ -80,7 +80,12 @@ export type TranslationKey =
   | "editor.modeErase"
   | "editor.selectColorAriaLabel"
   | "editor.editColorAriaLabel"
-  | "editor.removeColorAriaLabel";
+  | "editor.removeColorAriaLabel"
+  | "editor.error.emptyName"
+  | "editor.error.emptyFilename"
+  | "editor.error.imageUnsupported"
+  | "editor.error.imageUnreadable"
+  | "editor.error.unexpected";
 
 const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
   en: {
@@ -136,6 +141,12 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.selectColorAriaLabel": "Select color",
     "editor.editColorAriaLabel": "Edit color",
     "editor.removeColorAriaLabel": "Remove color",
+    "editor.error.emptyName": "Puzzle name is required.",
+    "editor.error.emptyFilename": "Filename is required.",
+    "editor.error.imageUnsupported": "This browser can't import images.",
+    "editor.error.imageUnreadable":
+      "Couldn't read this image file. Try a different one.",
+    "editor.error.unexpected": "Something went wrong. Please try again.",
   },
   fr: {
     "library.title": "Kindle Nonograms",
@@ -192,6 +203,13 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.selectColorAriaLabel": "Choisir la couleur",
     "editor.editColorAriaLabel": "Modifier la couleur",
     "editor.removeColorAriaLabel": "Retirer la couleur",
+    "editor.error.emptyName": "Le nom du puzzle est requis.",
+    "editor.error.emptyFilename": "Le nom de fichier est requis.",
+    "editor.error.imageUnsupported":
+      "Ce navigateur ne peut pas importer d'images.",
+    "editor.error.imageUnreadable":
+      "Impossible de lire ce fichier image. Essayez-en un autre.",
+    "editor.error.unexpected": "Une erreur est survenue. Veuillez réessayer.",
   },
 };
 

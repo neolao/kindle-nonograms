@@ -5,11 +5,12 @@ import {
   EDITOR_DEFAULT_PALETTE,
   EDITOR_DEFAULT_WIDTH,
   type Puzzle,
+  PuzzleValidationError,
   contrastingTextColor,
   createPuzzle,
   translate,
 } from "@kindle-nonograms/shared";
-import { decodeImageFile } from "./decodeImageFile.js";
+import { ImageDecodeError, decodeImageFile } from "./decodeImageFile.js";
 import { computeFitFontSizePx } from "./fitGrid.js";
 import { buildImportedGrid } from "./imageQuantize.js";
 
@@ -645,6 +646,52 @@ function hasPaintedContent(cells: (number | null)[][]): boolean {
 }
 
 /**
+ * Maps a `decodeImageFile` rejection to a fixed, contributor-facing
+ * translated message — never the error's own `message`, which for the
+ * `"unknown"` reason can be literal, untranslatable browser text (e.g. a
+ * `DOMException`'s wording). See
+ * `.vibe/decisions/021-editor-errors-discriminated-by-reason.md`.
+ */
+function describeImportError(error: unknown): string {
+  if (error instanceof ImageDecodeError) {
+    switch (error.reason) {
+      case "unsupported":
+        return translate(DEFAULT_LOCALE, "editor.error.imageUnsupported");
+      case "unreadable":
+        return translate(DEFAULT_LOCALE, "editor.error.imageUnreadable");
+      default:
+        return translate(DEFAULT_LOCALE, "editor.error.unexpected");
+    }
+  }
+  return translate(DEFAULT_LOCALE, "editor.error.unexpected");
+}
+
+/**
+ * Maps a `createPuzzle` rejection to a fixed, contributor-facing translated
+ * message — never the error's own `message`, which is a plain-English,
+ * developer-facing description reused verbatim by `discoverPuzzles.ts`'s
+ * build-time diagnostics. Only the two failures the editor's own fields can
+ * actually trigger (an empty name or filename) get a specific message;
+ * every other `PuzzleValidationError` reason (an internal invariant the
+ * editor's own state management already prevents from happening) falls
+ * back to the same generic message as a wholly unexpected error. See
+ * `.vibe/decisions/021-editor-errors-discriminated-by-reason.md`.
+ */
+function describeExportError(error: unknown): string {
+  if (error instanceof PuzzleValidationError) {
+    switch (error.reason) {
+      case "emptyId":
+        return translate(DEFAULT_LOCALE, "editor.error.emptyFilename");
+      case "emptyName":
+        return translate(DEFAULT_LOCALE, "editor.error.emptyName");
+      default:
+        return translate(DEFAULT_LOCALE, "editor.error.unexpected");
+    }
+  }
+  return translate(DEFAULT_LOCALE, "editor.error.unexpected");
+}
+
+/**
  * Decodes the picked file, downsamples/quantizes it to the grid's *current*
  * width/height (read now, at click time — not whenever the file was picked,
  * since the size fields stay live-editable in between), and replaces the
@@ -709,8 +756,7 @@ async function handleImport(
     elements.error.textContent = "";
     render(elements, state);
   } catch (error) {
-    elements.error.textContent =
-      error instanceof Error ? `⚠ ${error.message}` : "⚠ Image import failed.";
+    elements.error.textContent = `⚠ ${describeImportError(error)}`;
   } finally {
     elements.importFile.disabled = false;
     elements.importPaletteSize.disabled = false;
@@ -733,8 +779,7 @@ function handleExport(elements: EditorElements, state: EditorState): void {
     triggerDownload(`${puzzle.id}.json`, JSON.stringify(puzzle, null, 2));
     state.hasUnsavedChanges = false;
   } catch (error) {
-    elements.error.textContent =
-      error instanceof Error ? `⚠ ${error.message}` : "⚠ Export failed";
+    elements.error.textContent = `⚠ ${describeExportError(error)}`;
   }
 }
 

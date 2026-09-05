@@ -34,6 +34,11 @@ const ALL_KEYS: TranslationKey[] = [
   "library.paginationPrev",
   "library.paginationNext",
   "library.paginationStatusLabel",
+  "editor.error.emptyName",
+  "editor.error.emptyFilename",
+  "editor.error.imageUnsupported",
+  "editor.error.imageUnreadable",
+  "editor.error.unexpected",
 ];
 
 describe("SUPPORTED_LOCALES and DEFAULT_LOCALE", () => {
@@ -81,6 +86,21 @@ describe("translate", () => {
     expect(translate("en", "library.paginationPrev")).toBe("Previous");
     expect(translate("en", "library.paginationNext")).toBe("Next");
     expect(translate("en", "library.paginationStatusLabel")).toBe("Page");
+    expect(translate("en", "editor.error.emptyName")).toBe(
+      "Puzzle name is required.",
+    );
+    expect(translate("en", "editor.error.emptyFilename")).toBe(
+      "Filename is required.",
+    );
+    expect(translate("en", "editor.error.imageUnsupported")).toBe(
+      "This browser can't import images.",
+    );
+    expect(translate("en", "editor.error.imageUnreadable")).toBe(
+      "Couldn't read this image file. Try a different one.",
+    );
+    expect(translate("en", "editor.error.unexpected")).toBe(
+      "Something went wrong. Please try again.",
+    );
   });
 
   it("returns the exact French string for each key", () => {
@@ -125,6 +145,21 @@ describe("translate", () => {
     expect(translate("fr", "library.paginationPrev")).toBe("Précédent");
     expect(translate("fr", "library.paginationNext")).toBe("Suivant");
     expect(translate("fr", "library.paginationStatusLabel")).toBe("Page");
+    expect(translate("fr", "editor.error.emptyName")).toBe(
+      "Le nom du puzzle est requis.",
+    );
+    expect(translate("fr", "editor.error.emptyFilename")).toBe(
+      "Le nom de fichier est requis.",
+    );
+    expect(translate("fr", "editor.error.imageUnsupported")).toBe(
+      "Ce navigateur ne peut pas importer d'images.",
+    );
+    expect(translate("fr", "editor.error.imageUnreadable")).toBe(
+      "Impossible de lire ce fichier image. Essayez-en un autre.",
+    );
+    expect(translate("fr", "editor.error.unexpected")).toBe(
+      "Une erreur est survenue. Veuillez réessayer.",
+    );
   });
 
   it("has a non-empty string for every key in every supported locale", () => {

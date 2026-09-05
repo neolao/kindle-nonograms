@@ -4,10 +4,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 // Mocked so image import tests control decoding without a real <canvas> —
 // jsdom doesn't implement real pixel decoding (see decodeImageFile.ts's own
-// doc comment on this exact boundary).
-vi.mock("./decodeImageFile.js", () => ({ decodeImageFile: vi.fn() }));
+// doc comment on this exact boundary). `ImageDecodeError` is kept real (not
+// stubbed) so tests can construct the same error shape hydrateEditorPage.ts
+// actually receives in the browser.
+vi.mock("./decodeImageFile.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./decodeImageFile.js")>();
+  return { ...actual, decodeImageFile: vi.fn() };
+});
 
-import { decodeImageFile } from "./decodeImageFile.js";
+import { ImageDecodeError, decodeImageFile } from "./decodeImageFile.js";
 import { extractBodyHtml } from "./htmlFixture.js";
 import {
   addPaletteColor,
@@ -490,7 +495,7 @@ describe("hydrate", () => {
     expect(errorRegion().textContent).toBe("");
   });
 
-  it("shows the validation error inline and downloads nothing when the name is empty", () => {
+  it("shows a fixed, translated error and downloads nothing when the name is empty", () => {
     buildFixture();
     hydrate();
     const { createObjectURL } = stubDownload();
@@ -499,7 +504,19 @@ describe("hydrate", () => {
     fireClick(exportButton());
 
     expect(createObjectURL).not.toHaveBeenCalled();
-    expect(errorRegion().textContent).toMatch(/name must not be empty/i);
+    expect(errorRegion().textContent).toBe("⚠ Puzzle name is required.");
+  });
+
+  it("shows a fixed, translated error and downloads nothing when the filename is empty", () => {
+    buildFixture();
+    hydrate();
+    const { createObjectURL } = stubDownload();
+
+    fireChange(nameInput(), "Small Heart");
+    fireClick(exportButton());
+
+    expect(createObjectURL).not.toHaveBeenCalled();
+    expect(errorRegion().textContent).toBe("⚠ Filename is required.");
   });
 });
 
@@ -620,14 +637,14 @@ describe("image import", () => {
     expect(document.querySelectorAll("table td")).toHaveLength(6);
   });
 
-  it("surfaces a decode failure inline and leaves the previous grid untouched", async () => {
+  it("surfaces a fixed, translated error for an unreadable file and leaves the previous grid untouched", async () => {
     buildFixture();
     hydrate();
     fireClick(cell(0, 0));
     const paintedColor = cell(0, 0).style.backgroundColor;
     setImportFile(pngFile());
     vi.mocked(decodeImageFile).mockRejectedValueOnce(
-      new Error("Could not read this image file."),
+      new ImageDecodeError("unreadable", "Could not read this image file."),
     );
     vi.stubGlobal(
       "confirm",
@@ -637,15 +654,58 @@ describe("image import", () => {
     fireClick(importButton());
     await flushAsync();
 
-    expect(errorRegion().textContent).toMatch(/could not read this image/i);
+    expect(errorRegion().textContent).toBe(
+      "⚠ Couldn't read this image file. Try a different one.",
+    );
     expect(cell(0, 0).style.backgroundColor).toBe(paintedColor);
+  });
+
+  it("surfaces a fixed, translated error when the browser can't decode images", async () => {
+    buildFixture();
+    hydrate();
+    setImportFile(pngFile());
+    vi.mocked(decodeImageFile).mockRejectedValueOnce(
+      new ImageDecodeError(
+        "unsupported",
+        "This browser can't decode images for import.",
+      ),
+    );
+
+    fireClick(importButton());
+    await flushAsync();
+
+    expect(errorRegion().textContent).toBe(
+      "⚠ This browser can't import images.",
+    );
+  });
+
+  it("normalizes an unexpected/raw browser exception to the generic fallback message, never showing its own text", async () => {
+    buildFixture();
+    hydrate();
+    setImportFile(pngFile());
+    vi.mocked(decodeImageFile).mockRejectedValueOnce(
+      new ImageDecodeError(
+        "unknown",
+        "Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source width is 0.",
+      ),
+    );
+
+    fireClick(importButton());
+    await flushAsync();
+
+    expect(errorRegion().textContent).toBe(
+      "⚠ Something went wrong. Please try again.",
+    );
+    expect(errorRegion().textContent).not.toMatch(/getImageData|source width/);
   });
 
   it("re-enables the import controls after a failed import", async () => {
     buildFixture();
     hydrate();
     setImportFile(pngFile());
-    vi.mocked(decodeImageFile).mockRejectedValueOnce(new Error("broken"));
+    vi.mocked(decodeImageFile).mockRejectedValueOnce(
+      new ImageDecodeError("unknown", "broken"),
+    );
 
     fireClick(importButton());
     await flushAsync();

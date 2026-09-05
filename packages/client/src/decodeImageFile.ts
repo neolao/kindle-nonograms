@@ -1,6 +1,31 @@
 import type { ImageLike } from "./imageQuantize.js";
 
 /**
+ * Stable, locale-independent discriminant for why `decodeImageFile` rejected
+ * — lets `hydrateEditorPage.ts` pick its own contributor-facing message per
+ * failure kind instead of showing this error's own `message` (which can be
+ * literal, untranslatable browser text, e.g. a `DOMException`'s own wording
+ * from `getImageData`/`drawImage`) — see
+ * `.vibe/decisions/021-editor-errors-discriminated-by-reason.md`.
+ * `"unsupported"`: this browser can't decode images at all (no 2D canvas
+ * context). `"unreadable"`: the picked file itself couldn't be loaded as an
+ * image. `"unknown"`: any other failure, most often a raw browser exception
+ * from the decode step — its own message is kept on the error for
+ * debugging, but never shown to the contributor verbatim.
+ */
+export type ImageDecodeErrorReason = "unsupported" | "unreadable" | "unknown";
+
+export class ImageDecodeError extends Error {
+  readonly reason: ImageDecodeErrorReason;
+
+  constructor(reason: ImageDecodeErrorReason, message: string) {
+    super(message);
+    this.name = "ImageDecodeError";
+    this.reason = reason;
+  }
+}
+
+/**
  * Decodes a user-picked local image file into raw RGBA pixel data via a
  * throwaway `<canvas>` — the only way to read pixel data from an arbitrary
  * local file with no server to send it to for decoding (matches the
@@ -25,7 +50,12 @@ export function decodeImageFile(file: File): Promise<ImageLike> {
         canvas.height = image.naturalHeight;
         const context = canvas.getContext("2d");
         if (!context) {
-          reject(new Error("This browser can't decode images for import."));
+          reject(
+            new ImageDecodeError(
+              "unsupported",
+              "This browser can't decode images for import.",
+            ),
+          );
           return;
         }
 
@@ -43,7 +73,10 @@ export function decodeImageFile(file: File): Promise<ImageLike> {
         });
       } catch (error) {
         reject(
-          error instanceof Error ? error : new Error("Image decode failed."),
+          new ImageDecodeError(
+            "unknown",
+            error instanceof Error ? error.message : "Image decode failed.",
+          ),
         );
       } finally {
         URL.revokeObjectURL(url);
@@ -52,7 +85,9 @@ export function decodeImageFile(file: File): Promise<ImageLike> {
 
     image.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error("Could not read this image file."));
+      reject(
+        new ImageDecodeError("unreadable", "Could not read this image file."),
+      );
     };
 
     image.src = url;

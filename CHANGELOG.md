@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The puzzle editor now shows fixed, translatable messages for validation and image-import errors (an empty puzzle name or filename, an unreadable or unsupported image file) instead of raw, English-only, sometimes browser-generated error text.
+
 ## [2.10.1] - 2026-09-05
 
 ### Fixed
