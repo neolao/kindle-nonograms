@@ -164,6 +164,24 @@ function findStorageWarning(): HTMLElement | undefined {
 }
 
 /**
+ * Reveals the "this puzzle couldn't be loaded" message
+ * `renderPuzzlePage.ts` already bakes into the static page, hidden — see
+ * `renderDefaultLoadError` there (backlog item 040). Its text was already
+ * retranslated by `applyStoredLocale`'s full-page `[data-i18n]` pass before
+ * this runs, so only the `hidden` attribute needs clearing here. No-ops on
+ * a page shape that doesn't have the element, same defensive spirit as
+ * `findBanner`/`findStorageWarning`.
+ */
+function revealLoadError(): void {
+  const element = document.querySelector<HTMLElement>(
+    '[data-role="load-error"]',
+  );
+  if (element) {
+    element.hidden = false;
+  }
+}
+
+/**
  * Locates the toolbar `renderPuzzlePage.ts` already bakes into the static
  * page (Fill/Cross buttons, one color swatch button per palette color for a
  * multi-color puzzle, Check) and attaches this hydration's behavior to it —
@@ -471,6 +489,11 @@ export function hydrate(): void {
 
   const puzzle = readPuzzle();
   if (!puzzle) {
+    // The `#puzzle-data` script exists (checked above) but couldn't be
+    // read/parsed/validated — a real, if rare, failure distinct from the
+    // self-detection no-op above. See backlog item 040: leaving the grid
+    // silently inert here would be a dead end for the player.
+    revealLoadError();
     return;
   }
 

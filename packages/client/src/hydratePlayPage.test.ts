@@ -64,6 +64,10 @@ function storageWarning(): HTMLElement | null {
   return document.querySelector<HTMLElement>('[data-role="storage-warning"]');
 }
 
+function loadError(): HTMLElement | null {
+  return document.querySelector<HTMLElement>('[data-role="load-error"]');
+}
+
 function storageWarningDismissButton(): HTMLButtonElement | null {
   return document.querySelector<HTMLButtonElement>(
     '[data-role="storage-warning-dismiss"]',
@@ -340,6 +344,40 @@ describe("hydrate", () => {
 
     expect(() => hydrate()).not.toThrow();
     expect(banner()).toBeNull();
+  });
+
+  it("shows a visible load-error message in the chrome panel when the embedded puzzle data is malformed, instead of leaving a silently inert grid", () => {
+    buildFixture(soloPuzzle);
+    const script = document.getElementById("puzzle-data");
+    if (script) {
+      script.textContent = "not json{";
+    }
+
+    expect(() => hydrate()).not.toThrow();
+
+    expect(loadError()?.hidden).toBe(false);
+    expect(loadError()?.textContent).toBe("This puzzle couldn't be loaded");
+  });
+
+  it("keeps the back-link usable when the puzzle data fails to load", () => {
+    buildFixture(soloPuzzle);
+    const script = document.getElementById("puzzle-data");
+    if (script) {
+      script.textContent = "not json{";
+    }
+
+    hydrate();
+
+    const backLink = document.querySelector<HTMLAnchorElement>(".back-link");
+    expect(backLink?.getAttribute("href")).toBe("../../");
+  });
+
+  it("does not reveal the load-error message when the puzzle hydrates successfully", () => {
+    buildFixture(soloPuzzle);
+
+    hydrate();
+
+    expect(loadError()?.hidden).toBe(true);
   });
 
   it("falls back to a blank grid instead of throwing when saved progress has the wrong shape for the puzzle", () => {

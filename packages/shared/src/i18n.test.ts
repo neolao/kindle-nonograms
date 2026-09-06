@@ -66,6 +66,9 @@ describe("translate", () => {
     expect(translate("en", "play.winBanner.corrected")).toBe(
       "Some wrong cells were cleared — keep going!",
     );
+    expect(translate("en", "play.loadError")).toBe(
+      "This puzzle couldn't be loaded",
+    );
     expect(translate("en", "i18n.languageSwitcherLabel")).toBe("Language");
     expect(translate("en", "play.backToLibrary")).toBe("Back to puzzle list");
     expect(translate("en", "library.sectionLabel")).toBe("Choose a puzzle");
@@ -118,6 +121,9 @@ describe("translate", () => {
     );
     expect(translate("fr", "play.winBanner.corrected")).toBe(
       "Certaines cases incorrectes ont été effacées, continuez !",
+    );
+    expect(translate("fr", "play.loadError")).toBe(
+      "Ce puzzle n'a pas pu être chargé",
     );
     expect(translate("fr", "i18n.languageSwitcherLabel")).toBe("Langue");
     expect(translate("fr", "play.backToLibrary")).toBe(

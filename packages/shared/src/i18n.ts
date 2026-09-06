@@ -50,6 +50,7 @@ export type TranslationKey =
   | "play.winBanner.corrected"
   | "play.storageWarning"
   | "play.dismissWarning"
+  | "play.loadError"
   | "i18n.languageSwitcherLabel"
   | "play.backToLibrary"
   | "library.sectionLabel"
@@ -109,6 +110,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.winBanner.corrected": "Some wrong cells were cleared — keep going!",
     "play.storageWarning": "Progress can't be saved on this device.",
     "play.dismissWarning": "Dismiss",
+    "play.loadError": "This puzzle couldn't be loaded",
     "i18n.languageSwitcherLabel": "Language",
     "play.backToLibrary": "Back to puzzle list",
     "library.sectionLabel": "Choose a puzzle",
@@ -171,6 +173,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.storageWarning":
       "Impossible d'enregistrer la progression sur cet appareil.",
     "play.dismissWarning": "Ignorer",
+    "play.loadError": "Ce puzzle n'a pas pu être chargé",
     "i18n.languageSwitcherLabel": "Langue",
     "play.backToLibrary": "Retour à la liste des puzzles",
     "library.sectionLabel": "Choisir un puzzle",

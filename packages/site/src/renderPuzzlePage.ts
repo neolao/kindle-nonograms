@@ -46,6 +46,20 @@ function renderDefaultBanner(): string {
 }
 
 /**
+ * The "this puzzle couldn't be loaded" message (see backlog item 040),
+ * baked hidden into the static page the same way the banner/storage warning
+ * are — see `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`.
+ * Revealed by `hydratePlayPage.ts` only in the rare case where the embedded
+ * `#puzzle-data` script (present, since it's this page's own self-detection
+ * marker) turns out to be unreadable/invalid — puzzles are validated at
+ * build time, so this is a last-resort fail-safe rather than an expected
+ * state.
+ */
+function renderDefaultLoadError(): string {
+  return `<p data-role="load-error" data-i18n="play.loadError" role="status" aria-live="polite" hidden>${translate(DEFAULT_LOCALE, "play.loadError")}</p>`;
+}
+
+/**
  * The one-time "progress can't be saved" warning (see backlog item 033),
  * baked hidden into the static page the same way the toolbar/banner are —
  * see `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`. The
@@ -111,6 +125,7 @@ ${renderEarlyLangScript()}
 <h1>${escapeHtml(puzzle.name)}</h1>
 <div class="page-header-controls"></div>
 </div>
+${renderDefaultLoadError()}
 ${renderDefaultStorageWarning()}
 ${renderDefaultBanner()}
 ${renderDefaultToolbar(puzzle)}

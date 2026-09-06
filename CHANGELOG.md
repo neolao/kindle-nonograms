@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- A puzzle page now shows a clear "This puzzle couldn't be loaded" message when its puzzle data is missing or invalid, instead of silently leaving a grid that looks tappable but does nothing.
+
 ## [2.13.0] - 2026-09-06
 
 ### Added
