@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.0] - 2026-09-06
+
 ### Added
 
 - The puzzle editor now honors the saved/detected language and shows its own language switcher in a footer, matching the library page — previously it always rendered in English with no way to change it.
@@ -276,7 +278,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.11.3...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.12.0...HEAD
+[2.12.0]: https://github.com/neolao/kindle-nonograms/compare/v2.11.3...v2.12.0
 [2.11.3]: https://github.com/neolao/kindle-nonograms/compare/v2.11.2...v2.11.3
 [2.11.2]: https://github.com/neolao/kindle-nonograms/compare/v2.11.1...v2.11.2
 [2.11.1]: https://github.com/neolao/kindle-nonograms/compare/v2.11.0...v2.11.1
