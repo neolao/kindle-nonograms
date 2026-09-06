@@ -42,6 +42,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - If one part of a page's controls fails to set up, the rest of that page keeps working instead of breaking too.
 - The puzzle editor now shows clear, fixed messages for validation and image-import problems (like a missing name or an unreadable image) instead of raw, technical error text.
 - The puzzle editor now also honors your chosen language and has its own language switcher, just like the library page.
+- Every page now declares the correct language from the very first moment it loads, not just after it finishes loading — helpful for screen readers, search engines, and viewing the page without JavaScript.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

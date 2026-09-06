@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.0] - 2026-09-06
+
 ### Added
 
 - Every page's declared language now matches your saved language choice from the very first moment it loads, instead of only after the page finishes loading — so a screen reader, a search engine, or a page viewed without JavaScript no longer sees English tagged on French content.
@@ -282,7 +284,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.12.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.13.0...HEAD
+[2.13.0]: https://github.com/neolao/kindle-nonograms/compare/v2.12.0...v2.13.0
 [2.12.0]: https://github.com/neolao/kindle-nonograms/compare/v2.11.3...v2.12.0
 [2.11.3]: https://github.com/neolao/kindle-nonograms/compare/v2.11.2...v2.11.3
 [2.11.2]: https://github.com/neolao/kindle-nonograms/compare/v2.11.1...v2.11.2
