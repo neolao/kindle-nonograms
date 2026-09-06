@@ -1,17 +1,24 @@
 import {
-  DEFAULT_LOCALE,
   EDITOR_DEFAULT_HEIGHT,
   EDITOR_DEFAULT_MODE,
   EDITOR_DEFAULT_PALETTE,
   EDITOR_DEFAULT_WIDTH,
+  type Locale,
   type Puzzle,
   PuzzleValidationError,
   contrastingTextColor,
   createPuzzle,
+  isSupportedLocale,
   translate,
 } from "@kindle-nonograms/shared";
 import { ImageDecodeError, decodeImageFile } from "./decodeImageFile.js";
 import { computeFitFontSizePx } from "./fitGrid.js";
+import {
+  applyLocale,
+  readLocaleCookie,
+  resolveLocale,
+  writeLocaleCookie,
+} from "./i18n.js";
 import { buildImportedGrid } from "./imageQuantize.js";
 
 type EditorMode = "paint" | "erase";
@@ -26,6 +33,7 @@ interface EditorState {
   name: string;
   filename: string;
   hasUnsavedChanges: boolean;
+  locale: Locale;
 }
 
 const NEW_COLOR_DEFAULT = "#888888";
@@ -298,13 +306,15 @@ function renderPalette(elements: EditorElements, state: EditorState): void {
     swatch.type = "button";
     swatch.dataset.role = "swatch";
     swatch.dataset.colorIndex = String(index);
-    // Not tagged `data-i18n`: that mechanism retranslates `textContent`
-    // (see `applyLocale` in `i18n.ts`), which here holds the "✓" glyph, not
-    // this label — only `translate()`'s current-locale value is reused, to
-    // avoid duplicating the dictionary string.
+    // Not tagged `data-i18n` (that mechanism retranslates `textContent`,
+    // which here holds the "✓" glyph, not this label) but tagged
+    // `data-i18n-aria` so `applyLocale()` still retranslates the
+    // `aria-label` itself on a later language switch — see
+    // `.vibe/decisions/023-generic-aria-label-retranslation-attribute.md`.
+    swatch.dataset.i18nAria = "editor.selectColorAriaLabel";
     swatch.setAttribute(
       "aria-label",
-      translate(DEFAULT_LOCALE, "editor.selectColorAriaLabel"),
+      translate(state.locale, "editor.selectColorAriaLabel"),
     );
     const active = index === state.activeColorIndex;
     swatch.setAttribute("aria-pressed", String(active));
@@ -317,18 +327,20 @@ function renderPalette(elements: EditorElements, state: EditorState): void {
     colorInput.dataset.role = "palette-color-input";
     colorInput.dataset.colorIndex = String(index);
     colorInput.value = hex;
+    colorInput.dataset.i18nAria = "editor.editColorAriaLabel";
     colorInput.setAttribute(
       "aria-label",
-      translate(DEFAULT_LOCALE, "editor.editColorAriaLabel"),
+      translate(state.locale, "editor.editColorAriaLabel"),
     );
 
     const remove = document.createElement("button");
     remove.type = "button";
     remove.dataset.role = "palette-remove";
     remove.dataset.colorIndex = String(index);
+    remove.dataset.i18nAria = "editor.removeColorAriaLabel";
     remove.setAttribute(
       "aria-label",
-      translate(DEFAULT_LOCALE, "editor.removeColorAriaLabel"),
+      translate(state.locale, "editor.removeColorAriaLabel"),
     );
     remove.textContent = "×";
     remove.disabled = state.palette.length <= 1;
@@ -342,9 +354,10 @@ function renderPalette(elements: EditorElements, state: EditorState): void {
   addColor.type = "button";
   addColor.dataset.role = "editor-add-color";
   addColor.textContent = "+";
+  addColor.dataset.i18nAria = "editor.addColor";
   addColor.setAttribute(
     "aria-label",
-    translate(DEFAULT_LOCALE, "editor.addColor"),
+    translate(state.locale, "editor.addColor"),
   );
   elements.palette.append(addColor);
   wireAddColorButton(addColor, elements, state);
@@ -385,13 +398,13 @@ function renderToolbar(elements: EditorElements, state: EditorState): void {
   paintButton.type = "button";
   paintButton.dataset.role = "mode-paint";
   paintButton.dataset.i18n = "editor.modePaint";
-  paintButton.textContent = translate(DEFAULT_LOCALE, "editor.modePaint");
+  paintButton.textContent = translate(state.locale, "editor.modePaint");
 
   const eraseButton = document.createElement("button");
   eraseButton.type = "button";
   eraseButton.dataset.role = "mode-erase";
   eraseButton.dataset.i18n = "editor.modeErase";
-  eraseButton.textContent = translate(DEFAULT_LOCALE, "editor.modeErase");
+  eraseButton.textContent = translate(state.locale, "editor.modeErase");
 
   elements.toolbar.append(paintButton, eraseButton);
   wireToolbarButtons(paintButton, eraseButton, state);
@@ -652,18 +665,18 @@ function hasPaintedContent(cells: (number | null)[][]): boolean {
  * `DOMException`'s wording). See
  * `.vibe/decisions/021-editor-errors-discriminated-by-reason.md`.
  */
-function describeImportError(error: unknown): string {
+function describeImportError(error: unknown, locale: Locale): string {
   if (error instanceof ImageDecodeError) {
     switch (error.reason) {
       case "unsupported":
-        return translate(DEFAULT_LOCALE, "editor.error.imageUnsupported");
+        return translate(locale, "editor.error.imageUnsupported");
       case "unreadable":
-        return translate(DEFAULT_LOCALE, "editor.error.imageUnreadable");
+        return translate(locale, "editor.error.imageUnreadable");
       default:
-        return translate(DEFAULT_LOCALE, "editor.error.unexpected");
+        return translate(locale, "editor.error.unexpected");
     }
   }
-  return translate(DEFAULT_LOCALE, "editor.error.unexpected");
+  return translate(locale, "editor.error.unexpected");
 }
 
 /**
@@ -677,18 +690,18 @@ function describeImportError(error: unknown): string {
  * back to the same generic message as a wholly unexpected error. See
  * `.vibe/decisions/021-editor-errors-discriminated-by-reason.md`.
  */
-function describeExportError(error: unknown): string {
+function describeExportError(error: unknown, locale: Locale): string {
   if (error instanceof PuzzleValidationError) {
     switch (error.reason) {
       case "emptyId":
-        return translate(DEFAULT_LOCALE, "editor.error.emptyFilename");
+        return translate(locale, "editor.error.emptyFilename");
       case "emptyName":
-        return translate(DEFAULT_LOCALE, "editor.error.emptyName");
+        return translate(locale, "editor.error.emptyName");
       default:
-        return translate(DEFAULT_LOCALE, "editor.error.unexpected");
+        return translate(locale, "editor.error.unexpected");
     }
   }
-  return translate(DEFAULT_LOCALE, "editor.error.unexpected");
+  return translate(locale, "editor.error.unexpected");
 }
 
 /**
@@ -756,7 +769,7 @@ async function handleImport(
     elements.error.textContent = "";
     render(elements, state);
   } catch (error) {
-    elements.error.textContent = `⚠ ${describeImportError(error)}`;
+    elements.error.textContent = `⚠ ${describeImportError(error, state.locale)}`;
   } finally {
     elements.importFile.disabled = false;
     elements.importPaletteSize.disabled = false;
@@ -779,15 +792,52 @@ function handleExport(elements: EditorElements, state: EditorState): void {
     triggerDownload(`${puzzle.id}.json`, JSON.stringify(puzzle, null, 2));
     state.hasUnsavedChanges = false;
   } catch (error) {
-    elements.error.textContent = `⚠ ${describeExportError(error)}`;
+    elements.error.textContent = `⚠ ${describeExportError(error, state.locale)}`;
   }
 }
 
 /**
- * Hydrates the puzzle editor page: builds the width/height controls,
- * palette editor, paint/erase toolbar and grid canvas into the static
- * shell's reserved containers (see `renderEditorPage.ts`), and wires the
- * Export action to `createPuzzle`'s validation plus a browser download.
+ * Locates the FR/EN language switcher `renderEditorPage.ts` bakes into the
+ * page footer (English selected by default — the locale itself isn't known
+ * at build time) and attaches its change behavior, then applies the
+ * resolved locale (saved cookie, else the browser's detected language,
+ * else English) to every element on the page carrying a `data-i18n` or
+ * `data-i18n-aria` key — same footer placement and mechanism as the library
+ * page's own switcher (see `hydrateLibraryPage.ts`'s
+ * `setUpLanguageSwitcher` and
+ * `.vibe/decisions/022-editor-language-switcher-in-footer.md`). Also keeps
+ * `state.locale` in sync so a later re-render triggered by an actual edit
+ * (resize, palette change, import) keeps using the chosen language instead
+ * of silently reverting to English — see `renderPalette`/`renderToolbar`.
+ * Never rebuilds the palette/toolbar/canvas DOM itself (only text/aria-label
+ * swaps via `applyLocale`), so a language switch mid-edit can't drop the
+ * contributor's current focus.
+ */
+function setUpLanguageSwitcher(state: EditorState): void {
+  const select = document.querySelector<HTMLSelectElement>(
+    '[data-role="language-switcher-select"]',
+  );
+  if (select) {
+    select.value = state.locale;
+    select.addEventListener("change", () => {
+      if (isSupportedLocale(select.value)) {
+        writeLocaleCookie(select.value);
+        state.locale = select.value;
+        applyLocale(select.value);
+      }
+    });
+  }
+
+  applyLocale(state.locale);
+}
+
+/**
+ * Hydrates the puzzle editor page: applies the resolved locale and wires
+ * the footer's language switcher (see `setUpLanguageSwitcher`), builds the
+ * width/height controls, palette editor, paint/erase toolbar and grid
+ * canvas into the static shell's reserved containers (see
+ * `renderEditorPage.ts`), and wires the Export action to `createPuzzle`'s
+ * validation plus a browser download.
  */
 export function hydrate(): void {
   // `[data-role="editor-page"]` is this page's own unique self-detection
@@ -808,7 +858,10 @@ export function hydrate(): void {
     name: "",
     filename: "",
     hasUnsavedChanges: false,
+    locale: resolveLocale(readLocaleCookie(), navigator.language),
   };
+
+  setUpLanguageSwitcher(state);
 
   elements.width.value = String(state.width);
   elements.height.value = String(state.height);

@@ -137,4 +137,58 @@ describe("renderEditorPage", () => {
 
     expect(script?.getAttribute("src")).toBe("../assets/main.js");
   });
+
+  it("renders a footer language switcher, English selected by default, same markup as the library page's", () => {
+    const doc = parse(renderEditorPage());
+    const footer = doc.querySelector("footer.page-footer");
+    const select = footer?.querySelector<HTMLSelectElement>(
+      '[data-role="language-switcher-select"]',
+    );
+
+    expect(select).not.toBeNull();
+    expect(
+      select?.querySelector("option[selected]")?.getAttribute("value"),
+    ).toBe("en");
+  });
+
+  it("places the footer language switcher after the last editor panel, not in the header", () => {
+    const doc = parse(renderEditorPage());
+
+    expect(
+      doc
+        .querySelector(".page-header-controls")
+        ?.querySelector('[data-role="language-switcher-select"]'),
+    ).toBeNull();
+    expect(
+      doc.querySelector(
+        'footer.page-footer [data-role="language-switcher-select"]',
+      ),
+    ).not.toBeNull();
+  });
+
+  it("tags each palette control's aria-label for retranslation via data-i18n-aria", () => {
+    const doc = parse(renderEditorPage());
+    const palette = doc.querySelector('[data-role="editor-palette"]');
+
+    expect(
+      palette
+        ?.querySelector('[data-role="swatch"]')
+        ?.getAttribute("data-i18n-aria"),
+    ).toBe("editor.selectColorAriaLabel");
+    expect(
+      palette
+        ?.querySelector('[data-role="palette-color-input"]')
+        ?.getAttribute("data-i18n-aria"),
+    ).toBe("editor.editColorAriaLabel");
+    expect(
+      palette
+        ?.querySelector('[data-role="palette-remove"]')
+        ?.getAttribute("data-i18n-aria"),
+    ).toBe("editor.removeColorAriaLabel");
+    expect(
+      palette
+        ?.querySelector('[data-role="editor-add-color"]')
+        ?.getAttribute("data-i18n-aria"),
+    ).toBe("editor.addColor");
+  });
 });

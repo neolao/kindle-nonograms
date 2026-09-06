@@ -71,10 +71,17 @@ export function resolveLocale(
 }
 
 /**
- * Applies `locale` to the current document: updates `document.lang` and
+ * Applies `locale` to the current document: updates `document.lang`,
  * retranslates every element carrying a `data-i18n` attribute (its value is
- * a {@link TranslationKey}) by replacing its text content in place — no
- * reload, no reflow beyond the text swap itself.
+ * a {@link TranslationKey}) by replacing its text content in place, and
+ * retranslates every element carrying a `data-i18n-aria` attribute by
+ * replacing its `aria-label` in place — no reload, no reflow beyond these
+ * text/attribute swaps, and no DOM node is created, removed or moved, so a
+ * currently focused element is never disturbed. The two attributes are
+ * independent and can both be set on the same element or on different ones
+ * (e.g. `hydrateEditorPage.ts`'s palette buttons, whose accessible name is
+ * an `aria-label` rather than visible text — see
+ * `.vibe/decisions/023-generic-aria-label-retranslation-attribute.md`).
  */
 export function applyLocale(locale: Locale): void {
   document.documentElement.lang = locale;
@@ -84,6 +91,18 @@ export function applyLocale(locale: Locale): void {
     const key = element.getAttribute("data-i18n");
     if (key) {
       element.textContent = translate(locale, key as TranslationKey);
+    }
+  }
+
+  const ariaElements =
+    document.querySelectorAll<HTMLElement>("[data-i18n-aria]");
+  for (const element of Array.from(ariaElements)) {
+    const key = element.getAttribute("data-i18n-aria");
+    if (key) {
+      element.setAttribute(
+        "aria-label",
+        translate(locale, key as TranslationKey),
+      );
     }
   }
 }

@@ -108,4 +108,33 @@ describe("applyLocale", () => {
 
     expect(() => applyLocale("en")).not.toThrow();
   });
+
+  it("translates the aria-label of every element carrying a data-i18n-aria key", () => {
+    document.body.innerHTML =
+      '<button data-i18n-aria="editor.selectColorAriaLabel"></button>';
+
+    applyLocale("fr");
+
+    expect(document.querySelector("button")?.getAttribute("aria-label")).toBe(
+      "Choisir la couleur",
+    );
+  });
+
+  it("leaves an element's textContent untouched when it only carries data-i18n-aria, not data-i18n", () => {
+    document.body.innerHTML =
+      '<button data-i18n-aria="editor.selectColorAriaLabel">✓</button>';
+
+    applyLocale("fr");
+
+    expect(document.querySelector("button")?.textContent).toBe("✓");
+  });
+
+  it("does not throw and adds no aria-label when no element carries a data-i18n-aria key", () => {
+    document.body.innerHTML = "<button>plain</button>";
+
+    expect(() => applyLocale("fr")).not.toThrow();
+    expect(document.querySelector("button")?.hasAttribute("aria-label")).toBe(
+      false,
+    );
+  });
 });

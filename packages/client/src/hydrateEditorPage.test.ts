@@ -81,6 +81,31 @@ function fireClick(el: Element): void {
   el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 }
 
+function switcherSelect(): HTMLSelectElement {
+  const found = document.querySelector<HTMLSelectElement>(
+    '[data-role="language-switcher-select"]',
+  );
+  if (!found) {
+    throw new Error("fixture language switcher select not found");
+  }
+  return found;
+}
+
+const originalNavigatorLanguage = window.navigator.language;
+
+function setNavigatorLanguage(language: string): void {
+  Object.defineProperty(window.navigator, "language", {
+    value: language,
+    configurable: true,
+  });
+}
+
+afterEach(() => {
+  document.cookie = "kindle-nonograms-locale=; path=/; max-age=0";
+  document.documentElement.lang = "";
+  setNavigatorLanguage(originalNavigatorLanguage);
+});
+
 function importFileInput(): HTMLInputElement {
   return document.querySelector(
     '[data-role="editor-import-file"]',
@@ -713,5 +738,105 @@ describe("image import", () => {
     expect(importFileInput().disabled).toBe(false);
     expect(importPaletteSizeInput().disabled).toBe(false);
     expect(importButton().disabled).toBe(false);
+  });
+});
+
+describe("language switcher", () => {
+  it("defaults to the language detected from the browser when there is no saved cookie", () => {
+    setNavigatorLanguage("fr-FR");
+    buildFixture();
+
+    hydrate();
+
+    expect(switcherSelect().value).toBe("fr");
+    expect(document.querySelector("h1")?.textContent).toBe("Éditeur de puzzle");
+  });
+
+  it("falls back to English when the browser language is not supported", () => {
+    setNavigatorLanguage("de-DE");
+    buildFixture();
+
+    hydrate();
+
+    expect(switcherSelect().value).toBe("en");
+  });
+
+  it("prefers a saved cookie over the browser-detected language", () => {
+    document.cookie = "kindle-nonograms-locale=fr; path=/";
+    setNavigatorLanguage("en-US");
+    buildFixture();
+
+    hydrate();
+
+    expect(switcherSelect().value).toBe("fr");
+  });
+
+  it("retranslates the toolbar's data-i18n text and the palette's aria-labels immediately, with no reload, when the language is changed", () => {
+    buildFixture();
+    hydrate();
+
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    expect(document.documentElement.lang).toBe("fr");
+    expect(
+      document.querySelector('[data-role="mode-paint"]')?.textContent,
+    ).toBe("Peindre");
+    expect(swatches()[0]?.getAttribute("aria-label")).toBe(
+      "Choisir la couleur",
+    );
+  });
+
+  it("saves the chosen language in a cookie, read back as the priority source on the next load", () => {
+    buildFixture();
+    hydrate();
+
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    expect(document.cookie).toContain("kindle-nonograms-locale=fr");
+  });
+
+  it("keeps using the switched language for the toolbar/palette after a later edit rebuilds them, instead of reverting to English", () => {
+    buildFixture();
+    hydrate();
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    fireClick(
+      document.querySelector('[data-role="editor-add-color"]') as Element,
+    );
+
+    const toolbarPaint = document.querySelector('[data-role="mode-paint"]');
+    expect(toolbarPaint?.textContent).toBe("Peindre");
+    expect(swatches()[0]?.getAttribute("aria-label")).toBe(
+      "Choisir la couleur",
+    );
+  });
+
+  it("preserves focus on the currently focused control across a language switch", () => {
+    buildFixture();
+    hydrate();
+    const colorInput = document.querySelector(
+      '[data-role="palette-color-input"]',
+    ) as HTMLInputElement;
+    colorInput.focus();
+
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    expect(document.activeElement).toBe(colorInput);
+  });
+
+  it("shows fixed, translated export/import error messages in the switched language", () => {
+    buildFixture();
+    hydrate();
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    fireChange(filenameInput(), "small-heart");
+    fireClick(exportButton());
+
+    expect(errorRegion().textContent).toBe("⚠ Le nom du puzzle est requis.");
   });
 });

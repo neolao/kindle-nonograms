@@ -7,6 +7,7 @@ import {
   translate,
 } from "@kindle-nonograms/shared";
 import { versionQuery } from "./htmlEscape.js";
+import { renderLanguageSwitcher } from "./renderLanguageSwitcher.js";
 import { sharedStyles } from "./sharedStyles.js";
 import {
   BORDER_RADIUS_PX,
@@ -27,11 +28,18 @@ import {
  * script still rebuilds this same markup once at startup, which is a safe,
  * invisible no-op since both sides start from these same
  * `EDITOR_DEFAULT_*` values.
+ *
+ * Each control's `aria-label` also carries a matching `data-i18n-aria`
+ * key, so a resolved non-English locale (or a later language switch) can
+ * retranslate it via `applyLocale()` — its accessible name is this
+ * `aria-label`, not visible text, so the generic `data-i18n`/`textContent`
+ * mechanism alone can't reach it. See
+ * `.vibe/decisions/023-generic-aria-label-retranslation-attribute.md`.
  */
 function renderDefaultPalette(): string {
   const hex = EDITOR_DEFAULT_PALETTE[0] ?? "#000000";
   const textColor = contrastingTextColor(hex);
-  return `<div class="editor-palette-row"><button type="button" data-role="swatch" data-color-index="0" aria-label="${translate(DEFAULT_LOCALE, "editor.selectColorAriaLabel")}" aria-pressed="true" style="background-color:${hex};color:${textColor};">✓</button><input type="color" data-role="palette-color-input" data-color-index="0" value="${hex}" aria-label="${translate(DEFAULT_LOCALE, "editor.editColorAriaLabel")}" /><button type="button" data-role="palette-remove" data-color-index="0" aria-label="${translate(DEFAULT_LOCALE, "editor.removeColorAriaLabel")}" disabled>×</button></div><button type="button" data-role="editor-add-color" aria-label="${translate(DEFAULT_LOCALE, "editor.addColor")}">+</button>`;
+  return `<div class="editor-palette-row"><button type="button" data-role="swatch" data-color-index="0" aria-label="${translate(DEFAULT_LOCALE, "editor.selectColorAriaLabel")}" data-i18n-aria="editor.selectColorAriaLabel" aria-pressed="true" style="background-color:${hex};color:${textColor};">✓</button><input type="color" data-role="palette-color-input" data-color-index="0" value="${hex}" aria-label="${translate(DEFAULT_LOCALE, "editor.editColorAriaLabel")}" data-i18n-aria="editor.editColorAriaLabel" /><button type="button" data-role="palette-remove" data-color-index="0" aria-label="${translate(DEFAULT_LOCALE, "editor.removeColorAriaLabel")}" data-i18n-aria="editor.removeColorAriaLabel" disabled>×</button></div><button type="button" data-role="editor-add-color" aria-label="${translate(DEFAULT_LOCALE, "editor.addColor")}" data-i18n-aria="editor.addColor">+</button>`;
 }
 
 function renderDefaultToolbar(): string {
@@ -71,6 +79,12 @@ function renderDefaultGrid(): string {
  * marker unique to it (see main.ts's doc comment); a marker two page shapes
  * could both satisfy has caused a real double-hydration bug in this project
  * before. `[data-role="editor-page"]` is this page's own unique marker.
+ *
+ * Also renders a footer language switcher, English selected by default,
+ * placed and styled exactly like the library page's own footer switcher
+ * (see `.vibe/decisions/022-editor-language-switcher-in-footer.md`) —
+ * `hydrateEditorPage.ts` locates it, corrects its selection to the resolved
+ * locale, and retranslates the page accordingly.
  */
 export function renderEditorPage(assetVersion?: string): string {
   return `<!doctype html>
@@ -134,6 +148,9 @@ export function renderEditorPage(assetVersion?: string): string {
 <p class="editor-error" data-role="editor-error" aria-live="polite"></p>
 </div>
 </div>
+<footer class="page-footer">
+${renderLanguageSwitcher()}
+</footer>
 <script type="module" src="../assets/main.js${versionQuery(assetVersion)}"></script>
 </body>
 </html>`;

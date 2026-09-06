@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The puzzle editor now honors the saved/detected language and shows its own language switcher in a footer, matching the library page — previously it always rendered in English with no way to change it.
+
 ## [2.11.3] - 2026-09-06
 
 ### Fixed

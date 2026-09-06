@@ -63,6 +63,9 @@
 - An `aria-live` region's `hidden` attribute is always cleared before its announced text is (re)written, never after — some assistive tech only announces a live region's content change once the element is already unhidden, so setting the text first risks a silently missed announcement (see the win banner's two reveal paths in `hydratePlayPage.ts`).
 - An error a UI must show translated/user-facing text for, but whose throwing function also has other, developer-facing callers (build-time diagnostics, logs) that already depend on its exact `message` wording, carries a separate stable `reason` discriminant instead of changing `message` — the UI switches on `reason` to pick its own translated string, `message` stays untouched, and anything the UI doesn't recognize (including a raw, unclassified browser exception) falls back to one fixed generic message rather than ever displaying the original text (see `.vibe/decisions/021-editor-errors-discriminated-by-reason.md`).
 
+- A translated `aria-label` (an accessible name that isn't visible text, so the existing `[data-i18n]`/`textContent`-swap mechanism can't reach it) is retranslated via a parallel `data-i18n-aria` attribute, handled generically inside the same shared `applyLocale()` call rather than a page-specific rebuild — used first by the puzzle editor's palette buttons.
+- Markup shared verbatim by more than one generated page (e.g. the FR/EN language switcher, now used by both the library and editor pages) lives in its own small `site` module, imported by each page's renderer, rather than being copy-pasted or kept private to whichever page had it first.
+
 ## Other context files
 - [`models.md`](models.md) — data models
 - [`glossary.md`](glossary.md) — ubiquitous language

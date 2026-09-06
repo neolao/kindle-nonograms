@@ -1,15 +1,14 @@
 import {
   DEFAULT_LOCALE,
   LIBRARY_PAGE_SIZE,
-  NATIVE_LOCALE_NAMES,
   type Puzzle,
-  SUPPORTED_LOCALES,
   type TranslationKey,
   isMultiColorPuzzle,
   puzzleSizeBucket,
   translate,
 } from "@kindle-nonograms/shared";
 import { embedJson, escapeHtml, versionQuery } from "./htmlEscape.js";
+import { renderLanguageSwitcher } from "./renderLanguageSwitcher.js";
 import { sharedStyles } from "./sharedStyles.js";
 import {
   BORDER_RADIUS_PX,
@@ -84,23 +83,6 @@ function renderFiltersAndPagination(puzzleCount: number): {
   const pagination = `<div class="library-pagination" data-role="library-pagination"${showPagination ? "" : " hidden"}><button type="button" data-role="library-pagination-prev" data-i18n="library.paginationPrev" disabled>${translate(DEFAULT_LOCALE, "library.paginationPrev")}</button><span class="pagination-status" data-role="library-pagination-status" role="status" aria-live="polite"><span class="sr-only" data-i18n="library.paginationStatusLabel">${translate(DEFAULT_LOCALE, "library.paginationStatusLabel")}</span> <span data-role="library-pagination-position">1 / ${totalPages}</span></span><button type="button" data-role="library-pagination-next" data-i18n="library.paginationNext"${totalPages <= 1 ? " disabled" : ""}>${translate(DEFAULT_LOCALE, "library.paginationNext")}</button></div>`;
 
   return { filters, noResults, pagination };
-}
-
-/**
- * Renders the footer's FR/EN language switcher, English selected by
- * default (the locale itself isn't known at build time) — the client's
- * `applyStoredLocale`-equivalent corrects the selected option, along with
- * every other `[data-i18n]` element, before the page is perceived as
- * painted (see `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`).
- * A native `<select>`, kept native rather than a custom control for
- * reliable touch/keyboard behavior on Kindle's old WebKit.
- */
-function renderLanguageSwitcher(): string {
-  const options = SUPPORTED_LOCALES.map(
-    (locale) =>
-      `<option value="${locale}"${locale === DEFAULT_LOCALE ? " selected" : ""}>${NATIVE_LOCALE_NAMES[locale]}</option>`,
-  ).join("");
-  return `<div class="language-switcher"><label for="language-switcher-select" data-i18n="i18n.languageSwitcherLabel">${translate(DEFAULT_LOCALE, "i18n.languageSwitcherLabel")}</label><select id="language-switcher-select" data-role="language-switcher-select">${options}</select></div>`;
 }
 
 // Purely decorative — see .vibe/decisions/013-three-accent-cabinet-reskin.md.
@@ -269,8 +251,6 @@ li a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 .library-pagination:not([hidden]){display:flex;align-items:center;justify-content:center;gap:${SPACING_PX.md}px;margin:${SPACING_PX.sm}px ${SPACING_PX.md}px;}
 .library-pagination button:disabled{color:${COLORS.muted};border-color:${COLORS.muted};box-shadow:none;}
 .pagination-status{font-family:${LABEL_FONT_STACK};color:${COLORS.text};}
-.page-footer{display:flex;flex-wrap:wrap;align-items:center;gap:${SPACING_PX.md}px;border-top:${BORDER_WIDTH.thin} solid ${COLORS.line};margin:${SPACING_PX.md}px ${SPACING_PX.md}px 0;padding:${SPACING_PX.sm}px 0 ${SPACING_PX.md}px;}
-.page-footer .language-switcher{margin:0;}
 .page-footer-links{display:flex;flex-wrap:wrap;align-items:center;gap:${SPACING_PX.md}px;margin-left:auto;}
 .page-footer-links a{display:inline-flex;align-items:center;min-height:${MIN_TAP_TARGET_PX}px;color:${COLORS.text};text-decoration:none;}
 .page-footer-links a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
