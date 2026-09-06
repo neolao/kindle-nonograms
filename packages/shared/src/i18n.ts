@@ -15,6 +15,15 @@ export const SUPPORTED_LOCALES: readonly Locale[] = ["en", "fr"];
 export const DEFAULT_LOCALE: Locale = "en";
 
 /**
+ * Name of the cookie a player's chosen locale is persisted under. Shared
+ * between `packages/client/src/i18n.ts` (which reads/writes it once the
+ * hydration bundle runs) and `packages/site/src/earlyLangScript.ts` (which
+ * reads it from a tiny inline script, before hydration runs) so the two
+ * can never drift onto different cookie names.
+ */
+export const LOCALE_COOKIE_NAME = "kindle-nonograms-locale";
+
+/**
  * Native display name for each supported locale, always shown in its own
  * language — used to label the language switcher's options, both when the
  * static site generator bakes its default markup and when the client

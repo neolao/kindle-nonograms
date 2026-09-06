@@ -6,6 +6,7 @@ import {
   contrastingTextColor,
   translate,
 } from "@kindle-nonograms/shared";
+import { renderEarlyLangScript } from "./earlyLangScript.js";
 import { versionQuery } from "./htmlEscape.js";
 import { renderLanguageSwitcher } from "./renderLanguageSwitcher.js";
 import { sharedStyles } from "./sharedStyles.js";
@@ -91,6 +92,7 @@ export function renderEditorPage(assetVersion?: string): string {
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+${renderEarlyLangScript()}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Puzzle Editor</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg" />

@@ -191,4 +191,18 @@ describe("renderEditorPage", () => {
         ?.getAttribute("data-i18n-aria"),
     ).toBe("editor.addColor");
   });
+
+  it("places the early lang-setting script immediately after the charset meta, ahead of styles and the module bundle", () => {
+    const html = renderEditorPage();
+
+    const charsetIndex = html.indexOf('<meta charset="UTF-8" />');
+    const scriptIndex = html.indexOf("<script>");
+    const styleIndex = html.indexOf("<style>");
+    const moduleScriptIndex = html.indexOf('<script type="module"');
+
+    expect(charsetIndex).toBeGreaterThan(-1);
+    expect(scriptIndex).toBeGreaterThan(charsetIndex);
+    expect(scriptIndex).toBeLessThan(styleIndex);
+    expect(scriptIndex).toBeLessThan(moduleScriptIndex);
+  });
 });

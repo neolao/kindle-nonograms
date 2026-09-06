@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Every page's declared language now matches your saved language choice from the very first moment it loads, instead of only after the page finishes loading — so a screen reader, a search engine, or a page viewed without JavaScript no longer sees English tagged on French content.
+
 ## [2.12.0] - 2026-09-06
 
 ### Added

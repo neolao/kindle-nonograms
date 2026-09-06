@@ -8,6 +8,7 @@ import {
   contrastingTextColor,
   translate,
 } from "@kindle-nonograms/shared";
+import { renderEarlyLangScript } from "./earlyLangScript.js";
 import { embedJson, escapeHtml, versionQuery } from "./htmlEscape.js";
 import { sharedStyles } from "./sharedStyles.js";
 import { BORDER_RADIUS_PX, BORDER_WIDTH, COLORS, SPACING_PX } from "./theme.js";
@@ -97,6 +98,7 @@ export function renderPuzzlePage(
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+${renderEarlyLangScript()}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${escapeHtml(puzzle.name)}</title>
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />

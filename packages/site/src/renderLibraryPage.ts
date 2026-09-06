@@ -7,6 +7,7 @@ import {
   puzzleSizeBucket,
   translate,
 } from "@kindle-nonograms/shared";
+import { renderEarlyLangScript } from "./earlyLangScript.js";
 import { embedJson, escapeHtml, versionQuery } from "./htmlEscape.js";
 import { renderLanguageSwitcher } from "./renderLanguageSwitcher.js";
 import { sharedStyles } from "./sharedStyles.js";
@@ -185,6 +186,7 @@ export function renderLibraryPage(
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+${renderEarlyLangScript()}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Kindle Nonograms</title>
 <link rel="icon" type="image/svg+xml" href="./favicon.svg" />

@@ -1,12 +1,13 @@
 import {
   DEFAULT_LOCALE,
+  LOCALE_COOKIE_NAME,
   type Locale,
   type TranslationKey,
   isSupportedLocale,
   translate,
 } from "@kindle-nonograms/shared";
 
-const COOKIE_NAME = "kindle-nonograms-locale";
+const COOKIE_NAME = LOCALE_COOKIE_NAME;
 
 /**
  * Reads the player's saved locale preference from `document.cookie`.

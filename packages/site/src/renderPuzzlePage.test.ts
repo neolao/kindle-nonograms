@@ -132,8 +132,9 @@ describe("renderPuzzlePage", () => {
     const doc = parse(html);
 
     // Escaping worked if the malicious id never created real extra <script>
-    // elements — only the page's own two (JSON payload + module bundle).
-    expect(doc.querySelectorAll("script")).toHaveLength(2);
+    // elements — only the page's own three (early lang script + JSON
+    // payload + module bundle).
+    expect(doc.querySelectorAll("script")).toHaveLength(3);
 
     const payload = doc.querySelector('script[type="application/json"]');
     expect(JSON.parse(payload?.textContent ?? "null")).toEqual(maliciousPuzzle);
@@ -273,5 +274,19 @@ describe("renderPuzzlePage", () => {
     }
 
     expect(link.closest(".page-header")).not.toBeNull();
+  });
+
+  it("places the early lang-setting script immediately after the charset meta, ahead of styles and the module bundle", () => {
+    const html = renderPuzzlePage(multiColorPuzzle);
+
+    const charsetIndex = html.indexOf('<meta charset="UTF-8" />');
+    const scriptIndex = html.indexOf("<script>");
+    const styleIndex = html.indexOf("<style>");
+    const moduleScriptIndex = html.indexOf('<script type="module"');
+
+    expect(charsetIndex).toBeGreaterThan(-1);
+    expect(scriptIndex).toBeGreaterThan(charsetIndex);
+    expect(scriptIndex).toBeLessThan(styleIndex);
+    expect(scriptIndex).toBeLessThan(moduleScriptIndex);
   });
 });

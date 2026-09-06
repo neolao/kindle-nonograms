@@ -127,7 +127,9 @@ describe("renderLibraryPage", () => {
 
     const doc = parse(renderLibraryPage(maliciousPuzzles));
 
-    expect(doc.querySelectorAll("script")).toHaveLength(2);
+    // The page's own three <script> elements: the early lang script, the
+    // JSON payload, and the module bundle.
+    expect(doc.querySelectorAll("script")).toHaveLength(3);
     const payload = doc.querySelector('script[type="application/json"]');
     expect(JSON.parse(payload?.textContent ?? "null")).toEqual(
       maliciousPuzzles,
@@ -514,5 +516,19 @@ describe("renderLibraryPage", () => {
     expect(
       select?.querySelector("option[selected]")?.getAttribute("value"),
     ).toBe("en");
+  });
+
+  it("places the early lang-setting script immediately after the charset meta, ahead of styles and the module bundle", () => {
+    const html = renderLibraryPage(puzzles);
+
+    const charsetIndex = html.indexOf('<meta charset="UTF-8" />');
+    const scriptIndex = html.indexOf("<script>");
+    const styleIndex = html.indexOf("<style>");
+    const moduleScriptIndex = html.indexOf('<script type="module"');
+
+    expect(charsetIndex).toBeGreaterThan(-1);
+    expect(scriptIndex).toBeGreaterThan(charsetIndex);
+    expect(scriptIndex).toBeLessThan(styleIndex);
+    expect(scriptIndex).toBeLessThan(moduleScriptIndex);
   });
 });
