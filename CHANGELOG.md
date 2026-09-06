@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- A puzzle file with a missing filename/id now reports the error using the field's own name ("Filename (id) must not be empty") instead of calling it "Puzzle id", matching how the sibling puzzle-name error already names its own field.
+
 ## [2.11.1] - 2026-09-06
 
 ### Fixed

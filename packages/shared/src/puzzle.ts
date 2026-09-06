@@ -54,7 +54,10 @@ export function createPuzzle(input: Puzzle): Puzzle {
   const { id, name, width, height, palette, cells } = input;
 
   if (id.trim() === "") {
-    throw new PuzzleValidationError("emptyId", "Puzzle id must not be empty");
+    throw new PuzzleValidationError(
+      "emptyId",
+      "Filename (id) must not be empty",
+    );
   }
 
   if (name.trim() === "") {

@@ -148,4 +148,10 @@ describe("createPuzzle", () => {
       "Puzzle palette must contain at least one color",
     );
   });
+
+  it("names the empty id error after the field's actual label, Filename (id), not Puzzle id", () => {
+    const error = captureError(() => createPuzzle({ ...validInput(), id: "" }));
+
+    expect((error as Error).message).toBe("Filename (id) must not be empty");
+  });
 });
