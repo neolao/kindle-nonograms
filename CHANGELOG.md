@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.11.2] - 2026-09-06
+
 ### Fixed
 
 - A puzzle file with a missing filename/id now reports the error using the field's own name ("Filename (id) must not be empty") instead of calling it "Puzzle id", matching how the sibling puzzle-name error already names its own field.
@@ -264,7 +266,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.11.1...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.11.2...HEAD
+[2.11.2]: https://github.com/neolao/kindle-nonograms/compare/v2.11.1...v2.11.2
 [2.11.1]: https://github.com/neolao/kindle-nonograms/compare/v2.11.0...v2.11.1
 [2.11.0]: https://github.com/neolao/kindle-nonograms/compare/v2.10.1...v2.11.0
 [2.10.1]: https://github.com/neolao/kindle-nonograms/compare/v2.10.0...v2.10.1
