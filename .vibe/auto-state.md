@@ -1,7 +1,9 @@
 ---
-status: idle
-started: 2026-09-06T12:36
+status: running
+started: 2026-09-06T15:37
 limit: 1
+current: 036
+attempt: 1
 ---
 # Auto run journal
 
@@ -13,3 +15,5 @@ limit: 1
 
 ## 2026-09-06T12:36 — run started (limit: 1)
 - 037 — fix — done (0fefa9b)
+
+## 2026-09-06T15:37 — run started (limit: 1)
