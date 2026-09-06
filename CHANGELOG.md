@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Two bundled puzzles showed their raw UUID as the display name in the library list ("Dinosaur" and "Moon" now show up instead of the filename).
+
 ## [2.11.2] - 2026-09-06
 
 ### Fixed

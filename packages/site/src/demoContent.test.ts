@@ -26,4 +26,16 @@ describe("demo content in data/puzzles/", () => {
 
     expect(puzzles.some((puzzle) => puzzle.palette.length === 4)).toBe(true);
   });
+
+  it("gives every puzzle a human-readable name instead of its raw id", async () => {
+    const puzzles = await loadPuzzleSources(PUZZLES_DIR);
+    const uuidLike =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    const puzzlesNamedAfterTheirId = puzzles.filter(
+      (puzzle) => puzzle.name === puzzle.id || uuidLike.test(puzzle.name),
+    );
+
+    expect(puzzlesNamedAfterTheirId).toEqual([]);
+  });
 });
