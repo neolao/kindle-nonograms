@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { renderEditorPage } from "@kindle-nonograms/site";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mocked so image import tests control decoding without a real <canvas> —
 // jsdom doesn't implement real pixel decoding (see decodeImageFile.ts's own
@@ -781,6 +781,74 @@ describe("image import", () => {
     expect(importFileInput().disabled).toBe(false);
     expect(importPaletteSizeInput().disabled).toBe(false);
     expect(importButton().disabled).toBe(false);
+  });
+
+  describe("decode timeout", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("shows a clear timeout message and re-enables the controls when decoding never finishes", async () => {
+      buildFixture();
+      hydrate();
+      fireClick(cell(0, 0));
+      const paintedColor = cell(0, 0).style.backgroundColor;
+      setImportFile(pngFile());
+      vi.mocked(decodeImageFile).mockReturnValueOnce(new Promise(() => {}));
+      vi.stubGlobal(
+        "confirm",
+        vi.fn(() => true),
+      );
+
+      fireClick(importButton());
+      await vi.advanceTimersByTimeAsync(0); // handleImport's own pre-decode yield
+      await vi.advanceTimersByTimeAsync(15000);
+
+      expect(errorRegion().textContent).toBe(
+        "⚠ This image took too long to load.",
+      );
+      expect(importFileInput().disabled).toBe(false);
+      expect(importPaletteSizeInput().disabled).toBe(false);
+      expect(importButton().disabled).toBe(false);
+      expect(cell(0, 0).style.backgroundColor).toBe(paintedColor);
+    });
+
+    it("completes a normal import that finishes just under the timeout, never showing the timeout message", async () => {
+      buildFixture();
+      hydrate();
+      setImportFile(pngFile());
+      let resolveDecode: (value: {
+        width: number;
+        height: number;
+        data: Uint8ClampedArray;
+      }) => void = () => {};
+      vi.mocked(decodeImageFile).mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveDecode = resolve;
+        }),
+      );
+
+      fireClick(importButton());
+      await vi.advanceTimersByTimeAsync(0);
+      await vi.advanceTimersByTimeAsync(14900);
+      resolveDecode({
+        width: 1,
+        height: 1,
+        data: new Uint8ClampedArray([10, 20, 30, 255]),
+      });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(errorRegion().textContent).toBe("");
+      expect(swatches()).toHaveLength(1);
+
+      // The now-irrelevant timer must not fire afterward and overwrite success.
+      await vi.advanceTimersByTimeAsync(200);
+      expect(errorRegion().textContent).toBe("");
+    });
   });
 });
 

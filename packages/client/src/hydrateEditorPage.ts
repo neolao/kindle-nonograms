@@ -20,6 +20,7 @@ import {
   writeLocaleCookie,
 } from "./i18n.js";
 import { buildImportedGrid } from "./imageQuantize.js";
+import { withTimeout } from "./withTimeout.js";
 
 type EditorMode = "paint" | "erase";
 
@@ -42,6 +43,11 @@ const HEX_COLOR_PATTERN = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 // Kept in sync with `packages/site/src/renderEditorPage.ts`'s
 // `#editor-import-palette-size` input's own `max`.
 const MAX_IMPORT_PALETTE_SIZE = 16;
+
+// If the browser's <img> element never fires onload/onerror (a stalled or
+// pathological file), the decode is raced against this timeout so the
+// import controls can never stay disabled forever — see backlog item 044.
+const IMAGE_IMPORT_TIMEOUT_MS = 15000;
 
 // Same grid-fit tuning as hydratePlayPage.ts's own reused constants — this
 // tool isn't a Kindle page, but reusing fitGrid.ts keeps a resizable editor
@@ -686,6 +692,8 @@ function describeImportError(error: unknown, locale: Locale): string {
         return translate(locale, "editor.error.imageUnsupported");
       case "unreadable":
         return translate(locale, "editor.error.imageUnreadable");
+      case "timeout":
+        return translate(locale, "editor.error.imageTimeout");
       default:
         return translate(locale, "editor.error.unexpected");
     }
@@ -767,7 +775,11 @@ async function handleImport(
   await new Promise((resolve) => setTimeout(resolve, 0));
 
   try {
-    const image = await decodeImageFile(file);
+    const image = await withTimeout(
+      decodeImageFile(file),
+      IMAGE_IMPORT_TIMEOUT_MS,
+      () => new ImageDecodeError("timeout", "Image import timed out."),
+    );
     const imported = buildImportedGrid(image, {
       targetWidth: state.width,
       targetHeight: state.height,

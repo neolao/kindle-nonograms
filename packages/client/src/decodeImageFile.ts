@@ -9,11 +9,18 @@ import type { ImageLike } from "./imageQuantize.js";
  * `.vibe/decisions/021-editor-errors-discriminated-by-reason.md`.
  * `"unsupported"`: this browser can't decode images at all (no 2D canvas
  * context). `"unreadable"`: the picked file itself couldn't be loaded as an
- * image. `"unknown"`: any other failure, most often a raw browser exception
- * from the decode step — its own message is kept on the error for
- * debugging, but never shown to the contributor verbatim.
+ * image. `"timeout"`: the decode didn't finish within the caller's own
+ * timeout (this module never imposes one itself — see `withTimeout.ts` and
+ * `hydrateEditorPage.ts`'s `handleImport`). `"unknown"`: any other failure,
+ * most often a raw browser exception from the decode step — its own
+ * message is kept on the error for debugging, but never shown to the
+ * contributor verbatim.
  */
-export type ImageDecodeErrorReason = "unsupported" | "unreadable" | "unknown";
+export type ImageDecodeErrorReason =
+  | "unsupported"
+  | "unreadable"
+  | "timeout"
+  | "unknown";
 
 export class ImageDecodeError extends Error {
   readonly reason: ImageDecodeErrorReason;

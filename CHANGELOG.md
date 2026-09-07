@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Importing an image in the puzzle editor now gives up after 15 seconds if it never finishes loading, showing a clear "This image took too long to load" message and re-enabling the import controls instead of leaving them stuck disabled.
+
 ## [2.16.0] - 2026-09-07
 
 ### Added

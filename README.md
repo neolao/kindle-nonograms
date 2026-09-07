@@ -47,6 +47,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - If one page's startup script hits an unexpected error, the library, puzzle, and editor pages still each get their own chance to load normally instead of one failure silently breaking the others.
 - If your saved progress for a puzzle no longer fits after it was resized, you now see a note explaining it couldn't be restored, instead of a silently empty grid.
 - Typing an invalid grid width or height in the puzzle editor now shows a clear error message before the field reverts, instead of reverting silently with no explanation.
+- Importing an image in the puzzle editor now gives up after 15 seconds if it never finishes loading, showing a clear message and re-enabling the controls instead of leaving them stuck.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->
