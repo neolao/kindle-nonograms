@@ -64,6 +64,10 @@ function storageWarning(): HTMLElement | null {
   return document.querySelector<HTMLElement>('[data-role="storage-warning"]');
 }
 
+function restoreWarning(): HTMLElement | null {
+  return document.querySelector<HTMLElement>('[data-role="restore-warning"]');
+}
+
 function loadError(): HTMLElement | null {
   return document.querySelector<HTMLElement>('[data-role="load-error"]');
 }
@@ -866,6 +870,45 @@ describe("storage warning", () => {
 
     hydrate();
 
+    expect(() => cell(0, 0).click()).not.toThrow();
+  });
+});
+
+describe("restore warning", () => {
+  it("reveals the restore-warning note when saved progress no longer matches the puzzle's current dimensions", () => {
+    saveProgress("solo", { cells: [[0, 0, 0]] });
+    buildFixture(soloPuzzle);
+
+    hydrate();
+
+    expect(restoreWarning()?.hidden).toBe(false);
+    expect(restoreWarning()?.textContent).toBe(
+      "Your saved progress for this puzzle could not be restored.",
+    );
+  });
+
+  it("keeps the restore-warning note hidden when saved progress matches the puzzle's dimensions", () => {
+    saveProgress("solo", { cells: [[0, "marked"]] });
+    buildFixture(soloPuzzle);
+
+    hydrate();
+
+    expect(restoreWarning()?.hidden).toBe(true);
+  });
+
+  it("keeps the restore-warning note hidden when there is no saved progress at all", () => {
+    buildFixture(soloPuzzle);
+
+    hydrate();
+
+    expect(restoreWarning()?.hidden).toBe(true);
+  });
+
+  it("does not throw when the restore-warning element is missing from the page", () => {
+    saveProgress("solo", { cells: [[0, 0, 0]] });
+    document.body.innerHTML = `<h1>Solo</h1><p data-role="win-banner" hidden></p><table><tbody><tr><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
+
+    expect(() => hydrate()).not.toThrow();
     expect(() => cell(0, 0).click()).not.toThrow();
   });
 });

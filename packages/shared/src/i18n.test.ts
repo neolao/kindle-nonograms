@@ -18,6 +18,7 @@ const ALL_KEYS: TranslationKey[] = [
   "play.check",
   "play.winBanner.notSolved",
   "play.winBanner.corrected",
+  "play.restoreWarning",
   "i18n.languageSwitcherLabel",
   "play.backToLibrary",
   "library.sectionLabel",
@@ -68,6 +69,9 @@ describe("translate", () => {
     );
     expect(translate("en", "play.loadError")).toBe(
       "This puzzle couldn't be loaded",
+    );
+    expect(translate("en", "play.restoreWarning")).toBe(
+      "Your saved progress for this puzzle could not be restored.",
     );
     expect(translate("en", "i18n.languageSwitcherLabel")).toBe("Language");
     expect(translate("en", "play.backToLibrary")).toBe("Back to puzzle list");
@@ -124,6 +128,9 @@ describe("translate", () => {
     );
     expect(translate("fr", "play.loadError")).toBe(
       "Ce puzzle n'a pas pu être chargé",
+    );
+    expect(translate("fr", "play.restoreWarning")).toBe(
+      "Votre progression enregistrée pour ce puzzle n'a pas pu être restaurée.",
     );
     expect(translate("fr", "i18n.languageSwitcherLabel")).toBe("Langue");
     expect(translate("fr", "play.backToLibrary")).toBe(

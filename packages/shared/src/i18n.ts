@@ -48,6 +48,7 @@ export type TranslationKey =
   | "play.check"
   | "play.winBanner.notSolved"
   | "play.winBanner.corrected"
+  | "play.restoreWarning"
   | "play.storageWarning"
   | "play.dismissWarning"
   | "play.loadError"
@@ -108,6 +109,8 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.check": "Check",
     "play.winBanner.notSolved": "Not solved yet",
     "play.winBanner.corrected": "Some wrong cells were cleared — keep going!",
+    "play.restoreWarning":
+      "Your saved progress for this puzzle could not be restored.",
     "play.storageWarning": "Progress can't be saved on this device.",
     "play.dismissWarning": "Dismiss",
     "play.loadError": "This puzzle couldn't be loaded",
@@ -170,6 +173,8 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.winBanner.notSolved": "Pas encore résolu",
     "play.winBanner.corrected":
       "Certaines cases incorrectes ont été effacées, continuez !",
+    "play.restoreWarning":
+      "Votre progression enregistrée pour ce puzzle n'a pas pu être restaurée.",
     "play.storageWarning":
       "Impossible d'enregistrer la progression sur cet appareil.",
     "play.dismissWarning": "Ignorer",

@@ -60,6 +60,23 @@ function renderDefaultLoadError(): string {
 }
 
 /**
+ * The one-time "saved progress couldn't be restored" note (see backlog item
+ * 042), baked hidden into the static page the same way `load-error` is —
+ * see `.vibe/decisions/026-restore-warning-follows-load-error-pattern.md`.
+ * Revealed by `hydratePlayPage.ts` only when saved progress for this puzzle
+ * exists but no longer matches its current dimensions (e.g. the puzzle was
+ * resized since the player last played it) and is discarded for an empty
+ * grid. Deliberately plain, undecorated, and non-dismissible, unlike
+ * `renderDefaultStorageWarning` below: it reports a fact already true the
+ * instant the page loads, not a live outcome of a user action, and it can
+ * never reappear once revealed this page view, so a dismiss control would
+ * have nothing left to dismiss.
+ */
+function renderDefaultRestoreWarning(): string {
+  return `<p data-role="restore-warning" data-i18n="play.restoreWarning" role="status" aria-live="polite" hidden>${translate(DEFAULT_LOCALE, "play.restoreWarning")}</p>`;
+}
+
+/**
  * The one-time "progress can't be saved" warning (see backlog item 033),
  * baked hidden into the static page the same way the toolbar/banner are —
  * see `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`. The
@@ -126,6 +143,7 @@ ${renderEarlyLangScript()}
 <div class="page-header-controls"></div>
 </div>
 ${renderDefaultLoadError()}
+${renderDefaultRestoreWarning()}
 ${renderDefaultStorageWarning()}
 ${renderDefaultBanner()}
 ${renderDefaultToolbar(puzzle)}

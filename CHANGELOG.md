@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- If your saved progress for a puzzle no longer matches its current size (e.g. it was resized since you last played it), the puzzle page now shows a small note explaining that progress couldn't be restored, instead of silently handing you an empty grid with no explanation.
+
 ## [2.14.0] - 2026-09-07
 
 ### Added

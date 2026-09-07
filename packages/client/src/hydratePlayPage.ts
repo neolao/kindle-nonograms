@@ -62,13 +62,34 @@ function isValidProgress(puzzle: Puzzle, progress: PuzzleProgress): boolean {
   );
 }
 
-function readProgress(puzzle: Puzzle): PuzzleProgress {
+interface ProgressReadResult {
+  progress: PuzzleProgress;
+  /**
+   * `true` only when a saved progress record for this puzzle existed but no
+   * longer matched its current dimensions and was discarded — never when
+   * there was simply nothing saved at all (a first-ever visit must stay
+   * exactly as silent as a compatible restore). See backlog item 042.
+   */
+  discardedIncompatible: boolean;
+}
+
+function readProgress(puzzle: Puzzle): ProgressReadResult {
   const stored = loadProgress(puzzle.id);
-  if (stored && isValidProgress(puzzle, stored)) {
-    return stored;
+  if (!stored) {
+    return {
+      progress: { cells: createEmptyProgressGrid(puzzle.width, puzzle.height) },
+      discardedIncompatible: false,
+    };
   }
 
-  return { cells: createEmptyProgressGrid(puzzle.width, puzzle.height) };
+  if (isValidProgress(puzzle, stored)) {
+    return { progress: stored, discardedIncompatible: false };
+  }
+
+  return {
+    progress: { cells: createEmptyProgressGrid(puzzle.width, puzzle.height) },
+    discardedIncompatible: true,
+  };
 }
 
 function paintCell(
@@ -159,6 +180,20 @@ function findBanner(): HTMLElement | undefined {
 function findStorageWarning(): HTMLElement | undefined {
   return (
     document.querySelector<HTMLElement>('[data-role="storage-warning"]') ??
+    undefined
+  );
+}
+
+/**
+ * Locates the one-time "saved progress couldn't be restored" note
+ * `renderPuzzlePage.ts` already bakes into the static page, hidden — see
+ * `renderDefaultRestoreWarning` there (backlog item 042). Returns
+ * `undefined` on a page shape that doesn't have one, same defensive spirit
+ * as `findBanner`/`findStorageWarning`.
+ */
+function findRestoreWarning(): HTMLElement | undefined {
+  return (
+    document.querySelector<HTMLElement>('[data-role="restore-warning"]') ??
     undefined
   );
 }
@@ -508,8 +543,9 @@ export function hydrate(): void {
   // `attachToolbar`'s own missing-button guard.
   const banner = findBanner();
   const storageWarning = findStorageWarning();
+  const restoreWarning = findRestoreWarning();
 
-  const progress = readProgress(puzzle);
+  const { progress, discardedIncompatible } = readProgress(puzzle);
   const state: PlayState = {
     mode: PLAY_DEFAULT_MODE,
     activeColor: PLAY_DEFAULT_ACTIVE_COLOR_INDEX,
@@ -560,6 +596,15 @@ export function hydrate(): void {
     paintExistingProgress(table, puzzle, progress);
     if (banner) {
       banner.hidden = !isPuzzleSolved(puzzle, progress);
+    }
+    // Revealed once, right here at load time — a fact already true the
+    // instant hydration started, not a live outcome of a user action (see
+    // .vibe/decisions/026-restore-warning-follows-load-error-pattern.md).
+    // No extra re-fit call is needed: this runs before `applyGridFit`'s own
+    // call at the end of `hydrate()`, which already measures the note's
+    // final visible/hidden state.
+    if (discardedIncompatible && restoreWarning) {
+      restoreWarning.hidden = false;
     }
   } catch {
     // Degrades silently — the grid's own click listener (below) must still
