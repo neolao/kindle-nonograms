@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.14.0] - 2026-09-07
+
 ### Added
 
 - If one page's startup script hits an unexpected error, the library, puzzle, and editor pages still each get their own chance to load normally instead of one failure silently breaking the others.
@@ -294,7 +296,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.13.1...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.14.0...HEAD
+[2.14.0]: https://github.com/neolao/kindle-nonograms/compare/v2.13.1...v2.14.0
 [2.13.1]: https://github.com/neolao/kindle-nonograms/compare/v2.13.0...v2.13.1
 [2.13.0]: https://github.com/neolao/kindle-nonograms/compare/v2.12.0...v2.13.0
 [2.12.0]: https://github.com/neolao/kindle-nonograms/compare/v2.11.3...v2.12.0
