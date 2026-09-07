@@ -436,14 +436,57 @@ describe("hydrate", () => {
     expect(cell(4, 4).style.backgroundColor).toBe("");
   });
 
-  it("ignores a resize to an invalid (non-positive) dimension", () => {
+  it("shows a translated error and reverts the field when width is zero", () => {
     buildFixture();
     hydrate();
 
     fireChange(widthInput(), "0");
 
+    expect(errorRegion().textContent).toBe(
+      "⚠ Width and height must be whole numbers greater than 0.",
+    );
     expect(widthInput().value).toBe("5");
     expect(document.querySelectorAll("table td")).toHaveLength(25);
+  });
+
+  it("shows the same translated error and reverts the field when height is negative", () => {
+    buildFixture();
+    hydrate();
+
+    fireChange(heightInput(), "-3");
+
+    expect(errorRegion().textContent).toBe(
+      "⚠ Width and height must be whole numbers greater than 0.",
+    );
+    expect(heightInput().value).toBe("5");
+    expect(document.querySelectorAll("table td")).toHaveLength(25);
+  });
+
+  it("shows the same translated error and reverts the field when width is non-numeric", () => {
+    buildFixture();
+    hydrate();
+
+    fireChange(widthInput(), "abc");
+
+    expect(errorRegion().textContent).toBe(
+      "⚠ Width and height must be whole numbers greater than 0.",
+    );
+    expect(widthInput().value).toBe("5");
+    expect(document.querySelectorAll("table td")).toHaveLength(25);
+  });
+
+  it("clears the resize error once a valid width is entered", () => {
+    buildFixture();
+    hydrate();
+
+    fireChange(widthInput(), "0");
+    expect(errorRegion().textContent).not.toBe("");
+
+    fireChange(widthInput(), "7");
+
+    expect(errorRegion().textContent).toBe("");
+    expect(widthInput().value).toBe("7");
+    expect(document.querySelectorAll("table td")).toHaveLength(35);
   });
 
   it("exactly one swatch is pressed/checked at a time, and clicking another moves it", () => {

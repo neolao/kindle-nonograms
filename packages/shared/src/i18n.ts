@@ -96,6 +96,7 @@ export type TranslationKey =
   | "editor.error.emptyFilename"
   | "editor.error.imageUnsupported"
   | "editor.error.imageUnreadable"
+  | "editor.error.invalidGridSize"
   | "editor.error.unexpected";
 
 const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
@@ -160,6 +161,8 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.error.imageUnsupported": "This browser can't import images.",
     "editor.error.imageUnreadable":
       "Couldn't read this image file. Try a different one.",
+    "editor.error.invalidGridSize":
+      "Width and height must be whole numbers greater than 0.",
     "editor.error.unexpected": "Something went wrong. Please try again.",
   },
   fr: {
@@ -226,6 +229,8 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
       "Ce navigateur ne peut pas importer d'images.",
     "editor.error.imageUnreadable":
       "Impossible de lire ce fichier image. Essayez-en un autre.",
+    "editor.error.invalidGridSize":
+      "La largeur et la hauteur doivent être des nombres entiers supérieurs à 0.",
     "editor.error.unexpected": "Une erreur est survenue. Veuillez réessayer.",
   },
 };

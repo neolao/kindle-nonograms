@@ -626,6 +626,17 @@ function findElements(): EditorElements | undefined {
   };
 }
 
+/**
+ * Validates and applies a width/height `change`, shared by both the width
+ * and height inputs (hence one error message covering either field, matching
+ * the acceptance criteria's own field-agnostic wording rather than plumbing
+ * which of the two triggered it). Clears the error region on every call, so
+ * a stale message from a previous invalid entry never survives a later valid
+ * one — same clear-first convention as `handleImport`/`handleExport` — then,
+ * on an invalid value, reports into it *before* reverting the field, instead
+ * of silently reverting with no explanation like every other editor field
+ * already avoids (see backlog item 043).
+ */
 function handleResize(
   elements: EditorElements,
   state: EditorState,
@@ -633,8 +644,11 @@ function handleResize(
   apply: (value: number) => void,
   previous: number,
 ): void {
+  elements.error.textContent = "";
+
   const parsed = parsePositiveInt(input.value);
   if (parsed === undefined) {
+    elements.error.textContent = `⚠ ${translate(state.locale, "editor.error.invalidGridSize")}`;
     input.value = String(previous);
     return;
   }

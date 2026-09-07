@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Typing an invalid grid width or height in the puzzle editor (zero, negative, or not a number) now shows a clear error message before the field reverts to its last valid value, instead of reverting silently with no explanation.
+
 ## [2.15.0] - 2026-09-07
 
 ### Added

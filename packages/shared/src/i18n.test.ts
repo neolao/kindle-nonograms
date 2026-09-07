@@ -39,6 +39,7 @@ const ALL_KEYS: TranslationKey[] = [
   "editor.error.emptyFilename",
   "editor.error.imageUnsupported",
   "editor.error.imageUnreadable",
+  "editor.error.invalidGridSize",
   "editor.error.unexpected",
 ];
 
@@ -105,6 +106,9 @@ describe("translate", () => {
     expect(translate("en", "editor.error.imageUnreadable")).toBe(
       "Couldn't read this image file. Try a different one.",
     );
+    expect(translate("en", "editor.error.invalidGridSize")).toBe(
+      "Width and height must be whole numbers greater than 0.",
+    );
     expect(translate("en", "editor.error.unexpected")).toBe(
       "Something went wrong. Please try again.",
     );
@@ -169,6 +173,9 @@ describe("translate", () => {
     );
     expect(translate("fr", "editor.error.imageUnreadable")).toBe(
       "Impossible de lire ce fichier image. Essayez-en un autre.",
+    );
+    expect(translate("fr", "editor.error.invalidGridSize")).toBe(
+      "La largeur et la hauteur doivent être des nombres entiers supérieurs à 0.",
     );
     expect(translate("fr", "editor.error.unexpected")).toBe(
       "Une erreur est survenue. Veuillez réessayer.",
