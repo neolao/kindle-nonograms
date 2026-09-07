@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.15.0] - 2026-09-07
+
 ### Added
 
 - If your saved progress for a puzzle no longer matches its current size (e.g. it was resized since you last played it), the puzzle page now shows a small note explaining that progress couldn't be restored, instead of silently handing you an empty grid with no explanation.
@@ -300,7 +302,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.14.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.15.0...HEAD
+[2.15.0]: https://github.com/neolao/kindle-nonograms/compare/v2.14.0...v2.15.0
 [2.14.0]: https://github.com/neolao/kindle-nonograms/compare/v2.13.1...v2.14.0
 [2.13.1]: https://github.com/neolao/kindle-nonograms/compare/v2.13.0...v2.13.1
 [2.13.0]: https://github.com/neolao/kindle-nonograms/compare/v2.12.0...v2.13.0
