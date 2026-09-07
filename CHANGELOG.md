@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The puzzle editor now shows a brief on-page confirmation naming the exported file after a successful export, instead of relying on the browser's download UI alone. A failed export still shows its existing error message.
+
 ## [2.17.0] - 2026-09-07
 
 ### Added

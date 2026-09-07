@@ -124,6 +124,15 @@ describe("renderEditorPage", () => {
     expect(error?.textContent).toBe("");
   });
 
+  it("reserves an empty, accessible confirmation region near the export action", () => {
+    const doc = parse(renderEditorPage());
+    const confirmation = doc.querySelector('[data-role="editor-confirmation"]');
+
+    expect(confirmation).not.toBeNull();
+    expect(confirmation?.getAttribute("aria-live")).toBe("polite");
+    expect(confirmation?.textContent).toBe("");
+  });
+
   it("references the shared client bundle one directory up, versioned when given", () => {
     const doc = parse(renderEditorPage("abc123"));
     const script = doc.querySelector('script[type="module"]');

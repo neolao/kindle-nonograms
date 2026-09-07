@@ -148,6 +148,7 @@ ${renderEarlyLangScript()}
 <input type="text" id="editor-filename" data-role="editor-filename" />
 <button type="button" data-role="editor-export" data-i18n="editor.export">Export</button>
 <p class="editor-error" data-role="editor-error" aria-live="polite"></p>
+<p class="editor-confirmation" data-role="editor-confirmation" aria-live="polite"></p>
 </div>
 </div>
 <footer class="page-footer">
@@ -171,6 +172,7 @@ ${sharedStyles()}
 .editor-palette-row{display:flex;align-items:center;gap:${SPACING_PX.xs}px;}
 .editor-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:${SPACING_PX.md}px;margin:0 0 ${SPACING_PX.sm}px;}
 .editor-error{min-height:1.2em;color:${COLORS.amber};font-family:${LABEL_FONT_STACK};font-size:0.9em;}
+.editor-confirmation{min-height:1.2em;color:${COLORS.teal};font-family:${LABEL_FONT_STACK};font-size:0.9em;}
 .grid-center{text-align:center;margin:${SPACING_PX.sm}px 0 0;}
 .grid-wrapper{display:inline-block;vertical-align:top;text-align:left;overflow:hidden;box-sizing:border-box;border:${BORDER_WIDTH.medium} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};}
 .grid-wrapper table{border-collapse:collapse;}

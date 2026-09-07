@@ -98,7 +98,8 @@ export type TranslationKey =
   | "editor.error.imageUnreadable"
   | "editor.error.imageTimeout"
   | "editor.error.invalidGridSize"
-  | "editor.error.unexpected";
+  | "editor.error.unexpected"
+  | "editor.exportConfirmation";
 
 const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
   en: {
@@ -166,6 +167,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.error.invalidGridSize":
       "Width and height must be whole numbers greater than 0.",
     "editor.error.unexpected": "Something went wrong. Please try again.",
+    "editor.exportConfirmation": "Exported {filename} — download started.",
   },
   fr: {
     "library.title": "Kindle Nonograms",
@@ -236,6 +238,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.error.invalidGridSize":
       "La largeur et la hauteur doivent être des nombres entiers supérieurs à 0.",
     "editor.error.unexpected": "Une erreur est survenue. Veuillez réessayer.",
+    "editor.exportConfirmation": "Exporté {filename} — téléchargement lancé.",
   },
 };
 

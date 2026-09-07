@@ -547,6 +547,7 @@ interface EditorElements {
   filename: HTMLInputElement;
   exportButton: HTMLButtonElement;
   error: HTMLElement;
+  confirmation: HTMLElement;
   importFile: HTMLInputElement;
   importPaletteSize: HTMLInputElement;
   importBackground: HTMLInputElement;
@@ -582,6 +583,9 @@ function findElements(): EditorElements | undefined {
   const error = document.querySelector<HTMLElement>(
     '[data-role="editor-error"]',
   );
+  const confirmation = document.querySelector<HTMLElement>(
+    '[data-role="editor-confirmation"]',
+  );
   const importFile = document.querySelector<HTMLInputElement>(
     '[data-role="editor-import-file"]',
   );
@@ -606,6 +610,7 @@ function findElements(): EditorElements | undefined {
     !filename ||
     !exportButton ||
     !error ||
+    !confirmation ||
     !importFile ||
     !importPaletteSize ||
     !importBackground ||
@@ -625,6 +630,7 @@ function findElements(): EditorElements | undefined {
     filename,
     exportButton,
     error,
+    confirmation,
     importFile,
     importPaletteSize,
     importBackground,
@@ -805,6 +811,7 @@ async function handleImport(
 
 function handleExport(elements: EditorElements, state: EditorState): void {
   elements.error.textContent = "";
+  elements.confirmation.textContent = "";
 
   try {
     const puzzle = buildPuzzleCandidate({
@@ -815,8 +822,10 @@ function handleExport(elements: EditorElements, state: EditorState): void {
       palette: state.palette,
       cells: state.cells,
     });
-    triggerDownload(`${puzzle.id}.json`, JSON.stringify(puzzle, null, 2));
+    const filename = `${puzzle.id}.json`;
+    triggerDownload(filename, JSON.stringify(puzzle, null, 2));
     state.hasUnsavedChanges = false;
+    elements.confirmation.textContent = `✓ ${translate(state.locale, "editor.exportConfirmation").replace("{filename}", filename)}`;
   } catch (error) {
     elements.error.textContent = `⚠ ${describeExportError(error, state.locale)}`;
   }

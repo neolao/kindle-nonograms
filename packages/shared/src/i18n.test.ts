@@ -42,6 +42,7 @@ const ALL_KEYS: TranslationKey[] = [
   "editor.error.imageTimeout",
   "editor.error.invalidGridSize",
   "editor.error.unexpected",
+  "editor.exportConfirmation",
 ];
 
 describe("SUPPORTED_LOCALES and DEFAULT_LOCALE", () => {
@@ -116,6 +117,9 @@ describe("translate", () => {
     expect(translate("en", "editor.error.unexpected")).toBe(
       "Something went wrong. Please try again.",
     );
+    expect(translate("en", "editor.exportConfirmation")).toBe(
+      "Exported {filename} — download started.",
+    );
   });
 
   it("returns the exact French string for each key", () => {
@@ -186,6 +190,9 @@ describe("translate", () => {
     );
     expect(translate("fr", "editor.error.unexpected")).toBe(
       "Une erreur est survenue. Veuillez réessayer.",
+    );
+    expect(translate("fr", "editor.exportConfirmation")).toBe(
+      "Exporté {filename} — téléchargement lancé.",
     );
   });
 

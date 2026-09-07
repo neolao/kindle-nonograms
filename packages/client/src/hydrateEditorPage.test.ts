@@ -65,6 +65,11 @@ function exportButton(): HTMLButtonElement {
 function errorRegion(): HTMLElement {
   return document.querySelector('[data-role="editor-error"]') as HTMLElement;
 }
+function confirmationRegion(): HTMLElement {
+  return document.querySelector(
+    '[data-role="editor-confirmation"]',
+  ) as HTMLElement;
+}
 function swatches(): HTMLButtonElement[] {
   return Array.from(document.querySelectorAll('[data-role="swatch"]'));
 }
@@ -563,6 +568,21 @@ describe("hydrate", () => {
     expect(errorRegion().textContent).toBe("");
   });
 
+  it("shows a confirmation naming the exported file after a successful export", () => {
+    buildFixture();
+    hydrate();
+    stubDownload();
+
+    fireChange(nameInput(), "Small Heart");
+    fireChange(filenameInput(), "small-heart");
+    fireClick(exportButton());
+
+    expect(confirmationRegion().textContent).toBe(
+      "✓ Exported small-heart.json — download started.",
+    );
+    expect(errorRegion().textContent).toBe("");
+  });
+
   it("shows a fixed, translated error and downloads nothing when the name is empty", () => {
     buildFixture();
     hydrate();
@@ -573,6 +593,7 @@ describe("hydrate", () => {
 
     expect(createObjectURL).not.toHaveBeenCalled();
     expect(errorRegion().textContent).toBe("⚠ Puzzle name is required.");
+    expect(confirmationRegion().textContent).toBe("");
   });
 
   it("shows a fixed, translated error and downloads nothing when the filename is empty", () => {
@@ -585,6 +606,42 @@ describe("hydrate", () => {
 
     expect(createObjectURL).not.toHaveBeenCalled();
     expect(errorRegion().textContent).toBe("⚠ Filename is required.");
+    expect(confirmationRegion().textContent).toBe("");
+  });
+
+  it("clears a leftover confirmation once a later export attempt fails", () => {
+    buildFixture();
+    hydrate();
+    stubDownload();
+
+    fireChange(nameInput(), "Small Heart");
+    fireChange(filenameInput(), "small-heart");
+    fireClick(exportButton());
+    expect(confirmationRegion().textContent).not.toBe("");
+
+    fireChange(filenameInput(), "");
+    fireClick(exportButton());
+
+    expect(confirmationRegion().textContent).toBe("");
+    expect(errorRegion().textContent).toBe("⚠ Filename is required.");
+  });
+
+  it("clears a leftover error once a later export attempt succeeds", () => {
+    buildFixture();
+    hydrate();
+    stubDownload();
+
+    fireChange(filenameInput(), "small-heart");
+    fireClick(exportButton());
+    expect(errorRegion().textContent).not.toBe("");
+
+    fireChange(nameInput(), "Small Heart");
+    fireClick(exportButton());
+
+    expect(errorRegion().textContent).toBe("");
+    expect(confirmationRegion().textContent).toBe(
+      "✓ Exported small-heart.json — download started.",
+    );
   });
 });
 
@@ -949,5 +1006,21 @@ describe("language switcher", () => {
     fireClick(exportButton());
 
     expect(errorRegion().textContent).toBe("⚠ Le nom du puzzle est requis.");
+  });
+
+  it("shows the export confirmation message in the switched language", () => {
+    buildFixture();
+    hydrate();
+    stubDownload();
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    fireChange(nameInput(), "Small Heart");
+    fireChange(filenameInput(), "small-heart");
+    fireClick(exportButton());
+
+    expect(confirmationRegion().textContent).toBe(
+      "✓ Exporté small-heart.json — téléchargement lancé.",
+    );
   });
 });
