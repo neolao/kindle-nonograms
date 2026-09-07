@@ -1,7 +1,9 @@
 ---
-status: idle
+status: running
 started: 2026-09-07T06:00
 limit: 1
+current: "044"
+attempt: 1
 ---
 # Auto run journal
 
@@ -31,3 +33,6 @@ limit: 1
 
 ## 2026-09-07T06:00 — run started (limit: 1)
 - 043 — feature — done (ffcde19)
+
+## 2026-09-07T06:00 — run started (limit: 1)
+- 044 — feature — in progress
