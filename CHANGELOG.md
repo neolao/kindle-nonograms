@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.17.0] - 2026-09-07
+
 ### Added
 
 - Importing an image in the puzzle editor now gives up after 15 seconds if it never finishes loading, showing a clear "This image took too long to load" message and re-enabling the import controls instead of leaving them stuck disabled.
@@ -312,7 +314,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.16.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.17.0...HEAD
+[2.17.0]: https://github.com/neolao/kindle-nonograms/compare/v2.16.0...v2.17.0
 [2.16.0]: https://github.com/neolao/kindle-nonograms/compare/v2.15.0...v2.16.0
 [2.15.0]: https://github.com/neolao/kindle-nonograms/compare/v2.14.0...v2.15.0
 [2.14.0]: https://github.com/neolao/kindle-nonograms/compare/v2.13.1...v2.14.0
