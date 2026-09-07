@@ -44,6 +44,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The puzzle editor now also honors your chosen language and has its own language switcher, just like the library page.
 - Every page now declares the correct language from the very first moment it loads, not just after it finishes loading — helpful for screen readers, search engines, and viewing the page without JavaScript.
 - A puzzle page now shows a clear "This puzzle couldn't be loaded" message if its data turns out to be missing or invalid, instead of a grid that looks tappable but silently does nothing.
+- If one page's startup script hits an unexpected error, the library, puzzle, and editor pages still each get their own chance to load normally instead of one failure silently breaking the others.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

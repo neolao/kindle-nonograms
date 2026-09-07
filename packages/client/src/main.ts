@@ -9,6 +9,13 @@
 // `<table>` stopped being a safe marker — hydratePlayPage.ts now detects
 // its own page via the embedded `#puzzle-data` script instead, which the
 // editor page never has.
+//
+// Each module's own self-invocation also wraps its `hydrate()` call in a
+// try/catch (see backlog item 041): an uncaught error thrown while one
+// module hydrates would otherwise halt this shared bundle's remaining
+// synchronous top-level execution — a static `import` declaration can't be
+// wrapped in try/catch here, so each module guards its own call instead —
+// and stop the other two modules below from ever getting imported at all.
 import "./hydrateLibraryPage.js";
 import "./hydratePlayPage.js";
 import "./hydrateEditorPage.js";

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- If one page's startup script hits an unexpected error, the library, puzzle, and editor pages still each get their own chance to load normally instead of one failure silently breaking the others.
+
 ## [2.13.1] - 2026-09-07
 
 ### Fixed

@@ -319,5 +319,12 @@ export function hydrate(): void {
 }
 
 if (typeof document !== "undefined") {
-  hydrate();
+  try {
+    hydrate();
+  } catch {
+    // Isolates this page module's hydration from the other two page
+    // modules main.ts also imports for their own self-invoking hydration —
+    // an uncaught error here must never stop them from getting their turn.
+    // See backlog item 041.
+  }
 }
