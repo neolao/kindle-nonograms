@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.16.0] - 2026-09-07
+
 ### Added
 
 - Typing an invalid grid width or height in the puzzle editor (zero, negative, or not a number) now shows a clear error message before the field reverts to its last valid value, instead of reverting silently with no explanation.
@@ -306,7 +308,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.15.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.16.0...HEAD
+[2.16.0]: https://github.com/neolao/kindle-nonograms/compare/v2.15.0...v2.16.0
 [2.15.0]: https://github.com/neolao/kindle-nonograms/compare/v2.14.0...v2.15.0
 [2.14.0]: https://github.com/neolao/kindle-nonograms/compare/v2.13.1...v2.14.0
 [2.13.1]: https://github.com/neolao/kindle-nonograms/compare/v2.13.0...v2.13.1
