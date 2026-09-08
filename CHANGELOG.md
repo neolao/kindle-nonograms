@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.20.0] - 2026-09-08
+
 ### Added
 
 - In the puzzle editor, each palette color's "select", "edit" and "remove" controls now have a distinct, numbered accessible name ("Select color 2", "Edit color 2", "Remove color 2") instead of an identical, unlabeled-feeling name shared across the whole palette.
@@ -330,7 +332,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.19.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.20.0...HEAD
+[2.20.0]: https://github.com/neolao/kindle-nonograms/compare/v2.19.0...v2.20.0
 [2.19.0]: https://github.com/neolao/kindle-nonograms/compare/v2.18.0...v2.19.0
 [2.18.0]: https://github.com/neolao/kindle-nonograms/compare/v2.17.0...v2.18.0
 [2.17.0]: https://github.com/neolao/kindle-nonograms/compare/v2.16.0...v2.17.0
