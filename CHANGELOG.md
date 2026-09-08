@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A puzzle palette color written as shorthand hex (`#rgb`) or 8-digit hex with an alpha byte (`#rrggbbaa`) now gets the correct black-or-white contrasting text, instead of always falling back to black regardless of how dark the color actually is.
+
 ## [2.21.0] - 2026-09-08
 
 ### Added
