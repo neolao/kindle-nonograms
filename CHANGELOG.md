@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.19.0] - 2026-09-08
+
 ### Added
 
 - On a multi-color puzzle, each color swatch button now has an accessible name ("Color 1", "Color 2", etc.) so a screen reader user can tell which color a swatch picks, instead of announcing an unlabeled button.
@@ -324,7 +326,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.18.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.19.0...HEAD
+[2.19.0]: https://github.com/neolao/kindle-nonograms/compare/v2.18.0...v2.19.0
 [2.18.0]: https://github.com/neolao/kindle-nonograms/compare/v2.17.0...v2.18.0
 [2.17.0]: https://github.com/neolao/kindle-nonograms/compare/v2.16.0...v2.17.0
 [2.16.0]: https://github.com/neolao/kindle-nonograms/compare/v2.15.0...v2.16.0
