@@ -34,6 +34,38 @@ describe("renderPuzzlePage", () => {
     expect(icon?.getAttribute("type")).toBe("image/svg+xml");
   });
 
+  it("numbers each color swatch's accessible name in palette order, starting at 1", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+
+    const swatches = doc.querySelectorAll('[data-role="swatch"]');
+    expect(swatches).toHaveLength(2);
+    expect(swatches[0]?.getAttribute("aria-label")).toBe("Color 1");
+    expect(swatches[1]?.getAttribute("aria-label")).toBe("Color 2");
+  });
+
+  it("marks each color swatch's aria-label as retranslatable via data-i18n-aria", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+
+    const swatch = doc.querySelector('[data-role="swatch"]');
+    expect(swatch?.getAttribute("data-i18n-aria")).toBe(
+      "play.swatchColorAriaLabel",
+    );
+  });
+
+  it("renders no swatch aria-labels for a single-color puzzle, which has no swatches at all", () => {
+    const soloPuzzle: Puzzle = {
+      id: "solo",
+      name: "Solo",
+      width: 1,
+      height: 1,
+      palette: ["#000000"],
+      cells: [[0]],
+    };
+    const doc = parse(renderPuzzlePage(soloPuzzle));
+
+    expect(doc.querySelectorAll('[data-role="swatch"]')).toHaveLength(0);
+  });
+
   it("renders the correct row and column clue numbers for a multi-color fixture", () => {
     const doc = parse(renderPuzzlePage(multiColorPuzzle));
 

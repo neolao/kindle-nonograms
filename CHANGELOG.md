@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- On a multi-color puzzle, each color swatch button now has an accessible name ("Color 1", "Color 2", etc.) so a screen reader user can tell which color a swatch picks, instead of announcing an unlabeled button.
+
 ## [2.18.0] - 2026-09-08
 
 ### Added

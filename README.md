@@ -49,6 +49,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - Typing an invalid grid width or height in the puzzle editor now shows a clear error message before the field reverts, instead of reverting silently with no explanation.
 - Importing an image in the puzzle editor now gives up after 15 seconds if it never finishes loading, showing a clear message and re-enabling the controls instead of leaving them stuck.
 - Exporting a puzzle now shows a brief confirmation naming the downloaded file, instead of relying on the browser's download notification alone.
+- On a multi-color puzzle, each color swatch now announces which color it picks to a screen reader, instead of an unlabeled button.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

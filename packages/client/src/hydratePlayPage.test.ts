@@ -306,6 +306,34 @@ describe("hydrate", () => {
     expect(blueSwatch?.textContent).toBe("");
   });
 
+  it("gives each color swatch a numbered accessible name that survives hydration", () => {
+    buildFixture(duoPuzzle);
+    hydrate();
+
+    const redSwatch = document.querySelector<HTMLButtonElement>(
+      '[data-role="swatch"][data-color-index="0"]',
+    );
+    const blueSwatch = document.querySelector<HTMLButtonElement>(
+      '[data-role="swatch"][data-color-index="1"]',
+    );
+
+    expect(redSwatch?.getAttribute("aria-label")).toBe("Color 1");
+    expect(blueSwatch?.getAttribute("aria-label")).toBe("Color 2");
+  });
+
+  it("keeps a swatch's accessible name unchanged when its active state toggles", () => {
+    buildFixture(duoPuzzle);
+    hydrate();
+
+    const blueSwatch = document.querySelector<HTMLButtonElement>(
+      '[data-role="swatch"][data-color-index="1"]',
+    );
+    blueSwatch?.click();
+
+    expect(blueSwatch?.getAttribute("aria-label")).toBe("Color 2");
+    expect(blueSwatch?.getAttribute("aria-pressed")).toBe("true");
+  });
+
   it("groups the fill button and its color swatches in a shared visual container", () => {
     buildFixture(duoPuzzle);
     hydrate();

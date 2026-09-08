@@ -102,8 +102,30 @@ export function applyLocale(locale: Locale): void {
     if (key) {
       element.setAttribute(
         "aria-label",
-        translate(locale, key as TranslationKey),
+        interpolateColorNumber(
+          translate(locale, key as TranslationKey),
+          element,
+        ),
       );
     }
   }
+}
+
+/**
+ * Substitutes a `{number}` placeholder in a translated `aria-label` (e.g.
+ * `play.swatchColorAriaLabel`, "Color {number}") with the element's own
+ * 1-based `data-color-index` — the same index already baked for that
+ * element's click handling, reused here rather than introducing a second
+ * indexing scheme just for the label. A no-op (returns `label` unchanged)
+ * whenever the placeholder or the attribute is absent, so every other
+ * `data-i18n-aria` element (e.g. the editor's own `data-color-index`-bearing
+ * swatch, whose label has no `{number}` token) is unaffected — see
+ * `.vibe/decisions/029-swatch-aria-label-number-placeholder.md`.
+ */
+function interpolateColorNumber(label: string, element: HTMLElement): string {
+  const colorIndexAttr = element.getAttribute("data-color-index");
+  if (colorIndexAttr === null) {
+    return label;
+  }
+  return label.replace("{number}", String(Number(colorIndexAttr) + 1));
 }

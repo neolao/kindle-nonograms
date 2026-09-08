@@ -22,7 +22,10 @@ import { BORDER_RADIUS_PX, BORDER_WIDTH, COLORS, SPACING_PX } from "./theme.js";
  * exactly what that script's `buildToolbar`/`buildBanner` produce for a
  * fresh page; hydration now locates this same markup by its `data-role`
  * attributes and attaches behavior to it, rather than building it from
- * scratch.
+ * scratch. Each swatch also carries a numbered `aria-label` ("Color 2")
+ * so a screen reader can tell which color it picks, plus a matching
+ * `data-i18n-aria` key so a language switch retranslates it — see
+ * `.vibe/decisions/029-swatch-aria-label-number-placeholder.md`.
  */
 function renderDefaultToolbar(puzzle: Puzzle): string {
   const fillActive = PLAY_DEFAULT_MODE === "fill";
@@ -33,7 +36,11 @@ function renderDefaultToolbar(puzzle: Puzzle): string {
             const active = index === PLAY_DEFAULT_ACTIVE_COLOR_INDEX;
             const textColor = contrastingTextColor(hex);
             const borderWidth = active ? BORDER_WIDTH.thick : BORDER_WIDTH.thin;
-            return `<button type="button" data-role="swatch" data-color-index="${index}" aria-pressed="${active}" style="background-color:${hex};color:${textColor};border-width:${borderWidth};">${active ? "✓" : ""}</button>`;
+            const ariaLabel = translate(
+              DEFAULT_LOCALE,
+              "play.swatchColorAriaLabel",
+            ).replace("{number}", String(index + 1));
+            return `<button type="button" data-role="swatch" data-color-index="${index}" aria-pressed="${active}" aria-label="${escapeHtml(ariaLabel)}" data-i18n-aria="play.swatchColorAriaLabel" style="background-color:${hex};color:${textColor};border-width:${borderWidth};">${active ? "✓" : ""}</button>`;
           })
           .join("")
       : "";

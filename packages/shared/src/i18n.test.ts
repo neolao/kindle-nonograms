@@ -43,6 +43,7 @@ const ALL_KEYS: TranslationKey[] = [
   "editor.error.invalidGridSize",
   "editor.error.unexpected",
   "editor.exportConfirmation",
+  "play.swatchColorAriaLabel",
 ];
 
 describe("SUPPORTED_LOCALES and DEFAULT_LOCALE", () => {
@@ -120,6 +121,7 @@ describe("translate", () => {
     expect(translate("en", "editor.exportConfirmation")).toBe(
       "Exported {filename} — download started.",
     );
+    expect(translate("en", "play.swatchColorAriaLabel")).toBe("Color {number}");
   });
 
   it("returns the exact French string for each key", () => {
@@ -193,6 +195,9 @@ describe("translate", () => {
     );
     expect(translate("fr", "editor.exportConfirmation")).toBe(
       "Exporté {filename} — téléchargement lancé.",
+    );
+    expect(translate("fr", "play.swatchColorAriaLabel")).toBe(
+      "Couleur {number}",
     );
   });
 

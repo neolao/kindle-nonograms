@@ -137,4 +137,39 @@ describe("applyLocale", () => {
       false,
     );
   });
+
+  it("substitutes a {number} aria-label placeholder with the element's 1-based data-color-index", () => {
+    document.body.innerHTML =
+      '<button data-i18n-aria="play.swatchColorAriaLabel" data-color-index="1"></button>';
+
+    applyLocale("fr");
+
+    expect(document.querySelector("button")?.getAttribute("aria-label")).toBe(
+      "Couleur 2",
+    );
+  });
+
+  it("renumbers a {number} aria-label placeholder correctly for each swatch on a later locale switch", () => {
+    document.body.innerHTML =
+      '<button data-i18n-aria="play.swatchColorAriaLabel" data-color-index="0"></button>' +
+      '<button data-i18n-aria="play.swatchColorAriaLabel" data-color-index="1"></button>';
+
+    applyLocale("en");
+    applyLocale("fr");
+
+    const buttons = document.querySelectorAll("button");
+    expect(buttons[0]?.getAttribute("aria-label")).toBe("Couleur 1");
+    expect(buttons[1]?.getAttribute("aria-label")).toBe("Couleur 2");
+  });
+
+  it("leaves an unrelated data-i18n-aria label with no {number} token untouched even when data-color-index is present", () => {
+    document.body.innerHTML =
+      '<button data-i18n-aria="editor.selectColorAriaLabel" data-color-index="0"></button>';
+
+    applyLocale("fr");
+
+    expect(document.querySelector("button")?.getAttribute("aria-label")).toBe(
+      "Choisir la couleur",
+    );
+  });
 });
