@@ -6,6 +6,7 @@ import {
   type Puzzle,
   computePuzzleClues,
   contrastingTextColor,
+  readableRunColor,
   translate,
 } from "@kindle-nonograms/shared";
 import { renderEarlyLangScript } from "./earlyLangScript.js";
@@ -99,7 +100,11 @@ function renderDefaultStorageWarning(): string {
 
 // Cycled by palette index so different colors stay distinguishable even
 // where the browser can't render color (Kindle's e-ink is often grayscale).
-// See .vibe/decisions/003-clue-color-plus-pattern-cue.md.
+// See .vibe/decisions/003-clue-color-plus-pattern-cue.md. The border always
+// uses the raw palette hex, unlike the run's text color (see
+// `readableRunColor` in `renderStyle`) — the border is the color-identity
+// cue and stays untouched by the text's contrast fallback (backlog item 048
+// / .vibe/decisions/030-clue-number-contrast-fallback-not-blocked-by-hex-format-support.md).
 const BORDER_STYLES = ["solid", "dashed", "dotted", "double"];
 
 /**
@@ -232,7 +237,7 @@ function renderStyle(puzzle: Puzzle, multiColor: boolean): string {
     ? puzzle.palette
         .map(
           (hex, index) =>
-            `.run-c${index}{color:${hex};border:${BORDER_WIDTH.thin} ${BORDER_STYLES[index % BORDER_STYLES.length]} ${hex};padding:0 0.15em;}`,
+            `.run-c${index}{color:${readableRunColor(hex)};border:${BORDER_WIDTH.thin} ${BORDER_STYLES[index % BORDER_STYLES.length]} ${hex};padding:0 0.15em;}`,
         )
         .join("")
     : "";

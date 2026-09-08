@@ -51,6 +51,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - Exporting a puzzle now shows a brief confirmation naming the downloaded file, instead of relying on the browser's download notification alone.
 - On a multi-color puzzle, each color swatch now announces which color it picks to a screen reader, instead of an unlabeled button.
 - In the puzzle editor, each palette color's select, edit, and remove controls now announce which color they act on to a screen reader, instead of sounding identical across the whole palette.
+- On a multi-color puzzle, a clue number is now shown in black whenever its palette color is too pale to read against the white background, while its colored border still shows which color the clue belongs to.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

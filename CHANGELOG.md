@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- On a multi-color puzzle page, clue numbers for a pale palette color (e.g. pale yellow) now render in black text so they stay legible against the white background, while the number's colored/patterned border still identifies its color. Numbers for already-readable palette colors are unchanged.
+
 ## [2.20.0] - 2026-09-08
 
 ### Added
