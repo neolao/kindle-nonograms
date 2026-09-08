@@ -12,6 +12,7 @@ const ALL_KEYS: TranslationKey[] = [
   "library.title",
   "library.empty",
   "library.solvedBadge",
+  "library.solvedPuzzleLinkAriaLabel",
   "play.modeFill",
   "play.modeCross",
   "play.winBanner.solved",
@@ -66,6 +67,9 @@ describe("translate", () => {
       "No puzzles are available yet.",
     );
     expect(translate("en", "library.solvedBadge")).toBe("Solved");
+    expect(translate("en", "library.solvedPuzzleLinkAriaLabel")).toBe(
+      "{label}, {status}",
+    );
     expect(translate("en", "play.modeFill")).toBe("Fill");
     expect(translate("en", "play.modeCross")).toBe("Cross");
     expect(translate("en", "play.winBanner.solved")).toBe("Puzzle solved!");
@@ -142,6 +146,9 @@ describe("translate", () => {
       "Aucun puzzle disponible pour le moment.",
     );
     expect(translate("fr", "library.solvedBadge")).toBe("Résolu");
+    expect(translate("fr", "library.solvedPuzzleLinkAriaLabel")).toBe(
+      "{label}, {status}",
+    );
     expect(translate("fr", "play.modeFill")).toBe("Remplir");
     expect(translate("fr", "play.modeCross")).toBe("Croix");
     expect(translate("fr", "play.winBanner.solved")).toBe("Puzzle résolu !");

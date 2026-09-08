@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A solved puzzle's link in the library now announces its solved status as part of its own accessible name (e.g. "Cat — 15 × 15, Solved"), so tabbing link-to-link reveals it to screen reader users instead of only showing it as a nearby visual badge. An unsolved puzzle's link is unaffected, and the visible badge itself is unchanged.
+
 ## [2.22.0] - 2026-09-08
 
 ### Added

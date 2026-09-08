@@ -42,6 +42,7 @@ export type TranslationKey =
   | "library.title"
   | "library.empty"
   | "library.solvedBadge"
+  | "library.solvedPuzzleLinkAriaLabel"
   | "play.modeFill"
   | "play.modeCross"
   | "play.winBanner.solved"
@@ -107,6 +108,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.title": "Kindle Nonograms",
     "library.empty": "No puzzles are available yet.",
     "library.solvedBadge": "Solved",
+    "library.solvedPuzzleLinkAriaLabel": "{label}, {status}",
     "play.modeFill": "Fill",
     "play.modeCross": "Cross",
     "play.winBanner.solved": "Puzzle solved!",
@@ -175,6 +177,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.title": "Kindle Nonograms",
     "library.empty": "Aucun puzzle disponible pour le moment.",
     "library.solvedBadge": "Résolu",
+    "library.solvedPuzzleLinkAriaLabel": "{label}, {status}",
     "play.modeFill": "Remplir",
     "play.modeCross": "Croix",
     "play.winBanner.solved": "Puzzle résolu !",

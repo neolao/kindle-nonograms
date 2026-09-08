@@ -97,6 +97,16 @@ function badgeFor(puzzleId: string): HTMLElement {
   return found;
 }
 
+function linkFor(puzzleId: string): HTMLAnchorElement {
+  const found = document.querySelector<HTMLAnchorElement>(
+    `[data-puzzle-id="${puzzleId}"] a`,
+  );
+  if (!found) {
+    throw new Error(`fixture link for ${puzzleId} not found`);
+  }
+  return found;
+}
+
 function thumbFor(puzzleId: string): HTMLElement {
   const found = document.querySelector<HTMLElement>(
     `[data-puzzle-id="${puzzleId}"] .thumb`,
@@ -269,6 +279,49 @@ describe("hydrate", () => {
 
     expect(() => hydrate()).not.toThrow();
     expect(badgeFor("cat").hidden).toBe(true);
+  });
+});
+
+describe("solved-link accessible name", () => {
+  it("includes the solved status alongside the visible label in a solved puzzle's link aria-label", () => {
+    saveProgress("cat", { cells: [[0, null]] });
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    expect(linkFor("cat").getAttribute("aria-label")).toBe(
+      "Cat — 2 × 1, Solved",
+    );
+  });
+
+  it("leaves an unsolved puzzle's link with no aria-label at all", () => {
+    saveProgress("cat", { cells: [[0, null]] });
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    expect(linkFor("dog").hasAttribute("aria-label")).toBe(false);
+  });
+
+  it("retranslates a solved puzzle's link aria-label on a later language switch", () => {
+    saveProgress("cat", { cells: [[0, null]] });
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    hydrate();
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    expect(linkFor("cat").getAttribute("aria-label")).toBe(
+      "Cat — 2 × 1, Résolu",
+    );
+  });
+
+  it("does not throw when a solved puzzle's row is missing its link element", () => {
+    saveProgress("cat", { cells: [[0, null]] });
+    document.body.innerHTML = `<ul><li data-puzzle-id="cat"><span class="solved-badge" hidden>Solved</span></li></ul><script type="application/json" id="puzzles-data">${JSON.stringify([catPuzzle])}</script>`;
+
+    expect(() => hydrate()).not.toThrow();
+    expect(badgeFor("cat").hidden).toBe(false);
   });
 });
 

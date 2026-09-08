@@ -102,9 +102,10 @@ export function applyLocale(locale: Locale): void {
     if (key) {
       element.setAttribute(
         "aria-label",
-        interpolateColorNumber(
+        interpolateAriaLabelTokens(
           translate(locale, key as TranslationKey),
           element,
+          locale,
         ),
       );
     }
@@ -112,20 +113,37 @@ export function applyLocale(locale: Locale): void {
 }
 
 /**
- * Substitutes a `{number}` placeholder in a translated `aria-label` (e.g.
- * `play.swatchColorAriaLabel`, "Color {number}") with the element's own
- * 1-based `data-color-index` — the same index already baked for that
- * element's click handling, reused here rather than introducing a second
- * indexing scheme just for the label. A no-op (returns `label` unchanged)
- * whenever the placeholder or the attribute is absent, so every other
- * `data-i18n-aria` element (e.g. the editor's own `data-color-index`-bearing
- * swatch, whose label has no `{number}` token) is unaffected — see
- * `.vibe/decisions/029-swatch-aria-label-number-placeholder.md`.
+ * Substitutes the placeholder tokens a translated `aria-label` template may
+ * contain, each a no-op (label returned unchanged at that step) whenever its
+ * own token is absent, so every other `data-i18n-aria` element is unaffected
+ * by tokens it doesn't use:
+ * - `{number}`: the element's own 1-based `data-color-index` — the same
+ *   index already baked for that element's click handling, reused here
+ *   rather than introducing a second indexing scheme just for the label
+ *   (e.g. `play.swatchColorAriaLabel`, "Color {number}") — see
+ *   `.vibe/decisions/029-swatch-aria-label-number-placeholder.md`.
+ * - `{label}`: the element's own current `textContent` — used by an
+ *   element whose accessible name must both keep its own visible text
+ *   (WCAG 2.5.3 Label in Name) and append translated context, e.g. the
+ *   library page's solved-puzzle link, whose visible text (puzzle name +
+ *   dimensions) is never itself translated.
+ * - `{status}`: the translated `library.solvedBadge` word — reused rather
+ *   than duplicated so the puzzle link's spoken solved status can never
+ *   drift from the visible badge's own text — see
+ *   `.vibe/decisions/031-solved-link-aria-label-composes-badge-translation.md`.
  */
-function interpolateColorNumber(label: string, element: HTMLElement): string {
+function interpolateAriaLabelTokens(
+  label: string,
+  element: HTMLElement,
+  locale: Locale,
+): string {
   const colorIndexAttr = element.getAttribute("data-color-index");
-  if (colorIndexAttr === null) {
-    return label;
-  }
-  return label.replace("{number}", String(Number(colorIndexAttr) + 1));
+  const withNumber =
+    colorIndexAttr === null
+      ? label
+      : label.replace("{number}", String(Number(colorIndexAttr) + 1));
+
+  return withNumber
+    .replace("{label}", element.textContent ?? "")
+    .replace("{status}", translate(locale, "library.solvedBadge"));
 }

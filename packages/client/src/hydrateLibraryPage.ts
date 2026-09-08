@@ -1,9 +1,11 @@
 import {
   LIBRARY_PAGE_SIZE,
+  type Locale,
   type Puzzle,
   buildThumbnail,
   isPuzzleSolved,
   isSupportedLocale,
+  translate,
 } from "@kindle-nonograms/shared";
 import {
   applyLocale,
@@ -98,6 +100,33 @@ function revealThumbnail(row: HTMLElement, puzzle: Puzzle): void {
 }
 
 /**
+ * Folds the solved status into the puzzle link's own accessible name: sets
+ * `aria-label` to the link's own visible text (name + dimensions) followed
+ * by the translated "solved" word, and tags it `data-i18n-aria` so a later
+ * language switch keeps both halves in sync via `applyLocale()`'s generic
+ * `{label}`/`{status}` substitution — see
+ * .vibe/decisions/031-solved-link-aria-label-composes-badge-translation.md.
+ * A missing link (unexpected row markup) is a silent no-op, same defensive
+ * spirit as `revealThumbnail` above. Never called for an unsolved puzzle,
+ * so that link's accessible name is left exactly as rendered.
+ */
+function markLinkAsSolved(row: HTMLElement, locale: Locale): void {
+  const link = row.querySelector<HTMLAnchorElement>("a");
+  if (!link) {
+    return;
+  }
+
+  const key = "library.solvedPuzzleLinkAriaLabel";
+  link.dataset.i18nAria = key;
+  link.setAttribute(
+    "aria-label",
+    translate(locale, key)
+      .replace("{label}", link.textContent ?? "")
+      .replace("{status}", translate(locale, "library.solvedBadge")),
+  );
+}
+
+/**
  * Locates the FR/EN language switcher `renderLibraryPage.ts` already bakes
  * into the page footer (English selected by default — the locale itself
  * isn't known at build time) and attaches its change behavior, then applies
@@ -108,9 +137,12 @@ function revealThumbnail(row: HTMLElement, puzzle: Puzzle): void {
  * a previously saved locale, see `hydratePlayPage.ts` (see
  * .vibe/backlog/done/026-language-switcher-and-contribution-footer.md).
  * Runs before any other hydration so the switcher and translated strings
- * are present even on the empty library page.
+ * are present even on the empty library page. Returns the resolved locale
+ * so later hydration steps (the solved-badge reveal's own aria-label) can
+ * compose their own translated text in the same language without
+ * re-resolving it from the cookie/browser a second time.
  */
-function setUpLanguageSwitcher(): void {
+function setUpLanguageSwitcher(): Locale {
   const locale = resolveLocale(readLocaleCookie(), navigator.language);
 
   const select = document.querySelector<HTMLSelectElement>(
@@ -127,6 +159,7 @@ function setUpLanguageSwitcher(): void {
   }
 
   applyLocale(locale);
+  return locale;
 }
 
 /**
@@ -273,7 +306,11 @@ function scrollListIntoView(list: Element): void {
  * filter controls, checks each puzzle's saved progress against its
  * solution, and reveals the already-reserved "solved" badge (see
  * .vibe/decisions/004-library-page-reserves-solved-badge-node.md) for
- * every puzzle solved correctly.
+ * every puzzle solved correctly — at the same time folding that solved
+ * status into the puzzle link's own accessible name (see
+ * .vibe/decisions/031-solved-link-aria-label-composes-badge-translation.md),
+ * since the visible badge is a sibling `<span>`, not part of the link's
+ * accessible name on its own.
  */
 export function hydrate(): void {
   // The embedded `#puzzles-data` script is this page type's own
@@ -285,7 +322,7 @@ export function hydrate(): void {
     return;
   }
 
-  setUpLanguageSwitcher();
+  const locale = setUpLanguageSwitcher();
 
   const puzzles = readPuzzles();
   if (puzzles.length === 0) {
@@ -313,6 +350,8 @@ export function hydrate(): void {
     if (badge) {
       badge.hidden = false;
     }
+
+    markLinkAsSolved(row, locale);
 
     revealThumbnail(row, puzzle);
   }

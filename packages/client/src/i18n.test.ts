@@ -172,4 +172,38 @@ describe("applyLocale", () => {
       "Ajouter une couleur",
     );
   });
+
+  it("substitutes {label} with the element's own text and {status} with the translated solved-badge word", () => {
+    document.body.innerHTML =
+      '<a data-i18n-aria="library.solvedPuzzleLinkAriaLabel">Cat — 2 × 1</a>';
+
+    applyLocale("en");
+
+    expect(document.querySelector("a")?.getAttribute("aria-label")).toBe(
+      "Cat — 2 × 1, Solved",
+    );
+  });
+
+  it("retranslates both the {label} source text and the {status} word together on a later locale switch", () => {
+    document.body.innerHTML =
+      '<a data-i18n-aria="library.solvedPuzzleLinkAriaLabel">Cat — 2 × 1</a>';
+
+    applyLocale("en");
+    applyLocale("fr");
+
+    expect(document.querySelector("a")?.getAttribute("aria-label")).toBe(
+      "Cat — 2 × 1, Résolu",
+    );
+  });
+
+  it("leaves a {number}-only aria-label untouched by the {label}/{status} substitution", () => {
+    document.body.innerHTML =
+      '<button data-i18n-aria="play.swatchColorAriaLabel" data-color-index="0">✓</button>';
+
+    applyLocale("en");
+
+    expect(document.querySelector("button")?.getAttribute("aria-label")).toBe(
+      "Color 1",
+    );
+  });
 });
