@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Label Play Page Color Swatches For Screen Readers
 
