@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.21.0] - 2026-09-08
+
 ### Added
 
 - On a multi-color puzzle page, clue numbers for a pale palette color (e.g. pale yellow) now render in black text so they stay legible against the white background, while the number's colored/patterned border still identifies its color. Numbers for already-readable palette colors are unchanged.
@@ -336,7 +338,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.20.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.21.0...HEAD
+[2.21.0]: https://github.com/neolao/kindle-nonograms/compare/v2.20.0...v2.21.0
 [2.20.0]: https://github.com/neolao/kindle-nonograms/compare/v2.19.0...v2.20.0
 [2.19.0]: https://github.com/neolao/kindle-nonograms/compare/v2.18.0...v2.19.0
 [2.18.0]: https://github.com/neolao/kindle-nonograms/compare/v2.17.0...v2.18.0
