@@ -320,7 +320,10 @@ function renderPalette(elements: EditorElements, state: EditorState): void {
     swatch.dataset.i18nAria = "editor.selectColorAriaLabel";
     swatch.setAttribute(
       "aria-label",
-      translate(state.locale, "editor.selectColorAriaLabel"),
+      translate(state.locale, "editor.selectColorAriaLabel").replace(
+        "{number}",
+        String(index + 1),
+      ),
     );
     const active = index === state.activeColorIndex;
     swatch.setAttribute("aria-pressed", String(active));
@@ -336,7 +339,10 @@ function renderPalette(elements: EditorElements, state: EditorState): void {
     colorInput.dataset.i18nAria = "editor.editColorAriaLabel";
     colorInput.setAttribute(
       "aria-label",
-      translate(state.locale, "editor.editColorAriaLabel"),
+      translate(state.locale, "editor.editColorAriaLabel").replace(
+        "{number}",
+        String(index + 1),
+      ),
     );
 
     const remove = document.createElement("button");
@@ -346,7 +352,10 @@ function renderPalette(elements: EditorElements, state: EditorState): void {
     remove.dataset.i18nAria = "editor.removeColorAriaLabel";
     remove.setAttribute(
       "aria-label",
-      translate(state.locale, "editor.removeColorAriaLabel"),
+      translate(state.locale, "editor.removeColorAriaLabel").replace(
+        "{number}",
+        String(index + 1),
+      ),
     );
     remove.textContent = "×";
     remove.disabled = state.palette.length <= 1;

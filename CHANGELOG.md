@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- In the puzzle editor, each palette color's "select", "edit" and "remove" controls now have a distinct, numbered accessible name ("Select color 2", "Edit color 2", "Remove color 2") instead of an identical, unlabeled-feeling name shared across the whole palette.
+
 ## [2.19.0] - 2026-09-08
 
 ### Added

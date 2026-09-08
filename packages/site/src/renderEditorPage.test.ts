@@ -201,6 +201,27 @@ describe("renderEditorPage", () => {
     ).toBe("editor.addColor");
   });
 
+  it("numbers the default palette's swatch, color input and remove aria-labels so they aren't identical across colors", () => {
+    const doc = parse(renderEditorPage());
+    const palette = doc.querySelector('[data-role="editor-palette"]');
+
+    expect(
+      palette
+        ?.querySelector('[data-role="swatch"]')
+        ?.getAttribute("aria-label"),
+    ).toBe("Select color 1");
+    expect(
+      palette
+        ?.querySelector('[data-role="palette-color-input"]')
+        ?.getAttribute("aria-label"),
+    ).toBe("Edit color 1");
+    expect(
+      palette
+        ?.querySelector('[data-role="palette-remove"]')
+        ?.getAttribute("aria-label"),
+    ).toBe("Remove color 1");
+  });
+
   it("places the early lang-setting script immediately after the charset meta, ahead of styles and the module bundle", () => {
     const html = renderEditorPage();
 

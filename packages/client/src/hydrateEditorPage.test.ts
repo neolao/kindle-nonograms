@@ -73,6 +73,14 @@ function confirmationRegion(): HTMLElement {
 function swatches(): HTMLButtonElement[] {
   return Array.from(document.querySelectorAll('[data-role="swatch"]'));
 }
+function colorInputs(): HTMLInputElement[] {
+  return Array.from(
+    document.querySelectorAll('[data-role="palette-color-input"]'),
+  );
+}
+function removeButtons(): HTMLButtonElement[] {
+  return Array.from(document.querySelectorAll('[data-role="palette-remove"]'));
+}
 function cell(x: number, y: number): HTMLTableCellElement {
   return document.querySelector(
     `td[data-row="${y}"][data-col="${x}"]`,
@@ -554,6 +562,56 @@ describe("hydrate", () => {
     expect(remove.disabled).toBe(true);
   });
 
+  it("gives each palette color's swatch, color input and remove button a distinct, position-numbered aria-label", () => {
+    buildFixture();
+    hydrate();
+
+    fireClick(
+      document.querySelector('[data-role="editor-add-color"]') as Element,
+    );
+    fireClick(
+      document.querySelector('[data-role="editor-add-color"]') as Element,
+    );
+
+    expect(swatches().map((el) => el.getAttribute("aria-label"))).toEqual([
+      "Select color 1",
+      "Select color 2",
+      "Select color 3",
+    ]);
+    expect(colorInputs().map((el) => el.getAttribute("aria-label"))).toEqual([
+      "Edit color 1",
+      "Edit color 2",
+      "Edit color 3",
+    ]);
+    expect(removeButtons().map((el) => el.getAttribute("aria-label"))).toEqual([
+      "Remove color 1",
+      "Remove color 2",
+      "Remove color 3",
+    ]);
+  });
+
+  it("renumbers the remaining swatches' aria-labels contiguously after removing a middle palette color", () => {
+    buildFixture();
+    hydrate();
+    fireClick(
+      document.querySelector('[data-role="editor-add-color"]') as Element,
+    );
+    fireClick(
+      document.querySelector('[data-role="editor-add-color"]') as Element,
+    );
+
+    fireClick(
+      document.querySelector(
+        '[data-role="palette-remove"][data-color-index="1"]',
+      ) as Element,
+    );
+
+    expect(swatches().map((el) => el.getAttribute("aria-label"))).toEqual([
+      "Select color 1",
+      "Select color 2",
+    ]);
+  });
+
   it("exports a valid puzzle and triggers a download named after the filename", () => {
     buildFixture();
     hydrate();
@@ -951,7 +1009,7 @@ describe("language switcher", () => {
       document.querySelector('[data-role="mode-paint"]')?.textContent,
     ).toBe("Peindre");
     expect(swatches()[0]?.getAttribute("aria-label")).toBe(
-      "Choisir la couleur",
+      "Choisir la couleur 1",
     );
   });
 
@@ -978,7 +1036,7 @@ describe("language switcher", () => {
     const toolbarPaint = document.querySelector('[data-role="mode-paint"]');
     expect(toolbarPaint?.textContent).toBe("Peindre");
     expect(swatches()[0]?.getAttribute("aria-label")).toBe(
-      "Choisir la couleur",
+      "Choisir la couleur 1",
     );
   });
 

@@ -111,18 +111,18 @@ describe("applyLocale", () => {
 
   it("translates the aria-label of every element carrying a data-i18n-aria key", () => {
     document.body.innerHTML =
-      '<button data-i18n-aria="editor.selectColorAriaLabel"></button>';
+      '<button data-i18n-aria="editor.addColor"></button>';
 
     applyLocale("fr");
 
     expect(document.querySelector("button")?.getAttribute("aria-label")).toBe(
-      "Choisir la couleur",
+      "Ajouter une couleur",
     );
   });
 
   it("leaves an element's textContent untouched when it only carries data-i18n-aria, not data-i18n", () => {
     document.body.innerHTML =
-      '<button data-i18n-aria="editor.selectColorAriaLabel">✓</button>';
+      '<button data-i18n-aria="editor.addColor">✓</button>';
 
     applyLocale("fr");
 
@@ -164,12 +164,12 @@ describe("applyLocale", () => {
 
   it("leaves an unrelated data-i18n-aria label with no {number} token untouched even when data-color-index is present", () => {
     document.body.innerHTML =
-      '<button data-i18n-aria="editor.selectColorAriaLabel" data-color-index="0"></button>';
+      '<button data-i18n-aria="editor.addColor" data-color-index="0"></button>';
 
     applyLocale("fr");
 
     expect(document.querySelector("button")?.getAttribute("aria-label")).toBe(
-      "Choisir la couleur",
+      "Ajouter une couleur",
     );
   });
 });

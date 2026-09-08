@@ -44,6 +44,9 @@ const ALL_KEYS: TranslationKey[] = [
   "editor.error.unexpected",
   "editor.exportConfirmation",
   "play.swatchColorAriaLabel",
+  "editor.selectColorAriaLabel",
+  "editor.editColorAriaLabel",
+  "editor.removeColorAriaLabel",
 ];
 
 describe("SUPPORTED_LOCALES and DEFAULT_LOCALE", () => {
@@ -122,6 +125,15 @@ describe("translate", () => {
       "Exported {filename} — download started.",
     );
     expect(translate("en", "play.swatchColorAriaLabel")).toBe("Color {number}");
+    expect(translate("en", "editor.selectColorAriaLabel")).toBe(
+      "Select color {number}",
+    );
+    expect(translate("en", "editor.editColorAriaLabel")).toBe(
+      "Edit color {number}",
+    );
+    expect(translate("en", "editor.removeColorAriaLabel")).toBe(
+      "Remove color {number}",
+    );
   });
 
   it("returns the exact French string for each key", () => {
@@ -198,6 +210,15 @@ describe("translate", () => {
     );
     expect(translate("fr", "play.swatchColorAriaLabel")).toBe(
       "Couleur {number}",
+    );
+    expect(translate("fr", "editor.selectColorAriaLabel")).toBe(
+      "Choisir la couleur {number}",
+    );
+    expect(translate("fr", "editor.editColorAriaLabel")).toBe(
+      "Modifier la couleur {number}",
+    );
+    expect(translate("fr", "editor.removeColorAriaLabel")).toBe(
+      "Retirer la couleur {number}",
     );
   });
 

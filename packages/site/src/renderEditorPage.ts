@@ -40,7 +40,22 @@ import {
 function renderDefaultPalette(): string {
   const hex = EDITOR_DEFAULT_PALETTE[0] ?? "#000000";
   const textColor = contrastingTextColor(hex);
-  return `<div class="editor-palette-row"><button type="button" data-role="swatch" data-color-index="0" aria-label="${translate(DEFAULT_LOCALE, "editor.selectColorAriaLabel")}" data-i18n-aria="editor.selectColorAriaLabel" aria-pressed="true" style="background-color:${hex};color:${textColor};">✓</button><input type="color" data-role="palette-color-input" data-color-index="0" value="${hex}" aria-label="${translate(DEFAULT_LOCALE, "editor.editColorAriaLabel")}" data-i18n-aria="editor.editColorAriaLabel" /><button type="button" data-role="palette-remove" data-color-index="0" aria-label="${translate(DEFAULT_LOCALE, "editor.removeColorAriaLabel")}" data-i18n-aria="editor.removeColorAriaLabel" disabled>×</button></div><button type="button" data-role="editor-add-color" aria-label="${translate(DEFAULT_LOCALE, "editor.addColor")}" data-i18n-aria="editor.addColor">+</button>`;
+  // The default palette always has exactly one color at index 0, so its
+  // 1-based display number is always "1" — see the `{number}` placeholder
+  // mechanism documented at `.vibe/decisions/029-swatch-aria-label-number-placeholder.md`.
+  const selectLabel = translate(
+    DEFAULT_LOCALE,
+    "editor.selectColorAriaLabel",
+  ).replace("{number}", "1");
+  const editLabel = translate(
+    DEFAULT_LOCALE,
+    "editor.editColorAriaLabel",
+  ).replace("{number}", "1");
+  const removeLabel = translate(
+    DEFAULT_LOCALE,
+    "editor.removeColorAriaLabel",
+  ).replace("{number}", "1");
+  return `<div class="editor-palette-row"><button type="button" data-role="swatch" data-color-index="0" aria-label="${selectLabel}" data-i18n-aria="editor.selectColorAriaLabel" aria-pressed="true" style="background-color:${hex};color:${textColor};">✓</button><input type="color" data-role="palette-color-input" data-color-index="0" value="${hex}" aria-label="${editLabel}" data-i18n-aria="editor.editColorAriaLabel" /><button type="button" data-role="palette-remove" data-color-index="0" aria-label="${removeLabel}" data-i18n-aria="editor.removeColorAriaLabel" disabled>×</button></div><button type="button" data-role="editor-add-color" aria-label="${translate(DEFAULT_LOCALE, "editor.addColor")}" data-i18n-aria="editor.addColor">+</button>`;
 }
 
 function renderDefaultToolbar(): string {
