@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The puzzle editor's palette row color input is now at least 44×44px, matching the app's minimum tap target size and the same height as the swatch and remove buttons beside it in the same row.
+
 ## [2.23.0] - 2026-09-09
 
 ### Added

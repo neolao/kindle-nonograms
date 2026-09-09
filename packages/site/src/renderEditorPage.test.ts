@@ -222,6 +222,18 @@ describe("renderEditorPage", () => {
     ).toBe("Remove color 1");
   });
 
+  it("gives the palette row's color input the same minimum tap target size as the import section's color input", () => {
+    const doc = parse(renderEditorPage());
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(
+      /\.editor-palette-row input\[type="color"\]\{[^}]*min-height:44px/,
+    );
+    expect(css).toMatch(
+      /\.editor-palette-row input\[type="color"\]\{[^}]*min-width:44px/,
+    );
+  });
+
   it("places the early lang-setting script immediately after the charset meta, ahead of styles and the module bundle", () => {
     const html = renderEditorPage();
 
