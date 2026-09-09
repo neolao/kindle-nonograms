@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.25.0] - 2026-09-09
+
 ### Added
 
 - Pressed/active buttons (the Fill/Cross/Check toolbar buttons and color swatches) no longer jump in size or shift their neighbors' alignment when toggled — their border-width change is now fully absorbed instead of resizing the button.
@@ -360,7 +362,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.24.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.25.0...HEAD
+[2.25.0]: https://github.com/neolao/kindle-nonograms/compare/v2.24.0...v2.25.0
 [2.24.0]: https://github.com/neolao/kindle-nonograms/compare/v2.23.0...v2.24.0
 [2.23.0]: https://github.com/neolao/kindle-nonograms/compare/v2.22.0...v2.23.0
 [2.22.0]: https://github.com/neolao/kindle-nonograms/compare/v2.21.0...v2.22.0
