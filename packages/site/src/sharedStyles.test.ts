@@ -23,6 +23,26 @@ describe("sharedStyles", () => {
     expect(css).toMatch(/button\[aria-pressed="true"\]\{[^}]*border-width:3px/);
   });
 
+  it("keeps a button's and the back-link's outer box size fixed with box-sizing:border-box, so a pressed border-width change never shifts its size or its siblings' alignment", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/button,\s*\.back-link\{[^}]*box-sizing:border-box/);
+  });
+
+  it("shrinks a pressed/active button's padding by exactly its border-width growth (4px base minus 2px growth = 2px vertical, 12px base minus 2px growth = 10px horizontal), so a text button sized by its own content — not just one pinned to the minimum tap target — never resizes either", () => {
+    const css = sharedStyles();
+
+    // Pinned as literals (not re-derived from BORDER_WIDTH/SPACING_PX
+    // arithmetic), so a wrong compensation would actually fail this test
+    // instead of both sides trivially agreeing with themselves. Only
+    // box-sizing:border-box (previous test) protects a button already
+    // pinned to MIN_TAP_TARGET_PX (e.g. a color swatch); an auto-width
+    // button whose own text content already exceeds that floor (Fill,
+    // Cross, Check) has no explicit width for box-sizing to reinterpret,
+    // so it needs this padding compensation instead.
+    expect(css).toMatch(/button\[aria-pressed="true"\]\{[^}]*padding:2px 10px/);
+  });
+
   it("gives a focused button and select a visible, non-color-only outline", () => {
     const css = sharedStyles();
 

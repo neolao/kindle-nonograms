@@ -334,6 +334,60 @@ describe("hydrate", () => {
     expect(blueSwatch?.getAttribute("aria-pressed")).toBe("true");
   });
 
+  it("thickens the active swatch's border and thins the one it replaces when the active color toggles", () => {
+    buildFixture(duoPuzzle);
+    hydrate();
+
+    const redSwatch = document.querySelector<HTMLButtonElement>(
+      '[data-role="swatch"][data-color-index="0"]',
+    );
+    const blueSwatch = document.querySelector<HTMLButtonElement>(
+      '[data-role="swatch"][data-color-index="1"]',
+    );
+    blueSwatch?.click();
+
+    expect(blueSwatch?.style.borderWidth).toBe("3px");
+    expect(redSwatch?.style.borderWidth).toBe("1px");
+  });
+
+  it("sources a swatch's active-state border-width from the shared BORDER_WIDTH token instead of a literal duplicated at runtime", async () => {
+    vi.resetModules();
+    vi.doMock("@kindle-nonograms/shared", async (importOriginal) => {
+      const actual =
+        await importOriginal<typeof import("@kindle-nonograms/shared")>();
+      return {
+        ...actual,
+        BORDER_WIDTH: { thin: "5px", medium: "6px", thick: "9px" },
+      };
+    });
+
+    const { hydrate: hydrateWithMockedTokens } = await import(
+      "./hydratePlayPage.js"
+    );
+    buildFixture(duoPuzzle);
+    hydrateWithMockedTokens();
+
+    const redSwatch = document.querySelector<HTMLButtonElement>(
+      '[data-role="swatch"][data-color-index="0"]',
+    );
+    const blueSwatch = document.querySelector<HTMLButtonElement>(
+      '[data-role="swatch"][data-color-index="1"]',
+    );
+    // Toggling the active color is what makes hydratePlayPage.ts's own
+    // border-width assignment actually run (the static server-rendered
+    // markup already carries the real, unmocked value) — a hardcoded
+    // literal would still set "3px"/"1px" here regardless of this mock,
+    // since it never reads the token; only a real import from
+    // `@kindle-nonograms/shared` would pick up "9px"/"5px".
+    blueSwatch?.click();
+
+    expect(blueSwatch?.style.borderWidth).toBe("9px");
+    expect(redSwatch?.style.borderWidth).toBe("5px");
+
+    vi.doUnmock("@kindle-nonograms/shared");
+    vi.resetModules();
+  });
+
   it("groups the fill button and its color swatches in a shared visual container", () => {
     buildFixture(duoPuzzle);
     hydrate();

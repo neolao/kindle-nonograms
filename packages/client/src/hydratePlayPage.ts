@@ -1,4 +1,5 @@
 import {
+  BORDER_WIDTH,
   type Locale,
   PLAY_DEFAULT_ACTIVE_COLOR_INDEX,
   PLAY_DEFAULT_MODE,
@@ -267,7 +268,9 @@ function attachToolbar(
       swatchButtons.forEach((button, index) => {
         const active = index === state.activeColor;
         button.setAttribute("aria-pressed", String(active));
-        button.style.borderWidth = active ? "3px" : "1px";
+        button.style.borderWidth = active
+          ? BORDER_WIDTH.thick
+          : BORDER_WIDTH.thin;
         // A swatch is a plain solid-color square, matching how a filled grid
         // cell now renders; only the checkmark (a fixed, non-color cue)
         // marks which one is active. See

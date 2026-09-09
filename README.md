@@ -54,6 +54,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - On a multi-color puzzle, a clue number is now shown in black whenever its palette color is too pale to read against the white background, while its colored border still shows which color the clue belongs to.
 - A solved puzzle's entry in the library now announces its solved status to a screen reader as part of its own link, not just as a nearby visual badge.
 - The puzzle editor's palette color picker is now big enough to comfortably tap, matching the size of the swatch and remove buttons beside it.
+- Tapping a toolbar button or color swatch no longer makes it (or the buttons next to it) visibly jump in size.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

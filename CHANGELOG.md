@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Pressed/active buttons (the Fill/Cross/Check toolbar buttons and color swatches) no longer jump in size or shift their neighbors' alignment when toggled — their border-width change is now fully absorbed instead of resizing the button.
+
 ## [2.24.0] - 2026-09-09
 
 ### Added

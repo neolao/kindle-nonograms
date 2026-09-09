@@ -32,17 +32,36 @@ import {
  * texture and panel box-shadow below are backgrounds/shadows, not padding
  * or borders on `body`, so they add zero layout footprint and can't affect
  * that measurement.
+ *
+ * The shared `button,.back-link` rule sets `box-sizing:border-box` (same
+ * per-rule pattern already used on `.grid-wrapper` in
+ * `renderPuzzlePage.ts`/`renderEditorPage.ts`, not a project-wide reset) so
+ * a color swatch — whose empty/checkmark content is always smaller than
+ * `MIN_TAP_TARGET_PX`, so its rendered size is pinned to that `min-width`/
+ * `min-height` floor — keeps that exact outer size when its pressed/active
+ * border-width grows. That alone is not enough for a button sized by its
+ * own text content instead (Fill/Cross/Check, wider than the tap-target
+ * floor): `box-sizing` only reinterprets an *explicit* width/height, and an
+ * auto-width button has none — its border is always added on top of
+ * content+padding regardless. `button[aria-pressed="true"]` below shrinks
+ * padding by exactly the border-width increase on every edge instead, so
+ * the border grows entirely into the padding and the outer box — and every
+ * sibling's alignment — never moves either way. See backlog item 052.
  */
 export function sharedStyles(): string {
+  const pressedBorderGrowthPx =
+    Number.parseInt(BORDER_WIDTH.thick, 10) -
+    Number.parseInt(BORDER_WIDTH.thin, 10);
+
   return `
 body{font-family:${FONT_STACK};color:${COLORS.text};background:${COLORS.paper} repeating-linear-gradient(0deg,${COLORS.line} 0px,${COLORS.line} 1px,transparent 1px,transparent 28px),${COLORS.paper} repeating-linear-gradient(90deg,${COLORS.line} 0px,${COLORS.line} 1px,transparent 1px,transparent 28px);}
 h1{font-family:${LABEL_FONT_STACK};font-size:1.4em;margin:${SPACING_PX.md}px ${SPACING_PX.md}px ${SPACING_PX.sm}px;text-shadow:2px 2px 0 ${COLORS.amberSoft};}
 p{margin:${SPACING_PX.sm}px ${SPACING_PX.md}px;}
 button,select{font-family:${LABEL_FONT_STACK};}
-button,.back-link{border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};color:${COLORS.text};padding:${SPACING_PX.xs}px ${SPACING_PX.md}px;min-height:${MIN_TAP_TARGET_PX}px;min-width:${MIN_TAP_TARGET_PX}px;box-shadow:0 3px 0 ${COLORS.border};}
+button,.back-link{box-sizing:border-box;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};color:${COLORS.text};padding:${SPACING_PX.xs}px ${SPACING_PX.md}px;min-height:${MIN_TAP_TARGET_PX}px;min-width:${MIN_TAP_TARGET_PX}px;box-shadow:0 3px 0 ${COLORS.border};}
 button:focus,.back-link:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 button:active,.back-link:active{transform:translateY(2px);box-shadow:0 1px 0 ${COLORS.border};}
-button[aria-pressed="true"]{border-width:${BORDER_WIDTH.thick};border-color:${COLORS.amber};background:${COLORS.amberSoft};transform:translateY(2px);box-shadow:0 1px 0 ${COLORS.border};}
+button[aria-pressed="true"]{border-width:${BORDER_WIDTH.thick};border-color:${COLORS.amber};background:${COLORS.amberSoft};padding:${SPACING_PX.xs - pressedBorderGrowthPx}px ${SPACING_PX.md - pressedBorderGrowthPx}px;transform:translateY(2px);box-shadow:0 1px 0 ${COLORS.border};}
 .back-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border-color:${COLORS.amber};background:${COLORS.amberSoft};}
 .page-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:${SPACING_PX.sm}px;margin:${SPACING_PX.sm}px ${SPACING_PX.md}px;}
 .page-header h1{flex:1;min-width:0;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}

@@ -50,16 +50,13 @@ export const COLORS = {
 } as const;
 
 /**
- * Border widths in px (not `em`), so they stay crisp regardless of the
- * grid wrapper's own font-size-driven scaling. Exactly the three weights
- * already used across the app — a base grid line, the 5-cell group
- * divider, and a pressed/active-state outline.
+ * Re-exported from `@kindle-nonograms/shared`'s `uiDefaults.ts` (not
+ * defined here): `client`'s runtime border-width toggle
+ * (`hydratePlayPage.ts`'s swatch active state) needs the exact same values
+ * this package's own build-time render uses, and `client` can't reach this
+ * `site`-only module — see backlog item 052.
  */
-export const BORDER_WIDTH = {
-  thin: "1px",
-  medium: "2px",
-  thick: "3px",
-} as const;
+export { BORDER_WIDTH } from "@kindle-nonograms/shared";
 
 /**
  * Coarse spacing scale (px) for toolbar/switcher chrome — deliberately a
