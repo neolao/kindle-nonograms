@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Meet Minimum Tap Target Size For Palette Color Input
 
