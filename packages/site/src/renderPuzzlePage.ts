@@ -222,13 +222,23 @@ function renderInlineClue(runs: ClueRun[], multiColor: boolean): string {
   return runs.map((run) => renderRunLabel(run, multiColor)).join(" ");
 }
 
+/**
+ * Stacked multi-color column clues with more than one run get a `run-row`
+ * marker on each wrapping div, spaced apart by the `.run-row+.run-row` CSS
+ * rule below (see `renderStyle`) so two adjacent runs' colored/patterned
+ * borders no longer touch directly — see backlog item 053. Scoped to
+ * `multiColor` (a single-color run has no border to separate in the first
+ * place) and skipped entirely for a lone run (nothing to space it from,
+ * and the adjacent-sibling selector would never match a single div anyway).
+ */
 function renderStackedClue(runs: ClueRun[], multiColor: boolean): string {
   if (isEmptyLine(runs)) {
     return "0";
   }
 
+  const rowClass = multiColor && runs.length > 1 ? ' class="run-row"' : "";
   return runs
-    .map((run) => `<div>${renderRunLabel(run, multiColor)}</div>`)
+    .map((run) => `<div${rowClass}>${renderRunLabel(run, multiColor)}</div>`)
     .join("");
 }
 
@@ -255,5 +265,6 @@ tbody th{text-align:right;font-weight:bold;white-space:nowrap;}
 tbody td:nth-child(5n+2){border-left-width:${BORDER_WIDTH.medium};}
 tbody tr:nth-child(5n+1) td,tbody tr:nth-child(5n+1) th{border-top-width:${BORDER_WIDTH.medium};}
 .run{display:inline-block;}
+.run-row+.run-row{margin-top:0.2em;}
 ${colorClasses}`;
 }

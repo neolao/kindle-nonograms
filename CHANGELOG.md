@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Stacked multi-color column-clue numbers now have a small gap between each run, so adjacent runs' colored/patterned borders no longer touch and each reads as a discrete clue.
+
 ## [2.25.0] - 2026-09-09
 
 ### Added

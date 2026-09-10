@@ -92,6 +92,71 @@ describe("renderPuzzlePage", () => {
     expect(colorClasses).toEqual(new Set(["run-c0", "run-c1"]));
   });
 
+  it("gives every div of a stacked multi-color column clue with more than one run a spacing class, with a CSS rule that only adds margin from the second one on", () => {
+    const stackedMultiRunPuzzle: Puzzle = {
+      id: "stacked-multi-run",
+      name: "Stacked multi-run",
+      width: 1,
+      height: 3,
+      palette: ["#ff0000", "#0000ff"],
+      cells: [[0], [null], [1]],
+    };
+
+    const doc = parse(renderPuzzlePage(stackedMultiRunPuzzle));
+    const columnHeader = doc.querySelector("thead th.column-clue");
+    const runDivs = columnHeader?.querySelectorAll(":scope > div") ?? [];
+
+    expect(runDivs).toHaveLength(2);
+    for (const div of Array.from(runDivs)) {
+      expect(div.classList.contains("run-row")).toBe(true);
+    }
+
+    const css = doc.querySelector("style")?.textContent ?? "";
+    expect(css).toMatch(
+      /\.run-row\+\.run-row\{margin-top:(0\.\d+|[1-9][\d.]*)(em|px);\}/,
+    );
+  });
+
+  it("gives a single-run stacked column clue's div no spacing class, since it has nothing to be spaced from", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+
+    // Every column of the shared multi-color fixture resolves to a single run.
+    const columnHeaders = doc.querySelectorAll("thead th.column-clue");
+    for (const header of Array.from(columnHeaders)) {
+      const div = header.querySelector(":scope > div");
+      expect(div?.classList.contains("run-row")).toBe(false);
+    }
+  });
+
+  it("gives a stacked multi-run single-color column clue's divs no spacing class, since runs there carry no border to separate", () => {
+    const singleColorStackedPuzzle: Puzzle = {
+      id: "stacked-mono",
+      name: "Stacked mono",
+      width: 1,
+      height: 3,
+      palette: ["#000000"],
+      cells: [[0], [null], [0]],
+    };
+
+    const doc = parse(renderPuzzlePage(singleColorStackedPuzzle));
+    const columnHeader = doc.querySelector("thead th.column-clue");
+    const runDivs = columnHeader?.querySelectorAll(":scope > div") ?? [];
+
+    expect(runDivs).toHaveLength(2);
+    for (const div of Array.from(runDivs)) {
+      expect(div.classList.contains("run-row")).toBe(false);
+    }
+  });
+
+  it("renders an inline row clue with multiple runs as plain spans with no divs, so it is unaffected by stacked-clue spacing", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+
+    const rowHeaders = doc.querySelectorAll("tbody th");
+    // Fixture row 1 ("2 1") has two runs.
+    expect(rowHeaders[1]?.querySelectorAll("div")).toHaveLength(0);
+    expect(rowHeaders[1]?.querySelectorAll(".run")).toHaveLength(2);
+  });
+
   it("falls back clue-run text to black when the palette color's contrast against white is too low, but keeps the border in the palette color", () => {
     // #ff0000 (pure red) is ~4:1 against white, below the WCAG normal-text
     // threshold (4.5:1); #0000ff (pure blue) is ~8.6:1, above it.
