@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.26.0] - 2026-09-10
+
 ### Added
 
 - Stacked multi-color column-clue numbers now have a small gap between each run, so adjacent runs' colored/patterned borders no longer touch and each reads as a discrete clue.
@@ -366,7 +368,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.25.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.26.0...HEAD
+[2.26.0]: https://github.com/neolao/kindle-nonograms/compare/v2.25.0...v2.26.0
 [2.25.0]: https://github.com/neolao/kindle-nonograms/compare/v2.24.0...v2.25.0
 [2.24.0]: https://github.com/neolao/kindle-nonograms/compare/v2.23.0...v2.24.0
 [2.23.0]: https://github.com/neolao/kindle-nonograms/compare/v2.22.0...v2.23.0
