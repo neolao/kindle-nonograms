@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.28.0] - 2026-09-12
+
 ### Added
 
 - On a multi-color puzzle, each clue number now shows a solid background filled with its own palette color, like a filled grid cell, instead of just a colored/patterned border on white.
@@ -379,7 +381,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.27.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.28.0...HEAD
+[2.28.0]: https://github.com/neolao/kindle-nonograms/compare/v2.27.0...v2.28.0
 [2.27.0]: https://github.com/neolao/kindle-nonograms/compare/v2.26.0...v2.27.0
 [2.26.0]: https://github.com/neolao/kindle-nonograms/compare/v2.25.0...v2.26.0
 [2.25.0]: https://github.com/neolao/kindle-nonograms/compare/v2.24.0...v2.25.0

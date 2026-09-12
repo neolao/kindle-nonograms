@@ -111,6 +111,7 @@ npm run lint
 <!-- vibe:begin:docs-index -->
 - [docs/architecture.md](docs/architecture.md) — how the project's packages fit together, and how the site is built, deployed, and kept in sync with pull request previews.
 - [docs/configuration.md](docs/configuration.md) — build-time settings and the environment variables the automated workflows rely on.
+- [docs/testing.md](docs/testing.md) — the kinds of tests in the suite, what each one covers, and how to run them.
 <!-- vibe:end:docs-index -->
 
 ## Contributing
