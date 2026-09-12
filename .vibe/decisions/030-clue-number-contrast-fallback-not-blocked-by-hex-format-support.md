@@ -1,6 +1,6 @@
 ---
 date: 2026-09-08
-status: accepted
+status: superseded by 033
 ---
 # Clue-number contrast fix ships without waiting on broader hex-format support
 

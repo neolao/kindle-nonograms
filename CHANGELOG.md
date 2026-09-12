@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- On a multi-color puzzle, each clue number now shows a solid background filled with its own palette color, like a filled grid cell, instead of just a colored/patterned border on white.
+
 ## [2.27.0] - 2026-09-12
 
 ### Added

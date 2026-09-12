@@ -157,17 +157,23 @@ describe("renderPuzzlePage", () => {
     expect(rowHeaders[1]?.querySelectorAll(".run")).toHaveLength(2);
   });
 
-  it("falls back clue-run text to black when the palette color's contrast against white is too low, but keeps the border in the palette color", () => {
-    // #ff0000 (pure red) is ~4:1 against white, below the WCAG normal-text
-    // threshold (4.5:1); #0000ff (pure blue) is ~8.6:1, above it.
+  it("fills each clue-run number's background with its palette color and colors its text and border to match — not the raw palette hex", () => {
+    // #ff0000 (pure red) has low enough luminance that black wins the
+    // WCAG contrast race against it; #0000ff (pure blue) is dark enough
+    // that white wins instead. The border now follows that same pick
+    // rather than the fill's own hex, so it stays visible against it.
     const doc = parse(renderPuzzlePage(multiColorPuzzle));
     const css = doc.querySelector("style")?.textContent ?? "";
 
-    expect(css).toMatch(/\.run-c0\{color:#000000;border:[^}]*#ff0000/);
-    expect(css).toMatch(/\.run-c1\{color:#0000ff;border:[^}]*#0000ff/);
+    expect(css).toMatch(
+      /\.run-c0\{background-color:#ff0000;color:#000000;border:[^}]*#000000/,
+    );
+    expect(css).toMatch(
+      /\.run-c1\{background-color:#0000ff;color:#ffffff;border:[^}]*#ffffff/,
+    );
   });
 
-  it("keeps clue-run numbers legible for a puzzle with a pale palette color", () => {
+  it("keeps clue-run numbers legible for a puzzle with a pale palette color, matching the border to the same contrast-safe color as the text", () => {
     const paleYellowPuzzle: Puzzle = {
       id: "pale",
       name: "Pale",
@@ -179,11 +185,38 @@ describe("renderPuzzlePage", () => {
     const doc = parse(renderPuzzlePage(paleYellowPuzzle));
     const css = doc.querySelector("style")?.textContent ?? "";
 
-    // Pale yellow fails the contrast threshold: text falls back to black,
-    // while its border cue (the color-identity signal) stays pale yellow.
-    expect(css).toMatch(/\.run-c0\{color:#000000;border:[^}]*#ffff99/);
-    // Navy clears the threshold: text stays navy, same as its border.
-    expect(css).toMatch(/\.run-c1\{color:#000080;border:[^}]*#000080/);
+    // Pale yellow is a light fill: black wins the contrast race for both
+    // its text and its border.
+    expect(css).toMatch(
+      /\.run-c0\{background-color:#ffff99;color:#000000;border:[^}]*#000000/,
+    );
+    // Navy is a dark fill: white wins instead, for both text and border.
+    expect(css).toMatch(
+      /\.run-c1\{background-color:#000080;color:#ffffff;border:[^}]*#ffffff/,
+    );
+  });
+
+  it("keeps each run's fill, text, and border colors independent per palette entry, even once the four-style border cycle wraps around for a 5-color palette", () => {
+    const fiveColorPuzzle: Puzzle = {
+      id: "five-color",
+      name: "Five color",
+      width: 5,
+      height: 1,
+      palette: ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#800080"],
+      cells: [[0, 1, 2, 3, 4]],
+    };
+    const doc = parse(renderPuzzlePage(fiveColorPuzzle));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    // Index 4 wraps back to the "solid" border style (4 % 4 === 0, the
+    // same style as index 0) but must still carry its own fill color
+    // (#800080) and its own contrast pick, not index 0's.
+    expect(css).toMatch(
+      /\.run-c0\{background-color:#ff0000;color:#000000;border:1px solid #000000/,
+    );
+    expect(css).toMatch(
+      /\.run-c4\{background-color:#800080;color:#ffffff;border:1px solid #ffffff/,
+    );
   });
 
   it("renders a plain '0' with no color markup for an entirely empty line", () => {

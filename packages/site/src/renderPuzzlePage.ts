@@ -6,7 +6,6 @@ import {
   type Puzzle,
   computePuzzleClues,
   contrastingTextColor,
-  readableRunColor,
   translate,
 } from "@kindle-nonograms/shared";
 import { renderEarlyLangScript } from "./earlyLangScript.js";
@@ -100,11 +99,11 @@ function renderDefaultStorageWarning(): string {
 
 // Cycled by palette index so different colors stay distinguishable even
 // where the browser can't render color (Kindle's e-ink is often grayscale).
-// See .vibe/decisions/003-clue-color-plus-pattern-cue.md. The border always
-// uses the raw palette hex, unlike the run's text color (see
-// `readableRunColor` in `renderStyle`) — the border is the color-identity
-// cue and stays untouched by the text's contrast fallback (backlog item 048
-// / .vibe/decisions/030-clue-number-contrast-fallback-not-blocked-by-hex-format-support.md).
+// See .vibe/decisions/003-clue-color-plus-pattern-cue.md. The border color
+// follows the run's text color (both computed by `contrastingTextColor`
+// against the fill), not the raw palette hex — a same-hue border would
+// optically vanish into its own fill, erasing this grayscale cue. See
+// .vibe/decisions/033-clue-run-fill-reuses-contrastingtextcolor-border-follows-text.md.
 const BORDER_STYLES = ["solid", "dashed", "dotted", "double"];
 
 /**
@@ -245,10 +244,10 @@ function renderStackedClue(runs: ClueRun[], multiColor: boolean): string {
 function renderStyle(puzzle: Puzzle, multiColor: boolean): string {
   const colorClasses = multiColor
     ? puzzle.palette
-        .map(
-          (hex, index) =>
-            `.run-c${index}{color:${readableRunColor(hex)};border:${BORDER_WIDTH.thin} ${BORDER_STYLES[index % BORDER_STYLES.length]} ${hex};padding:0 0.15em;}`,
-        )
+        .map((hex, index) => {
+          const textColor = contrastingTextColor(hex);
+          return `.run-c${index}{background-color:${hex};color:${textColor};border:${BORDER_WIDTH.thin} ${BORDER_STYLES[index % BORDER_STYLES.length]} ${textColor};padding:0 0.15em;}`;
+        })
         .join("")
     : "";
 
