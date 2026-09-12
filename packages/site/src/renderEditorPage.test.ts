@@ -25,6 +25,14 @@ describe("renderEditorPage", () => {
     );
   });
 
+  it("lets the grid wrapper scroll instead of clipping, now that the legibility floor can leave a puzzle wider than the viewport", () => {
+    const doc = parse(renderEditorPage());
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/\.grid-wrapper\{[^}]*overflow:auto/);
+    expect(css).not.toMatch(/\.grid-wrapper\{[^}]*overflow:hidden/);
+  });
+
   it("carries a unique self-detection marker distinct from every other page shape", () => {
     const doc = parse(renderEditorPage());
 

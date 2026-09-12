@@ -25,9 +25,11 @@ import {
  * new decorative rule below is a one-time paint, never a keyframe.
  *
  * Deliberately never adds spacing to `body` itself: the puzzle page's
- * `.grid-wrapper` measures the raw viewport size to fit itself with no
- * scrollbar (see `hydratePlayPage.ts`'s `applyGridFit`), so every element
- * here gets its own margin/padding instead — see
+ * `.grid-wrapper` measures the raw viewport size to fit itself against it
+ * (see `hydratePlayPage.ts`'s `applyGridFit`; a scrollbar only ever appears
+ * once even the legibility floor no longer fits — see
+ * .vibe/decisions/032-grid-legibility-floor-scrolls-instead-of-clipping.md),
+ * so every element here gets its own margin/padding instead — see
  * .vibe/decisions/011-chrome-padding-excludes-grid-wrapper.md. The paper
  * texture and panel box-shadow below are backgrounds/shadows, not padding
  * or borders on `body`, so they add zero layout footprint and can't affect

@@ -766,14 +766,15 @@ describe("locale application", () => {
     expect(wrapper?.style.fontSize).toMatch(/^\d+px$/);
   });
 
-  it("caps the grid wrapper's own box to the available space, so overflow:hidden actually has something to clip", () => {
+  it("caps the grid wrapper's own box to the available space, so it scrolls instead of growing past the viewport", () => {
     buildFixture(soloPuzzle);
     hydrate();
 
     const wrapper = document.querySelector<HTMLElement>(".grid-wrapper");
-    // Without an explicit bound, a block element with overflow:hidden still
-    // grows to fit its content and clips nothing — this is what makes the
-    // "fail-safe by clipping" promise real instead of a no-op.
+    // Without an explicit bound, a block element with overflow:auto still
+    // grows to fit its content and never shows a scrollbar — this is what
+    // makes the wrapper an actually-bounded, scrollable box instead of a
+    // no-op.
     expect(wrapper?.style.maxWidth).toMatch(/^\d+px$/);
     expect(wrapper?.style.maxHeight).toMatch(/^\d+px$/);
   });
@@ -814,14 +815,16 @@ describe("locale application", () => {
     expect(Number.parseInt(wrapper.style.fontSize, 10)).toBeLessThan(16);
   });
 
-  it("shrinks a wide puzzle enough to actually fit a narrow screen, not just down to the old legibility floor", () => {
+  it("floors a wide puzzle's font-size at the legible minimum instead of shrinking further to still fit a narrow screen", () => {
     buildFixture(soloPuzzle);
 
     // Mirrors a real wide (25-column) puzzle measured on a narrow real
     // device: a puzzle-still-open scrollWidth of 913px on a 350px-wide
-    // screen. At the previous floor (half size), the grid would still
-    // render at 913 * 0.5 = 456.5px — wider than the 342px the wrapper is
-    // capped to — and get visibly clipped despite `overflow:hidden`.
+    // screen. Shrinking to actually fit 342px of available width would need
+    // a scale of roughly 0.37 — below the 10px/16px (~0.625) legibility
+    // floor — so the grid must now stop shrinking at the floor and rely on
+    // the wrapper's own scrolling instead (see
+    // .vibe/decisions/032-grid-legibility-floor-scrolls-instead-of-clipping.md).
     const table = document.querySelector("table");
     if (!table) {
       throw new Error("fixture table not found");
@@ -846,11 +849,10 @@ describe("locale application", () => {
     hydrate();
 
     const wrapper = document.querySelector<HTMLElement>(".grid-wrapper");
-    const fontSizePx = Number.parseInt(wrapper?.style.fontSize ?? "", 10);
-    const maxWidthPx = Number.parseInt(wrapper?.style.maxWidth ?? "", 10);
-    const renderedTableWidth = 913 * (fontSizePx / 16);
-
-    expect(renderedTableWidth).toBeLessThanOrEqual(maxWidthPx);
+    // 10px is the concrete minimum legible font-size the floor is derived
+    // from — a still-too-low floor (e.g. the old 0.3 ratio, ~4.8px) would
+    // instead let the raw fit-to-width ratio through unclamped here.
+    expect(wrapper?.style.fontSize).toBe("10px");
   });
 
   it("keeps a valid grid-wrapper font-size after revealing the win banner via Check, without throwing", () => {

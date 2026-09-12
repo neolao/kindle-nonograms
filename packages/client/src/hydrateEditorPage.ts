@@ -49,12 +49,14 @@ const MAX_IMPORT_PALETTE_SIZE = 16;
 // import controls can never stay disabled forever — see backlog item 044.
 const IMAGE_IMPORT_TIMEOUT_MS = 15000;
 
-// Same grid-fit tuning as hydratePlayPage.ts's own reused constants — this
-// tool isn't a Kindle page, but reusing fitGrid.ts keeps a resizable editor
+// Same grid-fit tuning as hydratePlayPage.ts's own reused constants (see
+// its doc comment for the full legibility-floor reasoning) — this tool
+// isn't a Kindle page, but reusing fitGrid.ts keeps a resizable editor
 // canvas from ever overflowing the viewport regardless of how large a
 // puzzle a contributor is drafting.
 const BASE_FONT_SIZE_PX = 16;
-const MIN_GRID_SCALE = 0.3;
+const MIN_LEGIBLE_FONT_SIZE_PX = 10;
+const MIN_GRID_SCALE = MIN_LEGIBLE_FONT_SIZE_PX / BASE_FONT_SIZE_PX;
 const MAX_GRID_SCALE = 2;
 const VIEWPORT_GUTTER_PX = 8;
 

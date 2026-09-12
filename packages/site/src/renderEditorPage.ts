@@ -190,7 +190,7 @@ ${sharedStyles()}
 .editor-error{min-height:1.2em;color:${COLORS.amber};font-family:${LABEL_FONT_STACK};font-size:0.9em;}
 .editor-confirmation{min-height:1.2em;color:${COLORS.teal};font-family:${LABEL_FONT_STACK};font-size:0.9em;}
 .grid-center{text-align:center;margin:${SPACING_PX.sm}px 0 0;}
-.grid-wrapper{display:inline-block;vertical-align:top;text-align:left;overflow:hidden;box-sizing:border-box;border:${BORDER_WIDTH.medium} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};}
+.grid-wrapper{display:inline-block;vertical-align:top;text-align:left;overflow:auto;box-sizing:border-box;border:${BORDER_WIDTH.medium} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};}
 .grid-wrapper table{border-collapse:collapse;}
 .grid-wrapper td{border:${BORDER_WIDTH.thin} solid ${COLORS.border};width:2em;height:2em;min-width:2em;min-height:2em;padding:0;cursor:pointer;}
 .grid-wrapper tbody td:nth-child(5n+1){border-left-width:${BORDER_WIDTH.medium};}

@@ -256,7 +256,7 @@ function renderStyle(puzzle: Puzzle, multiColor: boolean): string {
 ${sharedStyles()}
 .chrome-panel{background:${COLORS.panel};border:${BORDER_WIDTH.medium} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;box-shadow:6px 6px 0 ${COLORS.panelEdge};}
 .grid-center{text-align:center;margin:${SPACING_PX.sm}px 0 0;}
-.grid-wrapper{display:inline-block;vertical-align:top;text-align:left;overflow:hidden;box-sizing:border-box;border:${BORDER_WIDTH.medium} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};}
+.grid-wrapper{display:inline-block;vertical-align:top;text-align:left;overflow:auto;box-sizing:border-box;border:${BORDER_WIDTH.medium} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};}
 table{border-collapse:collapse;}
 th,td{border:${BORDER_WIDTH.thin} solid ${COLORS.border};min-width:1.6em;min-height:1.6em;text-align:center;padding:0.1em 0.2em;}
 td{width:1.6em;height:1.6em;}

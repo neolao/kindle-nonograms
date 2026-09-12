@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Clue and cell text on a large puzzle at a narrow (Kindle-width) screen, in both the play page and the editor, no longer shrinks below a legible size — the grid instead scrolls to show the rest of the puzzle.
+
 ## [2.26.0] - 2026-09-10
 
 ### Added

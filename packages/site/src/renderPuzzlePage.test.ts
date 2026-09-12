@@ -296,11 +296,12 @@ describe("renderPuzzlePage", () => {
     expect(script?.getAttribute("src")).toBe("../../assets/main.js?v=abc123ef");
   });
 
-  it("hides grid overflow instead of exposing a horizontal scrollbar", () => {
+  it("lets the grid wrapper scroll instead of clipping, now that the legibility floor can leave a puzzle wider than the viewport", () => {
     const doc = parse(renderPuzzlePage(multiColorPuzzle));
     const css = doc.querySelector("style")?.textContent ?? "";
 
-    expect(css).toMatch(/\.grid-wrapper\{[^}]*overflow:hidden/);
+    expect(css).toMatch(/\.grid-wrapper\{[^}]*overflow:auto/);
+    expect(css).not.toMatch(/\.grid-wrapper\{[^}]*overflow:hidden/);
     expect(css).not.toContain("overflow-x");
   });
 

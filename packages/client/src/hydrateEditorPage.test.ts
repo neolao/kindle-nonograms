@@ -701,6 +701,48 @@ describe("hydrate", () => {
       "✓ Exported small-heart.json — download started.",
     );
   });
+
+  it("floors a wide canvas's font-size at the legible minimum instead of shrinking further to still fit a narrow screen", () => {
+    buildFixture();
+
+    // Mirrors a contributor drafting a wide puzzle on a narrow device: a
+    // canvas-still-open scrollWidth of 913px on a 350px-wide screen.
+    // Shrinking to actually fit 342px of available width would need a scale
+    // of roughly 0.37 — below the 10px/16px (~0.625) legibility floor — so
+    // the canvas must now stop shrinking at the floor and rely on the
+    // wrapper's own scrolling instead (see
+    // .vibe/decisions/032-grid-legibility-floor-scrolls-instead-of-clipping.md).
+    const table = document.querySelector("table");
+    if (!table) {
+      throw new Error("fixture table not found");
+    }
+    Object.defineProperty(table, "scrollWidth", {
+      value: 913,
+      configurable: true,
+    });
+    Object.defineProperty(table, "scrollHeight", {
+      value: 913,
+      configurable: true,
+    });
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      value: 350,
+      configurable: true,
+    });
+    Object.defineProperty(document.documentElement, "clientHeight", {
+      value: 1000,
+      configurable: true,
+    });
+
+    hydrate();
+
+    const wrapper = document.querySelector<HTMLElement>(
+      '[data-role="editor-grid-wrapper"]',
+    );
+    // 10px is the concrete minimum legible font-size the floor is derived
+    // from — a still-too-low floor (e.g. the old 0.3 ratio, ~4.8px) would
+    // instead let the raw fit-to-width ratio through unclamped here.
+    expect(wrapper?.style.fontSize).toBe("10px");
+  });
 });
 
 describe("image import", () => {

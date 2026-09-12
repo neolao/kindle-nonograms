@@ -32,12 +32,16 @@ const CROSS_GLYPH = "✖";
 // Grid-fit tuning: the whole grid (cells, clues, borders) is `em`-sized, so
 // a single `font-size` change on the wrapper scales everything together.
 const BASE_FONT_SIZE_PX = 16;
-// A wide puzzle (e.g. 25 columns) measured on a narrow real Kindle screen
-// can need a scale below the previous 0.5 floor to actually fit — that
-// floor existed to protect legibility, but a puzzle clipped by
-// `.grid-wrapper`'s overflow:hidden fail-safe (missing cells/clues
-// entirely) is strictly worse than a puzzle rendered smaller than ideal.
-const MIN_GRID_SCALE = 0.3;
+// Below this, clue/cell text becomes practically unreadable regardless of
+// screen — a concrete pixel floor rather than an arbitrary ratio of the
+// base size. A wide puzzle (e.g. 25+ columns) measured on a narrow real
+// Kindle screen can need an even smaller scale to fit the viewport exactly;
+// rather than shrinking text past legibility to avoid it, `.grid-wrapper`
+// now scrolls (`overflow:auto`) instead of clipping, so the floor can be
+// enforced unconditionally. See
+// .vibe/decisions/032-grid-legibility-floor-scrolls-instead-of-clipping.md.
+const MIN_LEGIBLE_FONT_SIZE_PX = 10;
+const MIN_GRID_SCALE = MIN_LEGIBLE_FONT_SIZE_PX / BASE_FONT_SIZE_PX;
 const MAX_GRID_SCALE = 2;
 // Fixed breathing room (px) kept clear of the viewport edge, on top of
 // computeFitFontSizePx's own proportional safety margin.
@@ -300,8 +304,8 @@ function attachToolbar(
  * scaling it up. Resets font-size to the base first so the measurement
  * reflects the grid's true unscaled size: `scrollWidth`/`scrollHeight`
  * still report the full content size even once `.grid-wrapper{overflow:
- * hidden}` clips it visually, which is exactly what makes that fail-safe
- * measurable instead of a dead end.
+ * auto}` scrolls it out of view, which is exactly what makes that
+ * measurement possible instead of a dead end.
  */
 function applyGridFit(anchor: HTMLElement, table: HTMLElement): void {
   anchor.style.fontSize = `${BASE_FONT_SIZE_PX}px`;
@@ -326,12 +330,13 @@ function applyGridFit(anchor: HTMLElement, table: HTMLElement): void {
   });
 
   anchor.style.fontSize = `${fontSizePx}px`;
-  // A block element with `overflow:hidden` but no bounded size still grows
-  // to fit its content — it clips nothing on its own. A puzzle large enough
-  // that even minScale doesn't bring it under the available space (e.g. a
-  // 45x45 grid on a small screen) would otherwise keep growing the page
-  // itself, defeating the whole point: `overflow:hidden` on its own isn't
-  // the fail-safe, this cap is what actually makes it one. Floored at 0 —
+  // A block element with `overflow:auto` but no bounded size still grows to
+  // fit its content — it never shows a scrollbar on its own. A puzzle large
+  // enough that even minScale doesn't bring it under the available space
+  // (e.g. a 45x45 grid on a small screen) would otherwise keep growing the
+  // page itself, defeating the whole point: `overflow:auto` on its own
+  // isn't the fail-safe, this cap is what actually makes it a bounded,
+  // scrollable box. Floored at 0 —
   // an unusable/negative measurement (e.g. jsdom's zero layout, or the
   // header chrome alone taller than the viewport) must never turn into an
   // invalid negative max-width/max-height.
