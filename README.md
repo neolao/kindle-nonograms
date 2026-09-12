@@ -56,6 +56,8 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The puzzle editor's palette color picker is now big enough to comfortably tap, matching the size of the swatch and remove buttons beside it.
 - Tapping a toolbar button or color swatch no longer makes it (or the buttons next to it) visibly jump in size.
 - On a multi-color puzzle, stacked clue numbers above a column now have a small gap between them, so each one reads as its own distinct clue.
+- Clue and cell text on a large puzzle no longer shrinks below a legible size on a narrow screen — the grid scrolls instead, in both the play page and the editor.
+- A new "Papillon" puzzle (15×15, four colors) is included in the puzzle library.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->
