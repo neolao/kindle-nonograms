@@ -29,23 +29,31 @@ import { BORDER_RADIUS_PX, BORDER_WIDTH, COLORS, SPACING_PX } from "./theme.js";
  */
 function renderDefaultToolbar(puzzle: Puzzle): string {
   const fillActive = PLAY_DEFAULT_MODE === "fill";
-  const swatches =
-    puzzle.palette.length > 1
-      ? puzzle.palette
-          .map((hex, index) => {
-            const active = index === PLAY_DEFAULT_ACTIVE_COLOR_INDEX;
-            const textColor = contrastingTextColor(hex);
-            const borderWidth = active ? BORDER_WIDTH.thick : BORDER_WIDTH.thin;
-            const ariaLabel = translate(
-              DEFAULT_LOCALE,
-              "play.swatchColorAriaLabel",
-            ).replace("{number}", String(index + 1));
-            return `<button type="button" data-role="swatch" data-color-index="${index}" aria-pressed="${active}" aria-label="${escapeHtml(ariaLabel)}" data-i18n-aria="play.swatchColorAriaLabel" style="background-color:${hex};color:${textColor};border-width:${borderWidth};">${active ? "✓" : ""}</button>`;
-          })
-          .join("")
-      : "";
+  const hasSwatches = puzzle.palette.length > 1;
+  const swatches = hasSwatches
+    ? puzzle.palette
+        .map((hex, index) => {
+          const active = index === PLAY_DEFAULT_ACTIVE_COLOR_INDEX;
+          const textColor = contrastingTextColor(hex);
+          const borderWidth = active ? BORDER_WIDTH.thick : BORDER_WIDTH.thin;
+          const ariaLabel = translate(
+            DEFAULT_LOCALE,
+            "play.swatchColorAriaLabel",
+          ).replace("{number}", String(index + 1));
+          return `<button type="button" data-role="swatch" data-color-index="${index}" aria-pressed="${active}" aria-label="${escapeHtml(ariaLabel)}" data-i18n-aria="play.swatchColorAriaLabel" style="background-color:${hex};color:${textColor};border-width:${borderWidth};">${active ? "✓" : ""}</button>`;
+        })
+        .join("")
+    : "";
+  // A multi-color puzzle drops the Fill button entirely — tapping any
+  // swatch already re-enters fill mode (see backlog item 070). A
+  // single-color puzzle has no swatch to take over that job, so it keeps
+  // the explicit button — see
+  // .vibe/decisions/035-single-color-play-page-keeps-an-explicit-fill-button.md.
+  const fillButton = hasSwatches
+    ? ""
+    : `<button type="button" data-role="mode-fill" data-i18n="play.modeFill" aria-pressed="${fillActive}">${translate(DEFAULT_LOCALE, "play.modeFill")}</button>`;
 
-  return `<div class="play-toolbar"><div class="fill-color-group"><button type="button" data-role="mode-fill" data-i18n="play.modeFill" aria-pressed="${fillActive}">${translate(DEFAULT_LOCALE, "play.modeFill")}</button>${swatches}</div><button type="button" data-role="mode-cross" data-i18n="play.modeCross" aria-pressed="${!fillActive}">${translate(DEFAULT_LOCALE, "play.modeCross")}</button><button type="button" data-role="check" data-i18n="play.check">${translate(DEFAULT_LOCALE, "play.check")}</button></div>`;
+  return `<div class="play-toolbar"><div class="fill-color-group">${fillButton}${swatches}</div><button type="button" data-role="mode-cross" data-i18n="play.modeCross" aria-pressed="${!fillActive}">${translate(DEFAULT_LOCALE, "play.modeCross")}</button><button type="button" data-role="check" data-i18n="play.check">${translate(DEFAULT_LOCALE, "play.check")}</button></div>`;
 }
 
 function renderDefaultBanner(): string {

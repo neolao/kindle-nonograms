@@ -223,11 +223,15 @@ function revealLoadError(): void {
 
 /**
  * Locates the toolbar `renderPuzzlePage.ts` already bakes into the static
- * page (Fill/Cross buttons, one color swatch button per palette color for a
- * multi-color puzzle, Check) and attaches this hydration's behavior to it —
- * see `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`. Returns
+ * page (a Fill button only for a single-color puzzle, Cross, one color
+ * swatch button per palette color for a multi-color puzzle, Check) and
+ * attaches this hydration's behavior to it — see
+ * `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`. Returns
  * `undefined` when the expected controls aren't found, same defensive
- * spirit as `findElements` in `hydrateEditorPage.ts`.
+ * spirit as `findElements` in `hydrateEditorPage.ts`. The Fill button is
+ * optional (absent for a multi-color puzzle, see
+ * `.vibe/decisions/035-single-color-play-page-keeps-an-explicit-fill-button.md`)
+ * — Cross and Check are the only two always required.
  */
 function attachToolbar(
   puzzle: Puzzle,
@@ -243,16 +247,16 @@ function attachToolbar(
   const checkButton = document.querySelector<HTMLButtonElement>(
     '[data-role="check"]',
   );
-  if (!fillButton || !crossButton || !checkButton) {
+  if (!crossButton || !checkButton) {
     return;
   }
 
   const refreshModeButtons = (): void => {
-    fillButton.setAttribute("aria-pressed", String(state.mode === "fill"));
+    fillButton?.setAttribute("aria-pressed", String(state.mode === "fill"));
     crossButton.setAttribute("aria-pressed", String(state.mode === "cross"));
   };
 
-  fillButton.addEventListener("click", () => {
+  fillButton?.addEventListener("click", () => {
     state.mode = "fill";
     refreshModeButtons();
   });
@@ -286,6 +290,10 @@ function attachToolbar(
     swatchButtons.forEach((button, index) => {
       button.addEventListener("click", () => {
         state.activeColor = index;
+        // No Fill button exists on a multi-color puzzle (item 070) — a
+        // swatch tap is itself the only way back into fill mode.
+        state.mode = "fill";
+        refreshModeButtons();
         refreshSwatches();
       });
     });

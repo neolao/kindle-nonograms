@@ -132,7 +132,7 @@ describe("hydrate", () => {
     expect(cell(0, 0).style.color).toBe("");
   });
 
-  it("leaves no stale glyph, text color, or background when a cell cycles through fill, cross, clear, and refill with a different color", () => {
+  it("leaves no stale glyph, text color, or background when a cell cycles through fill, cross, clear, and refill with a different color, returning to fill mode via a swatch tap alone", () => {
     buildFixture(duoPuzzle);
     hydrate();
 
@@ -151,9 +151,8 @@ describe("hydrate", () => {
     expect(cell(0, 0).textContent).toBe("");
     expect(cell(0, 0).style.backgroundColor).toBe("");
 
-    document
-      .querySelector<HTMLButtonElement>('[data-role="mode-fill"]')
-      ?.click();
+    // No Fill button on a multi-color puzzle (item 070) — tapping a swatch
+    // is the only, and sufficient, way back into fill mode.
     document
       .querySelector<HTMLButtonElement>(
         '[data-role="swatch"][data-color-index="1"]',
@@ -287,6 +286,38 @@ describe("hydrate", () => {
     expect(document.querySelectorAll('[data-role="swatch"]')).toHaveLength(0);
   });
 
+  it("does not render a Fill mode button for a multi-color puzzle, since a swatch tap already does its job", () => {
+    buildFixture(duoPuzzle);
+    hydrate();
+
+    expect(fillButton()).toBeNull();
+  });
+
+  it("still renders a Fill mode button for a single-color puzzle, which has no swatch to fall back on", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    expect(fillButton()).not.toBeNull();
+  });
+
+  it("switches a multi-color puzzle back to fill mode, with aria-pressed in sync, as soon as a swatch is tapped after Cross", () => {
+    buildFixture(duoPuzzle);
+    hydrate();
+
+    crossButton()?.click();
+    expect(crossButton()?.getAttribute("aria-pressed")).toBe("true");
+
+    document
+      .querySelector<HTMLButtonElement>(
+        '[data-role="swatch"][data-color-index="0"]',
+      )
+      ?.click();
+    expect(crossButton()?.getAttribute("aria-pressed")).toBe("false");
+
+    cell(0, 0).click();
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(255, 0, 0)");
+  });
+
   it("renders each color swatch as a plain solid-color square, with only a checkmark marking the active one", () => {
     buildFixture(duoPuzzle);
     hydrate();
@@ -388,17 +419,15 @@ describe("hydrate", () => {
     vi.resetModules();
   });
 
-  it("groups the fill button and its color swatches in a shared visual container", () => {
+  it("groups the color swatches in the same visual container the Fill button would otherwise occupy", () => {
     buildFixture(duoPuzzle);
     hydrate();
 
     const swatch = document.querySelector<HTMLButtonElement>(
       '[data-role="swatch"][data-color-index="0"]',
     );
-    const group = fillButton()?.closest(".fill-color-group");
 
-    expect(group).not.toBeNull();
-    expect(swatch?.closest(".fill-color-group")).toBe(group);
+    expect(swatch?.closest(".fill-color-group")).not.toBeNull();
   });
 
   it("does not group the cross or check buttons with the fill/swatch container", () => {
