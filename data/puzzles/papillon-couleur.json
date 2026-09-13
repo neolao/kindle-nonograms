@@ -3,7 +3,7 @@
   "name": "Papillon",
   "width": 15,
   "height": 15,
-  "palette": ["#e75a67", "#90e534", "#f1b2c7", "#edeeed"],
+  "palette": ["#e75a67", "#90e534", "#f1b2c7", "#cccccc"],
   "cells": [
     [
       null,
