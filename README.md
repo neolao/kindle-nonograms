@@ -67,6 +67,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The library page can be sorted to show your most recently opened puzzles first, with puzzles you've never opened kept afterward in their usual order.
 - A puzzle you've started but not finished shows a small preview of what you've painted so far on the library page, instead of the generic "?" mark.
 - If you have the same puzzle open in two browser tabs, solving or changing it in one tab now updates the other automatically, without needing to reload it.
+- Two new puzzles, "Lion" (15×15) and "Appareil photo" (16×16), are included in the puzzle library.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.34.0] - 2026-09-13
+
 ### Added
 
 - Solving or otherwise changing a puzzle's progress in one open tab now updates any other tab open on the same puzzle automatically — the grid and win banner stay in sync without a manual reload.
+- Two new puzzles, "Lion" (15×15, four colors) and "Appareil photo" (16×16, four colors).
 
 ## [2.33.0] - 2026-09-13
 
@@ -432,7 +435,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.33.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.34.0...HEAD
+[2.34.0]: https://github.com/neolao/kindle-nonograms/compare/v2.33.0...v2.34.0
 [2.33.0]: https://github.com/neolao/kindle-nonograms/compare/v2.32.0...v2.33.0
 [2.32.0]: https://github.com/neolao/kindle-nonograms/compare/v2.31.0...v2.32.0
 [2.31.0]: https://github.com/neolao/kindle-nonograms/compare/v2.30.0...v2.31.0
