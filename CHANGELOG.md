@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.31.0] - 2026-09-13
+
 ### Added
 
 - The library footer's "Contribute a puzzle on GitHub" link now tells screen reader users it opens in a new tab, in addition to the existing visible arrow.
@@ -397,7 +399,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.30.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.31.0...HEAD
+[2.31.0]: https://github.com/neolao/kindle-nonograms/compare/v2.30.0...v2.31.0
 [2.30.0]: https://github.com/neolao/kindle-nonograms/compare/v2.29.0...v2.30.0
 [2.29.0]: https://github.com/neolao/kindle-nonograms/compare/v2.28.0...v2.29.0
 [2.28.0]: https://github.com/neolao/kindle-nonograms/compare/v2.27.0...v2.28.0
