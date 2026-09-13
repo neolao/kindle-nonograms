@@ -73,6 +73,39 @@ describe("renderLibraryPage", () => {
     expect(doc.body.textContent).toMatch(/no puzzles/i);
   });
 
+  it("exposes visually-hidden text stating the GitHub contribution link opens in a new tab", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const link = doc.querySelector<HTMLAnchorElement>('a[target="_blank"]');
+
+    expect(link).not.toBeNull();
+
+    const arrow = link?.querySelector('[aria-hidden="true"]');
+    expect(arrow?.textContent).toBe(" ↗");
+
+    const label = link?.querySelector(".sr-only");
+    expect(label?.getAttribute("data-i18n")).toBe("library.opensInNewTab");
+    expect(label?.textContent).toBe("opens in a new tab");
+  });
+
+  it("keeps the visible arrow before the hidden new-tab text, both after the visible label", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const link = doc.querySelector<HTMLAnchorElement>('a[target="_blank"]');
+    if (!link) {
+      throw new Error("contribute link not found");
+    }
+
+    const children = Array.from(link.children);
+    const arrowIndex = children.findIndex((el) =>
+      el.hasAttribute("aria-hidden"),
+    );
+    const labelIndex = children.findIndex((el) =>
+      el.classList.contains("sr-only"),
+    );
+
+    expect(arrowIndex).toBeGreaterThan(0);
+    expect(labelIndex).toBeGreaterThan(arrowIndex);
+  });
+
   it("links to the puzzle editor even when the library is empty", () => {
     const withPuzzles = parse(renderLibraryPage(puzzles));
     const empty = parse(renderLibraryPage([]));

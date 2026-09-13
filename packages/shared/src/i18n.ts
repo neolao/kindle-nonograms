@@ -71,6 +71,7 @@ export type TranslationKey =
   | "library.paginationStatusLabel"
   | "library.createPuzzleLink"
   | "library.contributeLink"
+  | "library.opensInNewTab"
   | "editor.title"
   | "editor.sizeLabel"
   | "editor.widthLabel"
@@ -138,6 +139,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.paginationStatusLabel": "Page",
     "library.createPuzzleLink": "Create a puzzle",
     "library.contributeLink": "Contribute a puzzle on GitHub",
+    "library.opensInNewTab": "opens in a new tab",
     "editor.title": "Puzzle Editor",
     "editor.sizeLabel": "Grid size",
     "editor.widthLabel": "Width",
@@ -209,6 +211,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.paginationStatusLabel": "Page",
     "library.createPuzzleLink": "Créer un puzzle",
     "library.contributeLink": "Contribuer un puzzle sur GitHub",
+    "library.opensInNewTab": "s'ouvre dans un nouvel onglet",
     "editor.title": "Éditeur de puzzle",
     "editor.sizeLabel": "Taille de la grille",
     "editor.widthLabel": "Largeur",

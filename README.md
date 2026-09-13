@@ -60,6 +60,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - On a multi-color puzzle, each clue number now shows a solid background filled with its own color, with automatically legible text, instead of just a colored border on white.
 - In the puzzle editor, feedback about importing an image (missing file, bad palette size, progress, failures) now appears right next to the Import controls instead of far away near the Export button.
 - A corrupted or unreadable puzzle library now logs a console warning, instead of silently looking identical to a library with zero puzzles.
+- The library page's "Contribute a puzzle on GitHub" link now tells screen reader users it opens in a new tab, not just sighted users via its arrow icon.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

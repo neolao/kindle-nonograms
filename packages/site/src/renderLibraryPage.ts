@@ -201,7 +201,7 @@ ${body}
 ${renderLanguageSwitcher()}
 <div class="page-footer-links">
 <a href="editor/" data-i18n="library.createPuzzleLink">Create a puzzle</a>
-<a href="${CONTRIBUTING_URL}" target="_blank" rel="noopener noreferrer"><span data-i18n="library.contributeLink">Contribute a puzzle on GitHub</span><span aria-hidden="true"> ↗</span></a>
+<a href="${CONTRIBUTING_URL}" target="_blank" rel="noopener noreferrer"><span data-i18n="library.contributeLink">Contribute a puzzle on GitHub</span><span aria-hidden="true"> ↗</span><span class="sr-only" data-i18n="library.opensInNewTab">${translate(DEFAULT_LOCALE, "library.opensInNewTab")}</span></a>
 </div>
 </footer>
 </div>

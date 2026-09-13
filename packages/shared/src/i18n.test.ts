@@ -48,6 +48,7 @@ const ALL_KEYS: TranslationKey[] = [
   "editor.selectColorAriaLabel",
   "editor.editColorAriaLabel",
   "editor.removeColorAriaLabel",
+  "library.opensInNewTab",
 ];
 
 describe("SUPPORTED_LOCALES and DEFAULT_LOCALE", () => {
@@ -138,6 +139,7 @@ describe("translate", () => {
     expect(translate("en", "editor.removeColorAriaLabel")).toBe(
       "Remove color {number}",
     );
+    expect(translate("en", "library.opensInNewTab")).toBe("opens in a new tab");
   });
 
   it("returns the exact French string for each key", () => {
@@ -226,6 +228,9 @@ describe("translate", () => {
     );
     expect(translate("fr", "editor.removeColorAriaLabel")).toBe(
       "Retirer la couleur {number}",
+    );
+    expect(translate("fr", "library.opensInNewTab")).toBe(
+      "s'ouvre dans un nouvel onglet",
     );
   });
 
