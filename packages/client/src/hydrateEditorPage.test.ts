@@ -158,6 +158,47 @@ function pngFile(name = "test.png"): File {
   return new File(["fake-image-bytes"], name, { type: "image/png" });
 }
 
+function importJsonFileInput(): HTMLInputElement {
+  return document.querySelector(
+    '[data-role="editor-import-json-file"]',
+  ) as HTMLInputElement;
+}
+function importJsonButton(): HTMLButtonElement {
+  return document.querySelector(
+    '[data-role="editor-import-json-button"]',
+  ) as HTMLButtonElement;
+}
+function importJsonErrorRegion(): HTMLElement {
+  return document.querySelector(
+    '[data-role="editor-import-json-error"]',
+  ) as HTMLElement;
+}
+
+/** jsdom's `<input type="file">.files` is normally read-only. */
+function setImportJsonFile(file: File | undefined): void {
+  Object.defineProperty(importJsonFileInput(), "files", {
+    value: file ? [file] : [],
+    configurable: true,
+  });
+}
+
+function jsonFile(content: unknown, name = "fixture.json"): File {
+  return new File([JSON.stringify(content)], name, {
+    type: "application/json",
+  });
+}
+
+/**
+ * `handleImportJson` awaits a `FileReader` read before doing anything else
+ * — jsdom resolves that read one macrotask later than a plain
+ * `setTimeout(0)`, so a single `flushAsync()` isn't reliably enough to
+ * observe its result; two are.
+ */
+async function flushFileRead(): Promise<void> {
+  await flushAsync();
+  await flushAsync();
+}
+
 /** Waits for the microtask/macrotask queue to drain — `handleImport`'s own
  * click listener isn't awaited by the caller (a DOM event handler can't be
  * awaited by `fireClick`), and it deliberately yields once via `setTimeout`
@@ -1383,6 +1424,295 @@ describe("image import", () => {
       await vi.advanceTimersByTimeAsync(200);
       expect(importErrorRegion().textContent).toBe("");
     });
+  });
+});
+
+describe("JSON puzzle import", () => {
+  it("shows an error and does nothing when the Import button is clicked with no file chosen", async () => {
+    buildFixture();
+    hydrate();
+
+    fireClick(importJsonButton());
+    await flushAsync();
+
+    expect(importJsonErrorRegion().textContent).toBe(
+      "⚠ Choose a puzzle file first.",
+    );
+  });
+
+  it("replaces the grid, palette, name and filename with a valid native-format puzzle", async () => {
+    buildFixture();
+    hydrate();
+    setImportJsonFile(
+      jsonFile(
+        {
+          id: "ignored-content-id",
+          name: "Boat",
+          width: 3,
+          height: 1,
+          palette: ["#ff0000", "#00ff00"],
+          cells: [[0, null, 1]],
+        },
+        "boat.json",
+      ),
+    );
+
+    fireClick(importJsonButton());
+    await flushFileRead();
+
+    expect(document.querySelectorAll("table td")).toHaveLength(3);
+    expect(swatches()).toHaveLength(2);
+    expect(nameInput().value).toBe("Boat");
+    // The id always comes from the picked file's own name, never any id
+    // the file's content happens to declare — same rule as the build-time
+    // loader (.vibe/decisions/001-puzzle-id-from-filename.md).
+    expect(filenameInput().value).toBe("boat");
+    expect(importJsonErrorRegion().textContent).toBe("");
+  });
+
+  it("imports a reMarkable boolean-grid export as a single-color puzzle", async () => {
+    buildFixture();
+    hydrate();
+    setImportJsonFile(
+      jsonFile({ width: 2, height: 1, cells: [[true, false]] }, "dog.json"),
+    );
+
+    fireClick(importJsonButton());
+    await flushFileRead();
+
+    expect(swatches()).toHaveLength(1);
+    expect(swatches()[0]?.style.backgroundColor).toBe("rgb(0, 0, 0)");
+    expect(nameInput().value).toBe("dog");
+    expect(filenameInput().value).toBe("dog");
+  });
+
+  it("imports directly with no confirmation when the grid is still empty", async () => {
+    buildFixture();
+    hydrate();
+    setImportJsonFile(
+      jsonFile({ width: 1, height: 1, cells: [[true]] }, "solo.json"),
+    );
+    const confirmSpy = vi.fn(() => false);
+    vi.stubGlobal("confirm", confirmSpy);
+
+    fireClick(importJsonButton());
+    await flushFileRead();
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(swatches()).toHaveLength(1);
+  });
+
+  it("asks for confirmation before overwriting an already-painted grid, and applies nothing when declined", async () => {
+    buildFixture();
+    hydrate();
+    fireClick(cell(0, 0)); // paint something first
+    setImportJsonFile(
+      jsonFile({ width: 1, height: 1, cells: [[true]] }, "solo.json"),
+    );
+    const confirmSpy = vi.fn(() => false);
+    vi.stubGlobal("confirm", confirmSpy);
+    const previousFilename = filenameInput().value;
+
+    fireClick(importJsonButton());
+    await flushAsync();
+
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(cell(0, 0).style.backgroundColor).not.toBe("");
+    expect(filenameInput().value).toBe(previousFilename);
+  });
+
+  it("shows a fixed error and leaves the previous puzzle untouched for text that isn't valid JSON", async () => {
+    buildFixture();
+    hydrate();
+    fireClick(cell(0, 0));
+    const paintedColor = cell(0, 0).style.backgroundColor;
+    setImportJsonFile(new File(["not json"], "broken.json"));
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true),
+    );
+
+    fireClick(importJsonButton());
+    await flushFileRead();
+
+    expect(importJsonErrorRegion().textContent).toBe(
+      "⚠ This file isn't a valid puzzle.",
+    );
+    expect(cell(0, 0).style.backgroundColor).toBe(paintedColor);
+  });
+
+  it("shows a fixed error and leaves the previous puzzle untouched for a structurally invalid puzzle", async () => {
+    buildFixture();
+    hydrate();
+    setImportJsonFile(
+      jsonFile(
+        {
+          id: "x",
+          name: "Broken",
+          width: 2,
+          height: 1,
+          palette: ["#000000"],
+          cells: [[0]], // only 1 column, width says 2
+        },
+        "broken.json",
+      ),
+    );
+
+    fireClick(importJsonButton());
+    await flushFileRead();
+
+    expect(importJsonErrorRegion().textContent).toBe(
+      "⚠ This file isn't a valid puzzle.",
+    );
+    expect(document.querySelectorAll("table td")).toHaveLength(25); // default 5x5
+  });
+
+  it("rejects a puzzle larger than the editor's own maximum grid size", async () => {
+    buildFixture();
+    hydrate();
+    setImportJsonFile(
+      jsonFile(
+        {
+          id: "huge",
+          name: "Huge",
+          width: 61,
+          height: 61,
+          palette: ["#000000"],
+          cells: Array.from({ length: 61 }, () => Array(61).fill(null)),
+        },
+        "huge.json",
+      ),
+    );
+
+    fireClick(importJsonButton());
+    await flushFileRead();
+
+    expect(importJsonErrorRegion().textContent).toBe(
+      "⚠ This puzzle is too large to edit here (max 60×60).",
+    );
+    expect(document.querySelectorAll("table td")).toHaveLength(25); // default 5x5, untouched
+  });
+});
+
+function checkSolvabilityButton(): HTMLButtonElement {
+  return document.querySelector(
+    '[data-role="editor-check-solvability"]',
+  ) as HTMLButtonElement;
+}
+function solvabilityErrorRegion(): HTMLElement {
+  return document.querySelector(
+    '[data-role="editor-solvability-error"]',
+  ) as HTMLElement;
+}
+function solvabilityConfirmationRegion(): HTMLElement {
+  return document.querySelector(
+    '[data-role="editor-solvability-confirmation"]',
+  ) as HTMLElement;
+}
+
+describe("solvability check", () => {
+  it("shows a dedicated message when the grid has no filled cells at all", async () => {
+    buildFixture();
+    hydrate();
+
+    fireClick(checkSolvabilityButton());
+    await flushAsync();
+
+    expect(solvabilityErrorRegion().textContent).toBe(
+      "⚠ This puzzle has no filled cells — nothing to check.",
+    );
+    expect(solvabilityConfirmationRegion().textContent).toBe("");
+  });
+
+  it("confirms a fully-determined puzzle is solvable", async () => {
+    buildFixture();
+    hydrate();
+    fireChange(widthInput(), "2");
+    fireChange(heightInput(), "2");
+    // A solid 2x2 square: zero slack, trivially solvable regardless of
+    // cross-referencing.
+    fireClick(cell(0, 0));
+    fireClick(cell(1, 0));
+    fireClick(cell(0, 1));
+    fireClick(cell(1, 1));
+
+    fireClick(checkSolvabilityButton());
+    await flushAsync();
+
+    expect(solvabilityConfirmationRegion().textContent).toBe(
+      "✓ This puzzle is fully solvable by logical deduction alone — no guessing required.",
+    );
+    expect(solvabilityErrorRegion().textContent).toBe("");
+  });
+
+  it("reports every ambiguous row and column, 1-based, on a puzzle that requires guessing", async () => {
+    buildFixture();
+    hydrate();
+    fireChange(widthInput(), "3");
+    fireChange(heightInput(), "3");
+    // The classic permutation-matrix ambiguity: a diagonal, each row and
+    // column with exactly one filled cell — see solvability.test.ts for
+    // why every row/column here is genuinely, symmetrically ambiguous.
+    fireClick(cell(0, 0));
+    fireClick(cell(1, 1));
+    fireClick(cell(2, 2));
+
+    fireClick(checkSolvabilityButton());
+    await flushAsync();
+
+    expect(solvabilityErrorRegion().textContent).toBe(
+      "⚠ Not solvable without guessing. Problem rows: 1, 2, 3. Problem columns: 1, 2, 3.",
+    );
+    expect(solvabilityConfirmationRegion().textContent).toBe("");
+  });
+
+  it("clears a previous problem result once a later check on a now-solvable grid succeeds", async () => {
+    buildFixture();
+    hydrate();
+    fireChange(widthInput(), "3");
+    fireChange(heightInput(), "3");
+    fireClick(cell(0, 0));
+    fireClick(cell(1, 1));
+    fireClick(cell(2, 2));
+    fireClick(checkSolvabilityButton());
+    await flushAsync();
+    expect(solvabilityErrorRegion().textContent).not.toBe("");
+
+    // Fill the whole grid solid — zero slack, unambiguous.
+    for (let y = 0; y < 3; y++) {
+      for (let x = 0; x < 3; x++) {
+        if (cell(x, y).style.backgroundColor === "") {
+          fireClick(cell(x, y));
+        }
+      }
+    }
+    fireClick(checkSolvabilityButton());
+    await flushAsync();
+
+    expect(solvabilityErrorRegion().textContent).toBe("");
+    expect(solvabilityConfirmationRegion().textContent).not.toBe("");
+  });
+
+  it("disables the button and shows a busy message while checking a large grid, then re-enables and clears it once done", async () => {
+    buildFixture();
+    hydrate();
+    fireChange(widthInput(), "25");
+    fireChange(heightInput(), "25");
+    await flushAsync(); // let the resize's own busy window finish first
+    // At least one filled cell, so this takes the (potentially slow) full
+    // line-solver path rather than the instant "no filled cells" shortcut.
+    fireClick(cell(0, 0));
+
+    fireClick(checkSolvabilityButton());
+
+    expect(checkSolvabilityButton().disabled).toBe(true);
+    // The busy state is applied before the (potentially slow) work starts,
+    // not after — mirrors the resize/import flows' own busy convention.
+    expect(solvabilityErrorRegion().textContent).toBe("Checking…");
+
+    await flushAsync();
+
+    expect(checkSolvabilityButton().disabled).toBe(false);
   });
 });
 

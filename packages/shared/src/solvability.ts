@@ -1,4 +1,4 @@
-import { type ClueRun, computePuzzleClues } from "./clues.js";
+import { type ClueRun, type PuzzleClues, computePuzzleClues } from "./clues.js";
 import type { Puzzle } from "./puzzle.js";
 
 /**
@@ -7,28 +7,61 @@ import type { Puzzle } from "./puzzle.js";
  */
 export type SolvabilityResult = { ok: true } | { ok: false; reason: string };
 
+/**
+ * Result of a full solvability diagnosis (see {@link diagnoseSolvability}):
+ * unlike {@link SolvabilityResult}, the failure case names *every* row and
+ * column that couldn't be fully determined, not just the first one found —
+ * built for a contributor actively fixing an ambiguous puzzle, who needs
+ * the whole picture, not one problem at a time.
+ */
+export type SolvabilityDiagnosis =
+  | { ok: true }
+  | { ok: false; kind: "noFilledCells" }
+  | {
+      ok: false;
+      kind: "ambiguous";
+      /** 0-based row indices containing at least one cell that couldn't be
+       * determined (or that a deduced value contradicted). */
+      problemRows: number[];
+      /** Same, for columns. */
+      problemColumns: number[];
+    };
+
 /** A cell during solving: a forced value, or `undefined` while undetermined. */
 type CellState = number | null | undefined;
 
+/** The fixpoint's own working grid, plus every line the solver ever found infeasible along the way. */
+interface FixpointOutcome {
+  grid: CellState[][];
+  infeasibleRows: Set<number>;
+  infeasibleColumns: Set<number>;
+}
+
 /**
- * Checks whether a puzzle's solution is fully derivable by line-based
- * logical deduction alone — the standard "no guessing required" nonogram
- * fairness check (see .vibe/decisions/016-line-solver-fairness-check.md).
+ * Runs the fixpoint line-solver to full convergence: repeatedly solves
+ * every row and column against its clue, constrained by whatever cells
+ * previous passes already forced, until nothing new is forced. Shared by
+ * {@link checkSolvability} (stops describing at the first problem found,
+ * for a build-time reject) and {@link diagnoseSolvability} (describes
+ * every problem, for a live editor diagnostic) so the two can never
+ * disagree about the same puzzle.
  *
- * Repeatedly solves every row and column against its clue, constrained by
- * whatever cells previous passes already forced, until nothing new is
- * forced. The puzzle is fair only if this fixpoint determines every cell
- * and it matches the stored solution.
+ * A line the solver finds infeasible (no placement of its clue is
+ * consistent with what's already known) contributes no forced cells but
+ * never aborts the run — in practice this never happens for a real
+ * puzzle, since every clue is derived from the very solution being
+ * checked, but recording it instead of throwing keeps this function total
+ * and safe to call live from the UI on arbitrary in-progress drafts.
  */
-export function checkSolvability(puzzle: Puzzle): SolvabilityResult {
-  const { width, height, cells: solution } = puzzle;
-
-  if (solution.every((row) => row.every((cell) => cell === null))) {
-    return { ok: false, reason: "Puzzle has no filled cells" };
-  }
-
-  const clues = computePuzzleClues(puzzle);
+function runFixpoint(
+  width: number,
+  height: number,
+  clues: PuzzleClues,
+  solution: (number | null)[][],
+): FixpointOutcome {
   const grid: CellState[][] = solution.map((row) => row.map(() => undefined));
+  const infeasibleRows = new Set<number>();
+  const infeasibleColumns = new Set<number>();
 
   let changed = true;
   while (changed) {
@@ -38,10 +71,8 @@ export function checkSolvability(puzzle: Puzzle): SolvabilityResult {
       const line = grid[y];
       const forced = solveLine(width, clues.rows[y], line);
       if (forced === null) {
-        return {
-          ok: false,
-          reason: `Row ${y} has no placement consistent with its clue`,
-        };
+        infeasibleRows.add(y);
+        continue;
       }
       changed = applyForced(line, forced) || changed;
     }
@@ -50,10 +81,8 @@ export function checkSolvability(puzzle: Puzzle): SolvabilityResult {
       const column = grid.map((row) => row[x]);
       const forced = solveLine(height, clues.columns[x], column);
       if (forced === null) {
-        return {
-          ok: false,
-          reason: `Column ${x} has no placement consistent with its clue`,
-        };
+        infeasibleColumns.add(x);
+        continue;
       }
       if (applyForced(column, forced)) {
         changed = true;
@@ -63,6 +92,32 @@ export function checkSolvability(puzzle: Puzzle): SolvabilityResult {
       }
     }
   }
+
+  return { grid, infeasibleRows, infeasibleColumns };
+}
+
+/**
+ * Checks whether a puzzle's solution is fully derivable by line-based
+ * logical deduction alone — the standard "no guessing required" nonogram
+ * fairness check (see .vibe/decisions/016-line-solver-fairness-check.md).
+ * Reports only the first problem found (row-major cell order, infeasible
+ * lines last) — enough to reject a bad submission at build time. See
+ * {@link diagnoseSolvability} for a version that reports every problem.
+ */
+export function checkSolvability(puzzle: Puzzle): SolvabilityResult {
+  const { width, height, cells: solution } = puzzle;
+
+  if (solution.every((row) => row.every((cell) => cell === null))) {
+    return { ok: false, reason: "Puzzle has no filled cells" };
+  }
+
+  const clues = computePuzzleClues(puzzle);
+  const { grid, infeasibleRows, infeasibleColumns } = runFixpoint(
+    width,
+    height,
+    clues,
+    solution,
+  );
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -81,7 +136,69 @@ export function checkSolvability(puzzle: Puzzle): SolvabilityResult {
     }
   }
 
+  if (infeasibleRows.size > 0) {
+    return {
+      ok: false,
+      reason: `Row ${Math.min(...infeasibleRows)} has no placement consistent with its clue`,
+    };
+  }
+
+  if (infeasibleColumns.size > 0) {
+    return {
+      ok: false,
+      reason: `Column ${Math.min(...infeasibleColumns)} has no placement consistent with its clue`,
+    };
+  }
+
   return { ok: true };
+}
+
+/**
+ * Diagnoses a puzzle's solvability like {@link checkSolvability}, but on
+ * failure names *every* problem row and column instead of stopping at the
+ * first — built for the puzzle editor's on-demand "check solvability"
+ * button, so a contributor mid-edit sees the whole scope of an ambiguous
+ * area at once (see .vibe/decisions/040-editor-solvability-diagnosis-and-json-import.md).
+ * A total function: never throws, even for a puzzle mid-edit that would
+ * be rejected outright at build time.
+ */
+export function diagnoseSolvability(puzzle: Puzzle): SolvabilityDiagnosis {
+  const { width, height, cells: solution } = puzzle;
+
+  if (solution.every((row) => row.every((cell) => cell === null))) {
+    return { ok: false, kind: "noFilledCells" };
+  }
+
+  const clues = computePuzzleClues(puzzle);
+  const { grid, infeasibleRows, infeasibleColumns } = runFixpoint(
+    width,
+    height,
+    clues,
+    solution,
+  );
+
+  const problemRows = new Set(infeasibleRows);
+  const problemColumns = new Set(infeasibleColumns);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (grid[y][x] === undefined || grid[y][x] !== solution[y][x]) {
+        problemRows.add(y);
+        problemColumns.add(x);
+      }
+    }
+  }
+
+  if (problemRows.size === 0 && problemColumns.size === 0) {
+    return { ok: true };
+  }
+
+  return {
+    ok: false,
+    kind: "ambiguous",
+    problemRows: [...problemRows].sort((a, b) => a - b),
+    problemColumns: [...problemColumns].sort((a, b) => a - b),
+  };
 }
 
 /** Applies newly-forced values from `forced` onto `line`; returns whether anything changed. */

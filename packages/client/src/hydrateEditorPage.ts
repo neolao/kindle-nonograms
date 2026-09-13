@@ -10,7 +10,9 @@ import {
   PuzzleValidationError,
   contrastingTextColor,
   createPuzzle,
+  diagnoseSolvability,
   isSupportedLocale,
+  parsePuzzleSource,
   translate,
 } from "@kindle-nonograms/shared";
 import { ImageDecodeError, decodeImageFile } from "./decodeImageFile.js";
@@ -737,6 +739,13 @@ interface EditorElements {
   importBackground: HTMLInputElement;
   importButton: HTMLButtonElement;
   importError: HTMLElement;
+  importJsonFile: HTMLInputElement;
+  importJsonButton: HTMLButtonElement;
+  importJsonError: HTMLElement;
+  importJsonConfirmation: HTMLElement;
+  checkSolvabilityButton: HTMLButtonElement;
+  solvabilityError: HTMLElement;
+  solvabilityConfirmation: HTMLElement;
 }
 
 function findElements(): EditorElements | undefined {
@@ -786,6 +795,27 @@ function findElements(): EditorElements | undefined {
   const importError = document.querySelector<HTMLElement>(
     '[data-role="editor-import-error"]',
   );
+  const importJsonFile = document.querySelector<HTMLInputElement>(
+    '[data-role="editor-import-json-file"]',
+  );
+  const importJsonButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="editor-import-json-button"]',
+  );
+  const importJsonError = document.querySelector<HTMLElement>(
+    '[data-role="editor-import-json-error"]',
+  );
+  const importJsonConfirmation = document.querySelector<HTMLElement>(
+    '[data-role="editor-import-json-confirmation"]',
+  );
+  const checkSolvabilityButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="editor-check-solvability"]',
+  );
+  const solvabilityError = document.querySelector<HTMLElement>(
+    '[data-role="editor-solvability-error"]',
+  );
+  const solvabilityConfirmation = document.querySelector<HTMLElement>(
+    '[data-role="editor-solvability-confirmation"]',
+  );
 
   if (
     !root ||
@@ -803,7 +833,14 @@ function findElements(): EditorElements | undefined {
     !importPaletteSize ||
     !importBackground ||
     !importButton ||
-    !importError
+    !importError ||
+    !importJsonFile ||
+    !importJsonButton ||
+    !importJsonError ||
+    !importJsonConfirmation ||
+    !checkSolvabilityButton ||
+    !solvabilityError ||
+    !solvabilityConfirmation
   ) {
     return undefined;
   }
@@ -825,6 +862,13 @@ function findElements(): EditorElements | undefined {
     importBackground,
     importButton,
     importError,
+    importJsonFile,
+    importJsonButton,
+    importJsonError,
+    importJsonConfirmation,
+    checkSolvabilityButton,
+    solvabilityError,
+    solvabilityConfirmation,
   };
 }
 
@@ -1035,6 +1079,198 @@ async function handleImport(
   }
 }
 
+/**
+ * Reads a `File`'s content as text via `FileReader` rather than the newer
+ * `File#text()` — jsdom (this project's test environment) implements
+ * `FileReader` but not `File#text()`, and `FileReader` has the longer
+ * cross-browser track record besides.
+ */
+function readFileAsText(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () =>
+      reject(reader.error ?? new Error("Failed to read file"));
+    reader.readAsText(file);
+  });
+}
+
+/**
+ * Replaces the editor's grid, palette, name, and filename with an imported
+ * puzzle file's own — auto-detecting the native format or a reMarkable
+ * export via `shared`'s `parsePuzzleSource`, exactly like the build-time
+ * puzzle loader. The imported id always comes from the picked file's own
+ * name, never any `id` the file's content happens to declare (same rule as
+ * the build loader — see .vibe/decisions/001-puzzle-id-from-filename.md).
+ *
+ * Only structural validity is checked here, deliberately not solvability:
+ * the primary use case is reopening an already-broken puzzle file
+ * specifically to repair it with the "check solvability" button below,
+ * which would be impossible if import itself refused an unfair puzzle
+ * (see .vibe/decisions/040-editor-solvability-diagnosis-and-json-import.md).
+ * A rejected file (unreadable, invalid JSON, structurally invalid, or over
+ * `EDITOR_MAX_DIMENSION`) leaves every field exactly as it was — the four
+ * fields are only ever replaced together, after full validation succeeds.
+ *
+ * Outright overwrites — no merge — so a confirmation is required first
+ * whenever the grid already has painted content to lose, matching
+ * `handleImport`'s own model. A resulting grid at or above
+ * `RESIZE_ASYNC_THRESHOLD_CELLS` reuses the same yield-then-disable busy
+ * pattern as a large resize/image-import, so a large imported puzzle can't
+ * freeze the page with no feedback.
+ */
+async function handleImportJson(
+  elements: EditorElements,
+  state: EditorState,
+): Promise<void> {
+  elements.importJsonError.textContent = "";
+  elements.importJsonConfirmation.textContent = "";
+
+  const file = elements.importJsonFile.files?.[0];
+  if (!file) {
+    elements.importJsonError.textContent = `⚠ ${translate(state.locale, "editor.error.importJsonNoFile")}`;
+    return;
+  }
+
+  if (
+    hasPaintedContent(state.cells) &&
+    !confirm(
+      "Importing this puzzle will replace the current grid, palette, name, and filename. Continue?",
+    )
+  ) {
+    return;
+  }
+
+  let puzzle: Puzzle;
+  try {
+    const text = await readFileAsText(file);
+    const parsed: unknown = JSON.parse(text);
+    puzzle = parsePuzzleSource(parsed, file.name.replace(/\.json$/i, ""));
+  } catch {
+    elements.importJsonError.textContent = `⚠ ${translate(state.locale, "editor.error.importJsonInvalid")}`;
+    return;
+  }
+
+  if (
+    puzzle.width > EDITOR_MAX_DIMENSION ||
+    puzzle.height > EDITOR_MAX_DIMENSION
+  ) {
+    elements.importJsonError.textContent = `⚠ ${translate(
+      state.locale,
+      "editor.error.importJsonTooLarge",
+    ).replaceAll("{max}", String(EDITOR_MAX_DIMENSION))}`;
+    return;
+  }
+
+  const applyImportedPuzzle = () => {
+    state.width = puzzle.width;
+    state.height = puzzle.height;
+    state.palette = puzzle.palette;
+    state.cells = puzzle.cells;
+    state.name = puzzle.name;
+    state.filename = puzzle.id;
+    state.activeColorIndex = 0;
+    state.mode = "paint";
+    state.hasUnsavedChanges = true;
+    elements.name.value = puzzle.name;
+    elements.filename.value = puzzle.id;
+    elements.width.value = String(puzzle.width);
+    elements.height.value = String(puzzle.height);
+  };
+
+  const isLargeRebuild =
+    puzzle.width * puzzle.height >= RESIZE_ASYNC_THRESHOLD_CELLS;
+
+  if (isLargeRebuild) {
+    elements.importJsonFile.disabled = true;
+    elements.importJsonButton.disabled = true;
+    elements.importJsonError.textContent = "Importing…";
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    applyImportedPuzzle();
+    render(elements, state);
+
+    elements.importJsonFile.disabled = false;
+    elements.importJsonButton.disabled = false;
+    elements.importJsonError.textContent = "";
+  } else {
+    applyImportedPuzzle();
+    render(elements, state);
+  }
+
+  elements.importJsonConfirmation.textContent = `✓ ${translate(
+    state.locale,
+    "editor.importJsonConfirmation",
+  ).replace("{filename}", `${puzzle.id}.json`)}`;
+}
+
+/**
+ * Runs `shared`'s `diagnoseSolvability` against the currently-drafted
+ * puzzle and reports the result in plain language — unlike the build-time
+ * `checkSolvability` gate, this names *every* problem row and column
+ * (1-based, for a human) instead of only the first one, so a contributor
+ * mid-edit sees the whole scope of an ambiguous area at once (see
+ * .vibe/decisions/040-editor-solvability-diagnosis-and-json-import.md).
+ * Independent of Export's own validation — a puzzle with no name/filename
+ * yet can still be checked. A grid at or above
+ * `RESIZE_ASYNC_THRESHOLD_CELLS` reuses the same yield-then-disable busy
+ * pattern as a large resize/import, since the full line-solver run can be
+ * slow enough on a large grid to otherwise freeze the page with no
+ * feedback.
+ */
+async function handleCheckSolvability(
+  elements: EditorElements,
+  state: EditorState,
+): Promise<void> {
+  elements.solvabilityError.textContent = "";
+  elements.solvabilityConfirmation.textContent = "";
+
+  const puzzle: Puzzle = {
+    id: state.filename,
+    name: state.name,
+    width: state.width,
+    height: state.height,
+    palette: state.palette,
+    cells: state.cells,
+  };
+
+  const isLargeCheck =
+    state.width * state.height >= RESIZE_ASYNC_THRESHOLD_CELLS;
+
+  if (isLargeCheck) {
+    elements.checkSolvabilityButton.disabled = true;
+    elements.solvabilityError.textContent = "Checking…";
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+
+  const result = diagnoseSolvability(puzzle);
+
+  if (isLargeCheck) {
+    elements.checkSolvabilityButton.disabled = false;
+    elements.solvabilityError.textContent = "";
+  }
+
+  if (result.ok) {
+    elements.solvabilityConfirmation.textContent = `✓ ${translate(state.locale, "editor.solvabilityOk")}`;
+    return;
+  }
+
+  if (result.kind === "noFilledCells") {
+    elements.solvabilityError.textContent = `⚠ ${translate(state.locale, "editor.error.solvabilityNoFilledCells")}`;
+    return;
+  }
+
+  const rows = result.problemRows.map((row) => row + 1).join(", ");
+  const columns = result.problemColumns.map((column) => column + 1).join(", ");
+  elements.solvabilityError.textContent = `⚠ ${translate(
+    state.locale,
+    "editor.error.solvabilityProblem",
+  )
+    .replace("{rows}", rows)
+    .replace("{columns}", columns)}`;
+}
+
 function handleExport(elements: EditorElements, state: EditorState): void {
   elements.error.textContent = "";
   elements.confirmation.textContent = "";
@@ -1166,6 +1402,14 @@ export function hydrate(): void {
 
   elements.importButton.addEventListener("click", () => {
     void handleImport(elements, state);
+  });
+
+  elements.importJsonButton.addEventListener("click", () => {
+    void handleImportJson(elements, state);
+  });
+
+  elements.checkSolvabilityButton.addEventListener("click", () => {
+    void handleCheckSolvability(elements, state);
   });
 
   // Single delegated listener on the wrapper, which `renderGrid` never

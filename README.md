@@ -72,6 +72,8 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The puzzle editor's grid width and height fields now have a sane maximum, with a clear message if you go over it; resizing to a larger grid now shows a brief "Resizing…" notice while it works, instead of the page silently freezing.
 - Two new puzzles, "Lunettes" and "Parapluie" (both 16×16, three colors), are included in the puzzle library.
 - The puzzle editor's grid no longer shrinks just because the browser window is short — it now sizes by the available width alone, keeping a normal size and letting the page scroll instead.
+- The puzzle editor can now import an existing puzzle file (this project's own format, or a reMarkable export), replacing the current grid, palette, name, and filename — useful for reopening and fixing an already-authored puzzle.
+- The puzzle editor has a new "Check solvability" button that reports, right on the current draft, whether it can be solved by logical deduction alone — and if not, exactly which rows and columns are the problem, instead of only finding out when the puzzle is submitted.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

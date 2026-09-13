@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The puzzle editor can now import an existing puzzle file (this project's own format, or a reMarkable export), replacing the current grid, palette, name, and filename — useful for reopening and fixing an already-authored puzzle.
+- The puzzle editor has a new "Check solvability" button that reports, right on the current draft, whether it can be solved by logical deduction alone — and if not, exactly which rows and columns are the problem, instead of only finding out when the puzzle is submitted.
+
 ### Fixed
 
 - The puzzle editor's grid no longer shrinks just because the browser window is short — it now sizes only by the available width, so a wide-but-short window keeps the grid at a normal size and lets the page scroll instead.

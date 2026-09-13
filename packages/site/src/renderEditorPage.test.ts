@@ -174,6 +174,54 @@ describe("renderEditorPage", () => {
     );
   });
 
+  it("renders the JSON puzzle import controls: a file input and an Import button", () => {
+    const doc = parse(renderEditorPage());
+
+    const file = doc.querySelector('[data-role="editor-import-json-file"]');
+    expect(file?.tagName).toBe("INPUT");
+    expect(file?.getAttribute("type")).toBe("file");
+    expect(file?.getAttribute("accept")).toBe("application/json,.json");
+
+    expect(
+      doc.querySelector('[data-role="editor-import-json-button"]')?.tagName,
+    ).toBe("BUTTON");
+  });
+
+  it("reserves empty, accessible error and confirmation regions next to the JSON import controls", () => {
+    const doc = parse(renderEditorPage());
+    const status = doc.querySelector('[data-role="editor-import-json-error"]');
+    const confirmation = doc.querySelector(
+      '[data-role="editor-import-json-confirmation"]',
+    );
+
+    expect(status).not.toBeNull();
+    expect(status?.getAttribute("aria-live")).toBe("polite");
+    expect(status?.textContent).toBe("");
+    expect(confirmation).not.toBeNull();
+    expect(confirmation?.getAttribute("aria-live")).toBe("polite");
+    expect(confirmation?.textContent).toBe("");
+  });
+
+  it("renders a solvability-check button with its own reserved error and confirmation regions", () => {
+    const doc = parse(renderEditorPage());
+
+    expect(
+      doc.querySelector('[data-role="editor-check-solvability"]')?.tagName,
+    ).toBe("BUTTON");
+
+    const error = doc.querySelector('[data-role="editor-solvability-error"]');
+    expect(error).not.toBeNull();
+    expect(error?.getAttribute("aria-live")).toBe("polite");
+    expect(error?.textContent).toBe("");
+
+    const confirmation = doc.querySelector(
+      '[data-role="editor-solvability-confirmation"]',
+    );
+    expect(confirmation).not.toBeNull();
+    expect(confirmation?.getAttribute("aria-live")).toBe("polite");
+    expect(confirmation?.textContent).toBe("");
+  });
+
   it("renders name and filename text inputs plus an Export button", () => {
     const doc = parse(renderEditorPage());
 

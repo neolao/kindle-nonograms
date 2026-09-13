@@ -1,0 +1,13 @@
+---
+date: 2026-09-13
+status: accepted
+---
+# Editor's on-demand solvability check is a total sibling of the build-time gate; JSON import never enforces fairness
+
+**Context:** The editor gets two new controls: a button to import an existing puzzle JSON (native or reMarkable-export shape) into the current draft, and a button to run the "no guessing required" fairness check against the current draft, reporting every problematic row/column rather than only the first one. The existing `checkSolvability` (`packages/shared/src/solvability.ts`) already implements the underlying fixpoint line-solver, but returns on the first infeasible line or first undetermined cell, and is only ever used at build time (wrapped in a thrown `Error`).
+
+**Decision:** The fixpoint line-solving engine (`solveLine`/`isLineFeasible`/`applyForced`) is extracted into a shared internal core reused by both `checkSolvability` (external behavior unchanged) and a new `diagnoseSolvability(puzzle)`, which runs the fixpoint to full convergence and returns every row/column index that still has an undetermined or contradictory cell, as `{ok:true} | {ok:false, reason, problemRows, problemColumns}` — a total function that never throws, since it's called live from the UI rather than in a controlled build/test context. JSON import validates only structural correctness (shape, dimensions ≤ `EDITOR_MAX_DIMENSION`) via the same `createPuzzle`/`fromBooleanGridExport` auto-detection the build-time loader uses (moved into `shared` so both sides share one native-vs-reMarkable detection instead of two copies) — it deliberately does not also require the imported puzzle to be fairly solvable.
+
+**Reason:** A build-time reason string only ever needs to name one problem to reject a submission; a contributor actively editing needs the full picture to fix an ambiguous area efficiently, which is exactly the gap the "Champignon"/"Renard" incident exposed. Making import reject an unsolvable puzzle would be self-defeating: the primary motivating use case is reopening an already-broken puzzle file specifically to repair it with the new solvability button, which requires the file to load in the first place.
+
+**Rejected alternatives:** A second, independent implementation of the line-solving algorithm for the diagnostic button — rejected as a maintenance risk (the build-time gate and the editor's live diagnostic could silently drift apart on the same puzzle). Having JSON import also enforce fairness (matching the build-time loader exactly) — rejected per the Product Owner's explicit choice, since it would block the exact repair workflow this feature exists for.

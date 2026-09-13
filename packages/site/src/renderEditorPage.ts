@@ -163,6 +163,17 @@ ${renderEarlyLangScript()}
 <p class="editor-import-hint" data-i18n="editor.importHint">The image is fitted to the grid size above and reduced to the palette size above; pixels close to the background color become blank.</p>
 </div>
 <div class="panel editor-panel">
+<p class="section-label" data-i18n="editor.importJsonLabel">Import puzzle</p>
+<div class="editor-import-controls">
+<label for="editor-import-json-file" data-i18n="editor.importJsonFileLabel">Puzzle file</label>
+<input type="file" accept="application/json,.json" id="editor-import-json-file" data-role="editor-import-json-file" />
+<button type="button" data-role="editor-import-json-button" data-i18n="editor.importJsonButton">Import</button>
+</div>
+<p class="editor-error" data-role="editor-import-json-error" aria-live="polite"></p>
+<p class="editor-confirmation" data-role="editor-import-json-confirmation" aria-live="polite"></p>
+<p class="editor-import-hint" data-i18n="editor.importJsonHint">Loads an existing puzzle file (this project's own format, or a reMarkable export) — replaces the current grid, palette, name, and filename.</p>
+</div>
+<div class="panel editor-panel">
 <p class="section-label" data-i18n="editor.paletteLabel">Palette</p>
 <div class="editor-palette" data-role="editor-palette">${renderDefaultPalette()}</div>
 </div>
@@ -172,6 +183,12 @@ ${renderEarlyLangScript()}
 <div class="grid-center">
 <div class="grid-wrapper" data-role="editor-grid-wrapper">${renderDefaultGrid()}</div>
 </div>
+</div>
+<div class="panel editor-panel">
+<p class="section-label" data-i18n="editor.solvabilityLabel">Solvability check</p>
+<button type="button" data-role="editor-check-solvability" data-i18n="editor.checkSolvabilityButton">Check solvability</button>
+<p class="editor-error" data-role="editor-solvability-error" aria-live="polite"></p>
+<p class="editor-confirmation" data-role="editor-solvability-confirmation" aria-live="polite"></p>
 </div>
 <div class="panel editor-panel">
 <p class="section-label" data-i18n="editor.metaLabel">Name and export</p>

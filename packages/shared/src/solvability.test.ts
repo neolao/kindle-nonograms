@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Puzzle } from "./puzzle.js";
-import { checkSolvability } from "./solvability.js";
+import { checkSolvability, diagnoseSolvability } from "./solvability.js";
 
 function fixture(overrides: Partial<Puzzle>): Puzzle {
   return {
@@ -90,5 +90,96 @@ describe("checkSolvability", () => {
     });
 
     expect(() => checkSolvability(puzzle)).not.toThrow();
+  });
+});
+
+describe("diagnoseSolvability", () => {
+  it("passes a puzzle solvable by line-based deduction alone", () => {
+    // Same fixture as checkSolvability's own "passes a monochrome puzzle"
+    // test: row1's lone cell only becomes unambiguous once column0's own
+    // full-column clue forces it.
+    const puzzle = fixture({
+      cells: [
+        [0, 0],
+        [0, null],
+      ],
+    });
+
+    expect(diagnoseSolvability(puzzle)).toEqual({ ok: true });
+  });
+
+  it("reports every ambiguous row and column, not just the first, on a fully ambiguous puzzle", () => {
+    // The classic permutation-matrix nonogram: every row/column clue is a
+    // single length-1 run, and swapping which row holds which column's fill
+    // (any permutation matrix) satisfies every clue equally well — no cell
+    // can ever be pinned down, so all 3 rows and all 3 columns are
+    // genuinely, symmetrically ambiguous (independently reasoned, not by
+    // re-running the solver: e.g. cell (0,0) could be null with the
+    // alternate valid completion [[null,0,0??]]... concretely, swapping
+    // rows 0 and 1 of the true solution yields a second, equally valid
+    // full grid consistent with every one of the 6 clues, so no cell is
+    // uniquely forced).
+    const puzzle = fixture({
+      width: 3,
+      height: 3,
+      cells: [
+        [0, null, null],
+        [null, 0, null],
+        [null, null, 0],
+      ],
+    });
+
+    const result = diagnoseSolvability(puzzle);
+
+    expect(result).toEqual({
+      ok: false,
+      kind: "ambiguous",
+      problemRows: [0, 1, 2],
+      problemColumns: [0, 1, 2],
+    });
+  });
+
+  it("confines the reported problem rows/columns to a genuinely ambiguous sub-area, excluding the rest of a larger, fully-determined grid", () => {
+    // A 2x2 permutation ambiguity (rows/columns 0-1) embedded in a 5x5
+    // grid whose remaining rows/columns (2-4) are entirely blank. A
+    // completely blank line's clue is the special "no fill anywhere"
+    // marker, forced trivially and unconditionally on the first pass,
+    // with zero slack to ever accommodate a stray fill from elsewhere —
+    // so this padding can't leak ambiguity into the rest of the grid, and
+    // the reported problem area must stay exactly rows/columns 0-1.
+    const puzzle = fixture({
+      width: 5,
+      height: 5,
+      cells: [
+        [0, null, null, null, null],
+        [null, 0, null, null, null],
+        [null, null, null, null, null],
+        [null, null, null, null, null],
+        [null, null, null, null, null],
+      ],
+    });
+
+    const result = diagnoseSolvability(puzzle);
+
+    expect(result).toEqual({
+      ok: false,
+      kind: "ambiguous",
+      problemRows: [0, 1],
+      problemColumns: [0, 1],
+    });
+  });
+
+  it("reports the degenerate 'no filled cells' case distinctly, without running the line solver", () => {
+    const puzzle = fixture({
+      cells: [
+        [null, null],
+        [null, null],
+      ],
+    });
+
+    expect(diagnoseSolvability(puzzle)).toEqual({
+      ok: false,
+      kind: "noFilledCells",
+    });
   });
 });

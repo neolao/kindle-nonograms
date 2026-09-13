@@ -31,12 +31,12 @@ A supported display language for the app's UI text — currently English or Fren
 _Sources: `packages/shared/src/i18n.ts`, `packages/client/src/i18n.ts`_
 
 ## Solvability (fairness check)
-Whether a puzzle's solution can be fully worked out from its row/column clues by logical deduction alone, with no cell requiring a guess. Checked by repeatedly deriving each row's and column's forced cells from its clue until nothing new is forced; a puzzle is fair only if every cell ends up determined this way and matches its stored solution. A submitted puzzle failing this check is rejected the same way a structurally invalid one is.
+Whether a puzzle's solution can be fully worked out from its row/column clues by logical deduction alone, with no cell requiring a guess. Checked by repeatedly deriving each row's and column's forced cells from its clue until nothing new is forced; a puzzle is fair only if every cell ends up determined this way and matches its stored solution. A submitted puzzle failing this check is rejected the same way a structurally invalid one is. The puzzle editor can also run this same check on demand, on the puzzle currently being drafted — unlike the submission-time check, which stops at the first problem, this reports every row and column that isn't yet determined, so a contributor can see the whole scope of an ambiguous area while still editing.
 **Do not confuse with:** Clue, the per-row/per-column data this check reasons over; Puzzle, the content being checked.
 _Sources: `packages/shared/src/solvability.ts`_
 
 ## Puzzle editor
-A contributor-facing page, distinct from the library and play pages, where a puzzle is authored rather than played: set a grid size, build a color palette, paint the solution cell by cell, name the puzzle, and export it as a ready-to-submit `Puzzle` JSON file. Runs entirely client-side in a normal desktop browser (not on Kindle) — there is no server to hand the exported file to, so the contributor still commits it manually.
+A contributor-facing page, distinct from the library and play pages, where a puzzle is authored rather than played: set a grid size, build a color palette, paint the solution cell by cell, name the puzzle, and export it as a ready-to-submit `Puzzle` JSON file — or import an existing puzzle file to continue or fix it, and check its Solvability at any time while drafting. Runs entirely client-side in a normal desktop browser (not on Kindle) — there is no server to hand the exported file to, so the contributor still commits it manually.
 **Do not confuse with:** Library page, which lists already-authored puzzles to play, not create.
 _Sources: `packages/site/src/renderEditorPage.ts`, `packages/client/src/hydrateEditorPage.ts`_
 

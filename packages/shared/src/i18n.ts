@@ -77,6 +77,12 @@ export type TranslationKey =
   | "editor.importBackgroundLabel"
   | "editor.importButton"
   | "editor.importHint"
+  | "editor.importJsonLabel"
+  | "editor.importJsonFileLabel"
+  | "editor.importJsonButton"
+  | "editor.importJsonHint"
+  | "editor.solvabilityLabel"
+  | "editor.checkSolvabilityButton"
   | "editor.paletteLabel"
   | "editor.canvasLabel"
   | "editor.metaLabel"
@@ -96,6 +102,13 @@ export type TranslationKey =
   | "editor.error.invalidGridSize"
   | "editor.error.unexpected"
   | "editor.exportConfirmation"
+  | "editor.error.importJsonNoFile"
+  | "editor.error.importJsonInvalid"
+  | "editor.error.importJsonTooLarge"
+  | "editor.importJsonConfirmation"
+  | "editor.solvabilityOk"
+  | "editor.error.solvabilityNoFilledCells"
+  | "editor.error.solvabilityProblem"
   | "play.swatchColorAriaLabel"
   | "editor.cellColorAriaLabel"
   | "editor.cellEmptyAriaLabel";
@@ -140,6 +153,13 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.importPaletteSizeLabel": "Palette size",
     "editor.importBackgroundLabel": "Background color",
     "editor.importButton": "Import",
+    "editor.importJsonLabel": "Import puzzle",
+    "editor.importJsonFileLabel": "Puzzle file",
+    "editor.importJsonButton": "Import",
+    "editor.importJsonHint":
+      "Loads an existing puzzle file (this project's own format, or a reMarkable export) — replaces the current grid, palette, name, and filename.",
+    "editor.solvabilityLabel": "Solvability check",
+    "editor.checkSolvabilityButton": "Check solvability",
     "editor.importHint":
       "The image is fitted to the grid size above and reduced to the palette size above; pixels close to the background color become blank.",
     "editor.paletteLabel": "Palette",
@@ -163,6 +183,17 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
       "Width and height must be whole numbers from 1 to {max}.",
     "editor.error.unexpected": "Something went wrong. Please try again.",
     "editor.exportConfirmation": "Exported {filename} — download started.",
+    "editor.error.importJsonNoFile": "Choose a puzzle file first.",
+    "editor.error.importJsonInvalid": "This file isn't a valid puzzle.",
+    "editor.error.importJsonTooLarge":
+      "This puzzle is too large to edit here (max {max}×{max}).",
+    "editor.importJsonConfirmation": "Imported {filename}.",
+    "editor.solvabilityOk":
+      "This puzzle is fully solvable by logical deduction alone — no guessing required.",
+    "editor.error.solvabilityNoFilledCells":
+      "This puzzle has no filled cells — nothing to check.",
+    "editor.error.solvabilityProblem":
+      "Not solvable without guessing. Problem rows: {rows}. Problem columns: {columns}.",
     "play.swatchColorAriaLabel": "Color {number}",
     "editor.cellColorAriaLabel": "Color {number}",
     "editor.cellEmptyAriaLabel": "Empty",
@@ -208,6 +239,13 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.importPaletteSizeLabel": "Nombre de couleurs",
     "editor.importBackgroundLabel": "Couleur de fond",
     "editor.importButton": "Importer",
+    "editor.importJsonLabel": "Importer un puzzle",
+    "editor.importJsonFileLabel": "Fichier puzzle",
+    "editor.importJsonButton": "Importer",
+    "editor.importJsonHint":
+      "Charge un fichier puzzle existant (le format natif du projet, ou un export reMarkable) — remplace la grille, la palette, le nom et le nom de fichier actuels.",
+    "editor.solvabilityLabel": "Vérification de solvabilité",
+    "editor.checkSolvabilityButton": "Vérifier la solvabilité",
     "editor.importHint":
       "L'image est ajustée à la taille de grille ci-dessus et réduite au nombre de couleurs ci-dessus ; les pixels proches de la couleur de fond deviennent vides.",
     "editor.paletteLabel": "Palette",
@@ -233,6 +271,17 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
       "La largeur et la hauteur doivent être des nombres entiers de 1 à {max}.",
     "editor.error.unexpected": "Une erreur est survenue. Veuillez réessayer.",
     "editor.exportConfirmation": "Exporté {filename} — téléchargement lancé.",
+    "editor.error.importJsonNoFile": "Choisissez d'abord un fichier puzzle.",
+    "editor.error.importJsonInvalid": "Ce fichier n'est pas un puzzle valide.",
+    "editor.error.importJsonTooLarge":
+      "Ce puzzle est trop grand pour être édité ici (max {max}×{max}).",
+    "editor.importJsonConfirmation": "Importé {filename}.",
+    "editor.solvabilityOk":
+      "Ce puzzle est entièrement résolvable par déduction logique — aucune supposition nécessaire.",
+    "editor.error.solvabilityNoFilledCells":
+      "Ce puzzle n'a aucune case remplie — rien à vérifier.",
+    "editor.error.solvabilityProblem":
+      "Non résolvable sans deviner. Lignes concernées : {rows}. Colonnes concernées : {columns}.",
     "play.swatchColorAriaLabel": "Couleur {number}",
     "editor.cellColorAriaLabel": "Couleur {number}",
     "editor.cellEmptyAriaLabel": "Vide",

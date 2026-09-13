@@ -46,6 +46,19 @@ const ALL_KEYS: TranslationKey[] = [
   "library.opensInNewTab",
   "editor.cellColorAriaLabel",
   "editor.cellEmptyAriaLabel",
+  "editor.importJsonLabel",
+  "editor.importJsonFileLabel",
+  "editor.importJsonButton",
+  "editor.importJsonHint",
+  "editor.solvabilityLabel",
+  "editor.checkSolvabilityButton",
+  "editor.error.importJsonNoFile",
+  "editor.error.importJsonInvalid",
+  "editor.error.importJsonTooLarge",
+  "editor.importJsonConfirmation",
+  "editor.solvabilityOk",
+  "editor.error.solvabilityNoFilledCells",
+  "editor.error.solvabilityProblem",
 ];
 
 describe("SUPPORTED_LOCALES and DEFAULT_LOCALE", () => {
@@ -134,6 +147,39 @@ describe("translate", () => {
     expect(translate("en", "library.opensInNewTab")).toBe("opens in a new tab");
     expect(translate("en", "editor.cellColorAriaLabel")).toBe("Color {number}");
     expect(translate("en", "editor.cellEmptyAriaLabel")).toBe("Empty");
+    expect(translate("en", "editor.importJsonLabel")).toBe("Import puzzle");
+    expect(translate("en", "editor.importJsonFileLabel")).toBe("Puzzle file");
+    expect(translate("en", "editor.importJsonButton")).toBe("Import");
+    expect(translate("en", "editor.importJsonHint")).toBe(
+      "Loads an existing puzzle file (this project's own format, or a reMarkable export) — replaces the current grid, palette, name, and filename.",
+    );
+    expect(translate("en", "editor.solvabilityLabel")).toBe(
+      "Solvability check",
+    );
+    expect(translate("en", "editor.checkSolvabilityButton")).toBe(
+      "Check solvability",
+    );
+    expect(translate("en", "editor.error.importJsonNoFile")).toBe(
+      "Choose a puzzle file first.",
+    );
+    expect(translate("en", "editor.error.importJsonInvalid")).toBe(
+      "This file isn't a valid puzzle.",
+    );
+    expect(translate("en", "editor.error.importJsonTooLarge")).toBe(
+      "This puzzle is too large to edit here (max {max}×{max}).",
+    );
+    expect(translate("en", "editor.importJsonConfirmation")).toBe(
+      "Imported {filename}.",
+    );
+    expect(translate("en", "editor.solvabilityOk")).toBe(
+      "This puzzle is fully solvable by logical deduction alone — no guessing required.",
+    );
+    expect(translate("en", "editor.error.solvabilityNoFilledCells")).toBe(
+      "This puzzle has no filled cells — nothing to check.",
+    );
+    expect(translate("en", "editor.error.solvabilityProblem")).toBe(
+      "Not solvable without guessing. Problem rows: {rows}. Problem columns: {columns}.",
+    );
   });
 
   it("returns the exact French string for each key", () => {
@@ -225,6 +271,43 @@ describe("translate", () => {
       "Couleur {number}",
     );
     expect(translate("fr", "editor.cellEmptyAriaLabel")).toBe("Vide");
+    expect(translate("fr", "editor.importJsonLabel")).toBe(
+      "Importer un puzzle",
+    );
+    expect(translate("fr", "editor.importJsonFileLabel")).toBe(
+      "Fichier puzzle",
+    );
+    expect(translate("fr", "editor.importJsonButton")).toBe("Importer");
+    expect(translate("fr", "editor.importJsonHint")).toBe(
+      "Charge un fichier puzzle existant (le format natif du projet, ou un export reMarkable) — remplace la grille, la palette, le nom et le nom de fichier actuels.",
+    );
+    expect(translate("fr", "editor.solvabilityLabel")).toBe(
+      "Vérification de solvabilité",
+    );
+    expect(translate("fr", "editor.checkSolvabilityButton")).toBe(
+      "Vérifier la solvabilité",
+    );
+    expect(translate("fr", "editor.error.importJsonNoFile")).toBe(
+      "Choisissez d'abord un fichier puzzle.",
+    );
+    expect(translate("fr", "editor.error.importJsonInvalid")).toBe(
+      "Ce fichier n'est pas un puzzle valide.",
+    );
+    expect(translate("fr", "editor.error.importJsonTooLarge")).toBe(
+      "Ce puzzle est trop grand pour être édité ici (max {max}×{max}).",
+    );
+    expect(translate("fr", "editor.importJsonConfirmation")).toBe(
+      "Importé {filename}.",
+    );
+    expect(translate("fr", "editor.solvabilityOk")).toBe(
+      "Ce puzzle est entièrement résolvable par déduction logique — aucune supposition nécessaire.",
+    );
+    expect(translate("fr", "editor.error.solvabilityNoFilledCells")).toBe(
+      "Ce puzzle n'a aucune case remplie — rien à vérifier.",
+    );
+    expect(translate("fr", "editor.error.solvabilityProblem")).toBe(
+      "Non résolvable sans deviner. Lignes concernées : {rows}. Colonnes concernées : {columns}.",
+    );
   });
 
   it("has a non-empty string for every key in every supported locale", () => {

@@ -10,6 +10,7 @@ export * from "./i18n.js";
 export * from "./thumbnail.js";
 export * from "./libraryFilters.js";
 export * from "./solvability.js";
+export * from "./puzzleSourceParsing.js";
 export * from "./duplicatePuzzles.js";
 export * from "./contrastColor.js";
 export * from "./uiDefaults.js";

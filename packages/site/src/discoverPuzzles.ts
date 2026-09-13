@@ -1,12 +1,10 @@
 import { readFile, readdir } from "node:fs/promises";
 import { basename, extname, join } from "node:path";
 import {
-  type BooleanGridExport,
   type Puzzle,
   checkSolvability,
-  createPuzzle,
   findDuplicatePuzzle,
-  fromBooleanGridExport,
+  parsePuzzleSource,
 } from "@kindle-nonograms/shared";
 
 /**
@@ -62,8 +60,9 @@ export async function loadPuzzleSources(dir: string): Promise<Puzzle[]> {
 
 /**
  * Loads and structurally validates a single puzzle file, auto-detecting
- * its shape the same way `loadPuzzleSources` does for a whole directory.
- * Exported for reuse by the PR-preview render script (see
+ * its shape via `shared`'s `parsePuzzleSource` — the same detection the
+ * editor's own JSON import uses, so the two can never disagree on the
+ * same file. Exported for reuse by the PR-preview render script (see
  * `renderPreviewArtifact.ts`), which renders only the specific
  * added/changed files a PR's diff names, not every puzzle in the
  * directory.
@@ -76,20 +75,10 @@ export async function loadPuzzleFile(
     const raw = await readFile(filePath, "utf-8");
     const parsed: unknown = JSON.parse(raw);
 
-    return isNativeShape(parsed)
-      ? createPuzzle({ ...parsed, id })
-      : fromBooleanGridExport(id, parsed as BooleanGridExport);
+    return parsePuzzleSource(parsed, id);
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
 
     throw new Error(`Failed to load puzzle file ${filePath}: ${reason}`);
   }
-}
-
-function isNativeShape(value: unknown): value is Puzzle {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    Array.isArray((value as Puzzle).palette)
-  );
 }
