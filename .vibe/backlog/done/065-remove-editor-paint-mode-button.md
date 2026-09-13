@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Remove Editor Paint Mode Button
 
