@@ -219,6 +219,26 @@ describe("renderEditorPage", () => {
     );
   });
 
+  it("caps the import hint paragraphs' reading width instead of letting them stretch full-width on a wide viewport", () => {
+    const doc = parse(renderEditorPage());
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    // Pinned as a literal within the 60-70ch range the acceptance criteria
+    // calls for, not re-derived from any other value, so a wrong number
+    // would actually fail this test instead of trivially agreeing with
+    // itself. `ch` ties the cap to character count regardless of
+    // font-size, which px or em can't do directly.
+    expect(css).toMatch(/\.editor-import-hint\{[^}]*max-width:65ch/);
+  });
+
+  it("applies the reading-width cap identically to both the image-import and JSON-import hints, since they share one class", () => {
+    const doc = parse(renderEditorPage());
+    const hints = Array.from(doc.querySelectorAll(".editor-import-hint"));
+
+    expect(hints).toHaveLength(2);
+    expect(hints.every((hint) => hint.getAttribute("data-i18n"))).toBe(true);
+  });
+
   it("renders the JSON puzzle import controls: a file input and an Import button", () => {
     const doc = parse(renderEditorPage());
 

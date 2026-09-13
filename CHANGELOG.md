@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The puzzle editor has a new "Check solvability" button that reports, right on the current draft, whether it can be solved by logical deduction alone — and if not, exactly which rows and columns are the problem, instead of only finding out when the puzzle is submitted.
 - The puzzle editor's grid now shows row and column numbers, making it easy to locate a specific cell mentioned in a solvability result.
 - When only a small area is ambiguous, the solvability check now suggests a concrete single-cell change that would make the puzzle solvable.
+- The puzzle editor's import hint paragraphs no longer stretch into one very long line on a wide browser window — they now wrap at a comfortable reading width.
 
 ### Fixed
 
