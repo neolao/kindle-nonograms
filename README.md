@@ -29,8 +29,8 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - Both pages now share a bolder "cabinet" look — a bordered panel, a printed-style title, and three accent colors used with intent (leaving/active controls, the Check action, and "completed" — the win message and the Solved stamp now share the same color).
 - Buttons and the back-link have a chunky, pressable look, corners are rounded throughout, each puzzle in the library is its own card, and the puzzle page's controls sit inside their own bordered panel above the board.
 - Each puzzle's card in the library shows a top stripe in its own colors — solid black for a single-color puzzle, one segment per color for a multi-color one — so you can spot a puzzle's palette before opening it.
-- On a multi-color puzzle, the "Fill" button and the color swatches sit inside their own small boxed group, showing at a glance that picking a color is part of the fill action.
-- The library page has filter controls to narrow the puzzle list by size (small/medium/large) and by color type (monochrome only or multi-color only).
+- On a multi-color puzzle's play page, picking a color swatch is itself enough to start painting with it — no separate "Fill" button needed (a single-color puzzle, with no swatches to pick from, keeps its "Fill" button). The puzzle editor's canvas works the same way for its palette colors.
+- The library page has a filter to narrow the puzzle list by color type (monochrome only or multi-color only), shown as two directly tappable buttons.
 - New puzzles are now checked automatically: a submission is rejected if it can't be solved without guessing, or if it's an exact duplicate of a puzzle already in the library.
 - A "Create a puzzle" page, linked from the library, lets you set a grid size, build a color palette, paint the solution cell by cell, name your puzzle, and export a ready-to-submit puzzle file.
 - The library page now has a footer with the language switcher and a link explaining how to contribute a puzzle on GitHub.
@@ -64,6 +64,8 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The puzzle editor's canvas can now be used entirely from the keyboard: arrow keys move between cells, Enter or Space paints or erases the focused cell, and each cell announces its current color (or "Empty") to a screen reader.
 - A new "Pikachu" puzzle (15×15, four colors) is included in the puzzle library.
 - The "Papillon" puzzle's palette color that was almost invisible against the background has been fixed.
+- The library page can be sorted to show your most recently opened puzzles first, with puzzles you've never opened kept afterward in their usual order.
+- A puzzle you've started but not finished shows a small preview of what you've painted so far on the library page, instead of the generic "?" mark.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->
