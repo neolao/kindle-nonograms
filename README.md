@@ -66,6 +66,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The "Papillon" puzzle's palette color that was almost invisible against the background has been fixed.
 - The library page can be sorted to show your most recently opened puzzles first, with puzzles you've never opened kept afterward in their usual order.
 - A puzzle you've started but not finished shows a small preview of what you've painted so far on the library page, instead of the generic "?" mark.
+- If you have the same puzzle open in two browser tabs, solving or changing it in one tab now updates the other automatically, without needing to reload it.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

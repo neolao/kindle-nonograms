@@ -1027,6 +1027,122 @@ describe("restore warning", () => {
   });
 });
 
+describe("cross-tab progress sync", () => {
+  function dispatchStorageEvent(key: string | null): void {
+    window.dispatchEvent(
+      new StorageEvent("storage", { key, storageArea: localStorage }),
+    );
+  }
+
+  it("repaints the grid when this puzzle's saved progress changes in another tab, without a reload", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    saveProgress("solo", { cells: [[0, "marked"]] });
+    dispatchStorageEvent("kindle-nonograms:progress:solo");
+
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
+    expect(cell(0, 1).textContent).toBe("✖");
+  });
+
+  it("shows the win banner when another tab's save completes the puzzle", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+    expect(banner()?.hidden).toBe(true);
+
+    saveProgress("solo", { cells: [[0, null]] });
+    dispatchStorageEvent("kindle-nonograms:progress:solo");
+
+    expect(banner()?.hidden).toBe(false);
+  });
+
+  it("hides the win banner when another tab's save makes the puzzle no longer solved", () => {
+    saveProgress("solo", { cells: [[0, null]] });
+    buildFixture(soloPuzzle);
+    hydrate();
+    expect(banner()?.hidden).toBe(false);
+
+    saveProgress("solo", { cells: [[null, null]] });
+    dispatchStorageEvent("kindle-nonograms:progress:solo");
+
+    expect(banner()?.hidden).toBe(true);
+  });
+
+  it("resyncs to an empty grid and hides the win banner when localStorage is cleared entirely", () => {
+    saveProgress("solo", { cells: [[0, null]] });
+    buildFixture(soloPuzzle);
+    hydrate();
+    expect(banner()?.hidden).toBe(false);
+
+    localStorage.clear();
+    dispatchStorageEvent(null);
+
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+    expect(banner()?.hidden).toBe(true);
+  });
+
+  it("ignores a storage event for a different puzzle's progress, leaving this grid untouched", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+    cell(0, 0).click();
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
+
+    saveProgress("duo", { cells: [[1, 1]] });
+    dispatchStorageEvent("kindle-nonograms:progress:duo");
+
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
+  });
+
+  it("ignores a storage event for an unrelated key (e.g. the opened-timestamp write), leaving this grid untouched", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+    cell(0, 0).click();
+
+    dispatchStorageEvent("kindle-nonograms:opened:solo");
+
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
+  });
+
+  it("mutates the existing cell and table nodes in place rather than rebuilding them on a cross-tab resync", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+    const originalCellNode = cell(0, 0);
+    const originalTable = document.querySelector("table");
+
+    saveProgress("solo", { cells: [[0, null]] });
+    dispatchStorageEvent("kindle-nonograms:progress:solo");
+
+    expect(cell(0, 0)).toBe(originalCellNode);
+    expect(document.querySelector("table")).toBe(originalTable);
+  });
+
+  it("does not throw and falls back to an empty grid when the synced progress value is corrupted JSON", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+    cell(0, 0).click();
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
+
+    localStorage.setItem("kindle-nonograms:progress:solo", "not valid json{");
+
+    expect(() =>
+      dispatchStorageEvent("kindle-nonograms:progress:solo"),
+    ).not.toThrow();
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+  });
+
+  it("still repaints the grid on a cross-tab resync even when the win banner element is missing from the page", () => {
+    document.body.innerHTML = `<h1>Solo</h1><table><tbody><tr><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td></tr></tbody></table><script type="application/json" id="puzzle-data">${JSON.stringify(soloPuzzle)}</script>`;
+    hydrate();
+
+    saveProgress("solo", { cells: [[0, null]] });
+
+    expect(() =>
+      dispatchStorageEvent("kindle-nonograms:progress:solo"),
+    ).not.toThrow();
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
+  });
+});
+
 describe("opened timestamp", () => {
   it("records the puzzle as opened now, for the library's recently-opened sort (item 068)", () => {
     buildFixture(soloPuzzle);

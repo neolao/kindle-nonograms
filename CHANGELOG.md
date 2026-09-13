@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Solving or otherwise changing a puzzle's progress in one open tab now updates any other tab open on the same puzzle automatically — the grid and win banner stay in sync without a manual reload.
+
 ## [2.33.0] - 2026-09-13
 
 ### Added

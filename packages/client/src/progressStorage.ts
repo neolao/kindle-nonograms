@@ -3,6 +3,16 @@ import type { PuzzleProgress } from "@kindle-nonograms/shared";
 const STORAGE_KEY_PREFIX = "kindle-nonograms:progress:";
 
 /**
+ * The exact `localStorage` key a puzzle's progress is stored under.
+ * Exported so another module (e.g. `hydratePlayPage.ts`'s cross-tab
+ * `storage` event listener) can recognize which key change belongs to a
+ * given puzzle without duplicating the prefix.
+ */
+export function progressStorageKey(puzzleId: string): string {
+  return STORAGE_KEY_PREFIX + puzzleId;
+}
+
+/**
  * Persists a puzzle's progress to `localStorage`. Never throws: a write
  * that fails (quota exceeded, a restricted/private browsing mode) is
  * reported back as `false` instead of raising, so a caller can react (e.g.
@@ -14,7 +24,7 @@ export function saveProgress(
 ): boolean {
   try {
     localStorage.setItem(
-      STORAGE_KEY_PREFIX + puzzleId,
+      progressStorageKey(puzzleId),
       JSON.stringify(progress),
     );
     return true;
@@ -30,7 +40,7 @@ export function saveProgress(
  */
 export function loadProgress(puzzleId: string): PuzzleProgress | undefined {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_PREFIX + puzzleId);
+    const raw = localStorage.getItem(progressStorageKey(puzzleId));
     if (raw === null) {
       return undefined;
     }

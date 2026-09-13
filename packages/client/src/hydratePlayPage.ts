@@ -16,7 +16,11 @@ import {
 import { computeFitFontSizePx } from "./fitGrid.js";
 import { applyLocale, readLocaleCookie, resolveLocale } from "./i18n.js";
 import { recordPuzzleOpened } from "./openedStorage.js";
-import { loadProgress, saveProgress } from "./progressStorage.js";
+import {
+  loadProgress,
+  progressStorageKey,
+  saveProgress,
+} from "./progressStorage.js";
 
 type Mode = "fill" | "cross";
 
@@ -143,6 +147,33 @@ function paintExistingProgress(
       );
       if (cell) {
         paintCell(cell, mark, puzzle);
+      }
+    }
+  }
+}
+
+/**
+ * Repaints every grid cell from `progress.cells`, including cells that are
+ * currently empty — unlike `paintExistingProgress` (which only paints
+ * non-null cells and is only safe for the very first, all-empty-by-default
+ * paint), this must also clear a cell that was filled locally but got
+ * cleared by another tab's write. Mutates the existing `<td>` nodes in
+ * place via `paintCell`, exactly like a single tap does — never rebuilds
+ * the table — so a cross-tab resync can't lose any state a future feature
+ * might attach to a specific cell node. See backlog item 059.
+ */
+function repaintAllCells(
+  table: HTMLTableElement,
+  puzzle: Puzzle,
+  progress: PuzzleProgress,
+): void {
+  for (let y = 0; y < puzzle.height; y++) {
+    for (let x = 0; x < puzzle.width; x++) {
+      const cell = table.querySelector<HTMLTableCellElement>(
+        `td[data-row="${y}"][data-col="${x}"]`,
+      );
+      if (cell) {
+        paintCell(cell, progress.cells[y][x], puzzle);
       }
     }
   }
@@ -491,6 +522,54 @@ function handleCheck(
 }
 
 /**
+ * Runs on the browser's native `storage` event — fired automatically in
+ * every other same-origin tab when `localStorage` changes, and never in the
+ * tab that made the write, so a tab can never react to its own action. Only
+ * a change to this exact puzzle's progress key resyncs the page; `key ===
+ * null` (a whole-area `localStorage.clear()`) also resyncs, since that
+ * clears this puzzle's progress too even though no single key changed. Any
+ * other key (a different puzzle's progress, the "recently opened"
+ * timestamp, anything else) is left alone. Deliberately touches only the
+ * grid and win banner — the one-time storage/restore-warning notes keep
+ * their own existing, load-time/action-scoped lifecycle untouched by this
+ * resync. See .vibe/decisions/037-cross-tab-progress-sync-scoped-to-grid-and-banner.md
+ * (backlog item 059).
+ */
+function handleStorageSync(
+  event: StorageEvent,
+  table: HTMLTableElement,
+  puzzle: Puzzle,
+  progress: PuzzleProgress,
+  banner: HTMLElement | undefined,
+  locale: Locale,
+  anchor: HTMLElement,
+): void {
+  if (event.key !== null && event.key !== progressStorageKey(puzzle.id)) {
+    return;
+  }
+
+  progress.cells = readProgress(puzzle).progress.cells;
+  repaintAllCells(table, puzzle, progress);
+
+  if (!banner) {
+    return;
+  }
+
+  const solved = isPuzzleSolved(puzzle, progress);
+  const wasBannerHidden = banner.hidden;
+  // Same announcement-order rule as `handleGridClick`/`handleCheck`:
+  // `hidden` is cleared before the text below is (re)set.
+  banner.hidden = !solved;
+  if (solved) {
+    setBannerMessage(banner, locale, "play.winBanner.solved");
+  }
+
+  if (!banner.hidden && wasBannerHidden) {
+    applyGridFit(anchor, table);
+  }
+}
+
+/**
  * Resolves the effective locale (saved cookie, else the browser's detected
  * language, else English) and applies it to every element on the page
  * carrying a `data-i18n` key — including the toolbar/banner's default text,
@@ -668,6 +747,12 @@ export function hydrate(): void {
   // viewport changes.
   applyGridFit(anchor, table);
   window.addEventListener("resize", () => applyGridFit(anchor, table));
+
+  // Cross-tab progress sync (backlog item 059): resyncs this tab's grid and
+  // win banner when another open tab changes this puzzle's saved progress.
+  window.addEventListener("storage", (event) =>
+    handleStorageSync(event, table, puzzle, progress, banner, locale, anchor),
+  );
 }
 
 if (typeof document !== "undefined") {
