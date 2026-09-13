@@ -42,12 +42,21 @@ function renderColorFilterButtons(): string {
   return `<div><span data-i18n="library.filterColorLabel">${groupLabel}</span><button type="button" data-role="library-filter-color-mono" data-i18n="library.filterColorMono" aria-pressed="false">${monoLabel}</button><button type="button" data-role="library-filter-color-multi" data-i18n="library.filterColorMulti" aria-pressed="false">${multiLabel}</button></div>`;
 }
 
+// A separate `<div>` from the color filter's — the existing
+// `.library-filters` flex-row gap already keeps the two visually apart,
+// so a player doesn't mistake this for a third color option (backlog
+// item 068, per the visual-design consultation on this batch).
+function renderSortButton(): string {
+  const label = translate(DEFAULT_LOCALE, "library.sortRecentLabel");
+  return `<div><button type="button" data-role="library-sort-recent" data-i18n="library.sortRecentLabel" aria-pressed="false">${label}</button></div>`;
+}
+
 function renderFiltersAndPagination(puzzleCount: number): {
   filters: string;
   noResults: string;
   pagination: string;
 } {
-  const filters = `<div class="library-filters">${renderColorFilterButtons()}</div>`;
+  const filters = `<div class="library-filters">${renderColorFilterButtons()}${renderSortButton()}</div>`;
 
   const noResults = `<p class="filter-no-results" data-role="library-filter-no-results" data-i18n="library.filterNoResults" hidden>${translate(DEFAULT_LOCALE, "library.filterNoResults")}</p>`;
 

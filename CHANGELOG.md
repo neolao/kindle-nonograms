@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The library page can now sort puzzles by "Recently opened" — a new toggle button orders them by the last time each was played, with never-opened puzzles kept after, in their usual order. Combines with the color filter.
+
 ### Changed
 
 - The puzzle editor no longer has a separate "Paint" button — tapping any palette color now selects it and switches the canvas straight to paint mode.

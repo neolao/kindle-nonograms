@@ -15,6 +15,7 @@ import {
 } from "@kindle-nonograms/shared";
 import { computeFitFontSizePx } from "./fitGrid.js";
 import { applyLocale, readLocaleCookie, resolveLocale } from "./i18n.js";
+import { recordPuzzleOpened } from "./openedStorage.js";
 import { loadProgress, saveProgress } from "./progressStorage.js";
 
 type Mode = "fill" | "cross";
@@ -547,6 +548,13 @@ export function hydrate(): void {
     revealLoadError();
     return;
   }
+
+  // Records this visit for the library's "recently opened" sort (backlog
+  // item 068) — a real, successfully-loaded puzzle only, never for the
+  // load-error/self-detection-no-op paths above. Never throws (see
+  // `recordPuzzleOpened`), so a storage failure here can't dead-end the
+  // rest of hydration.
+  recordPuzzleOpened(puzzle.id);
 
   // The toolbar and win banner are already real markup, in their default
   // shape, baked by `renderPuzzlePage.ts` — see

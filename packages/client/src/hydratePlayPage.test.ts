@@ -4,6 +4,7 @@ import { renderPuzzlePage } from "@kindle-nonograms/site";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { extractBodyHtml } from "./htmlFixture.js";
 import { hydrate } from "./hydratePlayPage.js";
+import { loadPuzzleOpenedAt } from "./openedStorage.js";
 import { loadProgress, saveProgress } from "./progressStorage.js";
 
 const soloPuzzle: Puzzle = {
@@ -1023,5 +1024,42 @@ describe("restore warning", () => {
 
     expect(() => hydrate()).not.toThrow();
     expect(() => cell(0, 0).click()).not.toThrow();
+  });
+});
+
+describe("opened timestamp", () => {
+  it("records the puzzle as opened now, for the library's recently-opened sort (item 068)", () => {
+    buildFixture(soloPuzzle);
+
+    const before = Date.now();
+    hydrate();
+    const after = Date.now();
+
+    const openedAt = loadPuzzleOpenedAt("solo");
+    expect(openedAt).toBeGreaterThanOrEqual(before);
+    expect(openedAt).toBeLessThanOrEqual(after);
+  });
+
+  it("overwrites a previous opened timestamp for the same puzzle, so the latest visit always wins", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+    const firstOpenedAt = loadPuzzleOpenedAt("solo");
+
+    document.body.innerHTML = "";
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    expect(loadPuzzleOpenedAt("solo")).toBeGreaterThanOrEqual(
+      firstOpenedAt ?? 0,
+    );
+  });
+
+  it("does not record an opened timestamp when the embedded puzzle JSON fails to parse", () => {
+    document.body.innerHTML =
+      '<h1>Puzzle</h1><table><tbody><tr><td data-row="0" data-col="0"></td></tr></tbody></table><script type="application/json" id="puzzle-data">not valid json</script>';
+
+    hydrate();
+
+    expect(loadPuzzleOpenedAt("solo")).toBeUndefined();
   });
 });

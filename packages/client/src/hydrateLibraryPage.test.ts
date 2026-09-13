@@ -4,6 +4,7 @@ import { renderLibraryPage } from "@kindle-nonograms/site";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { extractBodyHtml } from "./htmlFixture.js";
 import { hydrate } from "./hydrateLibraryPage.js";
+import { recordPuzzleOpened } from "./openedStorage.js";
 import { saveProgress } from "./progressStorage.js";
 
 const catPuzzle: Puzzle = {
@@ -52,6 +53,36 @@ const largeMonoPuzzle: Puzzle = {
   height: 25,
   palette: ["#000000"],
   cells: Array.from({ length: 25 }, () => Array(25).fill(null)),
+};
+
+// Three puzzles, in this fixed default order, for the "recently opened"
+// sort tests below — none carries a stored "opened" timestamp until a test
+// records one via `recordPuzzleOpened`.
+const puzzleA: Puzzle = {
+  id: "puzzle-a",
+  name: "Puzzle A",
+  width: 2,
+  height: 1,
+  palette: ["#000000"],
+  cells: [[0, null]],
+};
+
+const puzzleB: Puzzle = {
+  id: "puzzle-b",
+  name: "Puzzle B",
+  width: 2,
+  height: 1,
+  palette: ["#000000"],
+  cells: [[0, null]],
+};
+
+const puzzleC: Puzzle = {
+  id: "puzzle-c",
+  name: "Puzzle C",
+  width: 2,
+  height: 1,
+  palette: ["#000000"],
+  cells: [[0, null]],
 };
 
 /**
@@ -202,6 +233,23 @@ function isRowVisible(puzzleId: string): boolean {
     throw new Error(`fixture row for ${puzzleId} not found`);
   }
   return !row.hidden;
+}
+
+function sortRecentButton(): HTMLButtonElement {
+  const found = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-sort-recent"]',
+  );
+  if (!found) {
+    throw new Error("fixture recently-opened sort button not found");
+  }
+  return found;
+}
+
+/** Every puzzle row's id, in current DOM order (reflects a sort's reorder). */
+function rowOrder(): (string | undefined)[] {
+  return Array.from(
+    document.querySelectorAll<HTMLElement>("[data-puzzle-id]"),
+  ).map((row) => row.dataset.puzzleId);
 }
 
 beforeEach(() => {
@@ -591,6 +639,70 @@ describe("library filters", () => {
     expect(isRowVisible("small-mono")).toBe(true);
     expect(isRowVisible("medium-multi")).toBe(false);
     expect(monoFilterButton().textContent).toBe("Monochrome uniquement");
+  });
+});
+
+describe("library sort by recently opened", () => {
+  it("keeps the default order and an unpressed sort button when no puzzle has ever been opened", () => {
+    buildFixture([puzzleA, puzzleB, puzzleC]);
+
+    hydrate();
+
+    expect(sortRecentButton().getAttribute("aria-pressed")).toBe("false");
+    expect(rowOrder()).toEqual(["puzzle-a", "puzzle-b", "puzzle-c"]);
+  });
+
+  it("orders opened puzzles most-recent-first, keeping never-opened ones after, in their default order, once the sort is toggled on", () => {
+    recordPuzzleOpened("puzzle-a", 1_000);
+    recordPuzzleOpened("puzzle-c", 2_000);
+    // puzzle-b was never opened.
+    buildFixture([puzzleA, puzzleB, puzzleC]);
+    hydrate();
+
+    click(sortRecentButton());
+
+    expect(sortRecentButton().getAttribute("aria-pressed")).toBe("true");
+    expect(rowOrder()).toEqual(["puzzle-c", "puzzle-a", "puzzle-b"]);
+  });
+
+  it("restores the default order and un-presses the button when the sort is toggled off again", () => {
+    recordPuzzleOpened("puzzle-c", 1_000);
+    buildFixture([puzzleA, puzzleB, puzzleC]);
+    hydrate();
+    click(sortRecentButton());
+
+    click(sortRecentButton());
+
+    expect(sortRecentButton().getAttribute("aria-pressed")).toBe("false");
+    expect(rowOrder()).toEqual(["puzzle-a", "puzzle-b", "puzzle-c"]);
+  });
+
+  it("keeps a puzzle solved-checkable and still in the DOM after being reordered by the sort", () => {
+    saveProgress("puzzle-b", { cells: [[0, null]] });
+    recordPuzzleOpened("puzzle-b", 1_000);
+    buildFixture([puzzleA, puzzleB, puzzleC]);
+    hydrate();
+
+    click(sortRecentButton());
+
+    const row = document.querySelector<HTMLElement>(
+      '[data-puzzle-id="puzzle-b"]',
+    );
+    expect(row).not.toBeNull();
+    expect(row?.querySelector(".solved-badge")).not.toBeNull();
+  });
+
+  it("combines with the color filter — a sorted puzzle excluded by the color filter stays hidden", () => {
+    recordPuzzleOpened("medium-multi", 1_000);
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    hydrate();
+
+    click(sortRecentButton());
+    click(monoFilterButton());
+
+    expect(isRowVisible("medium-multi")).toBe(false);
+    expect(isRowVisible("small-mono")).toBe(true);
+    expect(isRowVisible("large-mono")).toBe(true);
   });
 });
 

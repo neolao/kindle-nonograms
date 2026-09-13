@@ -497,6 +497,15 @@ describe("renderLibraryPage", () => {
     ).toBeNull();
   });
 
+  it("bakes an unpressed 'recently opened' sort toggle button", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const sortButton = doc.querySelector('[data-role="library-sort-recent"]');
+    expect(sortButton?.tagName).toBe("BUTTON");
+    expect(sortButton?.getAttribute("aria-pressed")).toBe("false");
+    expect(sortButton?.textContent).toBe("Recently opened");
+  });
+
   it("hides the pagination controls by default when every puzzle already fits on one page", () => {
     const doc = parse(renderLibraryPage(puzzles));
 

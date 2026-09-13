@@ -13,6 +13,7 @@ import {
   resolveLocale,
   writeLocaleCookie,
 } from "./i18n.js";
+import { loadPuzzleOpenedAt } from "./openedStorage.js";
 import { loadProgress } from "./progressStorage.js";
 
 // Neither dimension of the revealed thumbnail exceeds this. Kept in sync
@@ -210,6 +211,9 @@ function setUpFiltersAndPagination(): void {
   const multiButton = document.querySelector<HTMLButtonElement>(
     '[data-role="library-filter-color-multi"]',
   );
+  const sortButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-sort-recent"]',
+  );
   const noResultsMessage = document.querySelector<HTMLElement>(
     '[data-role="library-filter-no-results"]',
   );
@@ -228,6 +232,7 @@ function setUpFiltersAndPagination(): void {
   if (
     !monoButton ||
     !multiButton ||
+    !sortButton ||
     !noResultsMessage ||
     !paginationContainer ||
     !prevButton ||
@@ -243,10 +248,54 @@ function setUpFiltersAndPagination(): void {
   // options ("all"/"mono"/"multi") can't represent directly with two plain
   // toggle buttons. Tapping the already-active button returns here.
   let colorValue: ColorFilterValue = "all";
+  let sortByRecent = false;
+
+  const list = document.querySelector("ul");
+  // Captured once, before any reordering, so toggling the sort back off can
+  // restore the page's original (server-baked) row order exactly.
+  const defaultRowOrder = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-puzzle-id]"),
+  );
 
   function refreshFilterButtons(): void {
     monoButton?.setAttribute("aria-pressed", String(colorValue === "mono"));
     multiButton?.setAttribute("aria-pressed", String(colorValue === "multi"));
+  }
+
+  /**
+   * Recently-opened first, each puzzle's own stored `openedAt` timestamp
+   * descending; puzzles never opened keep appearing after every opened one,
+   * in `defaultRowOrder`'s relative order among themselves — a stable
+   * partition, not a comparator that coerces "never opened" to some
+   * sentinel number (which would also reorder that group).
+   */
+  function computeRecencyOrder(): HTMLElement[] {
+    const withTimestamp: { row: HTMLElement; openedAt: number }[] = [];
+    const withoutTimestamp: HTMLElement[] = [];
+    for (const row of defaultRowOrder) {
+      const puzzleId = row.dataset.puzzleId;
+      const openedAt = puzzleId ? loadPuzzleOpenedAt(puzzleId) : undefined;
+      if (openedAt === undefined) {
+        withoutTimestamp.push(row);
+      } else {
+        withTimestamp.push({ row, openedAt });
+      }
+    }
+    withTimestamp.sort((a, b) => b.openedAt - a.openedAt);
+    return [...withTimestamp.map((entry) => entry.row), ...withoutTimestamp];
+  }
+
+  // Moves every row (`appendChild` on an already-attached node relocates
+  // it, never clones/recreates it) into `order` — safe to call with the
+  // full row set regardless of which are currently filtered out, since a
+  // `hidden` row's position among the others has no visible effect.
+  function reorderRows(order: HTMLElement[]): void {
+    if (!list) {
+      return;
+    }
+    for (const row of order) {
+      list.appendChild(row);
+    }
   }
 
   function render(): void {
@@ -288,7 +337,13 @@ function setUpFiltersAndPagination(): void {
   monoButton.addEventListener("click", () => selectColorFilter("mono"));
   multiButton.addEventListener("click", () => selectColorFilter("multi"));
 
-  const list = document.querySelector("ul");
+  sortButton.addEventListener("click", () => {
+    sortByRecent = !sortByRecent;
+    sortButton.setAttribute("aria-pressed", String(sortByRecent));
+    reorderRows(sortByRecent ? computeRecencyOrder() : defaultRowOrder);
+    currentPage = 1;
+    render();
+  });
 
   prevButton.addEventListener("click", () => {
     if (currentPage <= 1) {

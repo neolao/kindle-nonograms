@@ -26,6 +26,7 @@ const ALL_KEYS: TranslationKey[] = [
   "library.filterColorLabel",
   "library.filterColorMono",
   "library.filterColorMulti",
+  "library.sortRecentLabel",
   "library.filterNoResults",
   "library.paginationPrev",
   "library.paginationNext",
@@ -89,6 +90,7 @@ describe("translate", () => {
     expect(translate("en", "library.filterColorMulti")).toBe(
       "Multi-color only",
     );
+    expect(translate("en", "library.sortRecentLabel")).toBe("Recently opened");
     expect(translate("en", "library.filterNoResults")).toBe(
       "No puzzles match these filters.",
     );
@@ -170,6 +172,9 @@ describe("translate", () => {
     );
     expect(translate("fr", "library.filterColorMulti")).toBe(
       "Multicolore uniquement",
+    );
+    expect(translate("fr", "library.sortRecentLabel")).toBe(
+      "Récemment ouverts",
     );
     expect(translate("fr", "library.filterNoResults")).toBe(
       "Aucun puzzle ne correspond à ces filtres.",

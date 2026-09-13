@@ -59,6 +59,7 @@ export type TranslationKey =
   | "library.filterColorLabel"
   | "library.filterColorMono"
   | "library.filterColorMulti"
+  | "library.sortRecentLabel"
   | "library.filterNoResults"
   | "library.paginationPrev"
   | "library.paginationNext"
@@ -122,6 +123,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.filterColorLabel": "Color",
     "library.filterColorMono": "Monochrome only",
     "library.filterColorMulti": "Multi-color only",
+    "library.sortRecentLabel": "Recently opened",
     "library.filterNoResults": "No puzzles match these filters.",
     "library.paginationPrev": "Previous",
     "library.paginationNext": "Next",
@@ -189,6 +191,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.filterColorLabel": "Couleur",
     "library.filterColorMono": "Monochrome uniquement",
     "library.filterColorMulti": "Multicolore uniquement",
+    "library.sortRecentLabel": "Récemment ouverts",
     "library.filterNoResults": "Aucun puzzle ne correspond à ces filtres.",
     "library.paginationPrev": "Précédent",
     "library.paginationNext": "Suivant",
