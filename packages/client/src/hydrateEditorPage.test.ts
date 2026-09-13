@@ -520,7 +520,7 @@ describe("hydrate", () => {
     fireChange(widthInput(), "0");
 
     expect(errorRegion().textContent).toBe(
-      "⚠ Width and height must be whole numbers greater than 0.",
+      "⚠ Width and height must be whole numbers from 1 to 60.",
     );
     expect(widthInput().value).toBe("5");
     expect(document.querySelectorAll("table td")).toHaveLength(25);
@@ -533,7 +533,7 @@ describe("hydrate", () => {
     fireChange(heightInput(), "-3");
 
     expect(errorRegion().textContent).toBe(
-      "⚠ Width and height must be whole numbers greater than 0.",
+      "⚠ Width and height must be whole numbers from 1 to 60.",
     );
     expect(heightInput().value).toBe("5");
     expect(document.querySelectorAll("table td")).toHaveLength(25);
@@ -546,7 +546,7 @@ describe("hydrate", () => {
     fireChange(widthInput(), "abc");
 
     expect(errorRegion().textContent).toBe(
-      "⚠ Width and height must be whole numbers greater than 0.",
+      "⚠ Width and height must be whole numbers from 1 to 60.",
     );
     expect(widthInput().value).toBe("5");
     expect(document.querySelectorAll("table td")).toHaveLength(25);
@@ -564,6 +564,72 @@ describe("hydrate", () => {
     expect(errorRegion().textContent).toBe("");
     expect(widthInput().value).toBe("7");
     expect(document.querySelectorAll("table td")).toHaveLength(35);
+  });
+
+  it("rejects a width above the sane maximum, reporting the maximum and reverting the field", () => {
+    buildFixture();
+    hydrate();
+
+    fireChange(widthInput(), "61");
+
+    expect(errorRegion().textContent).toBe(
+      "⚠ Width and height must be whole numbers from 1 to 60.",
+    );
+    expect(widthInput().value).toBe("5");
+    expect(document.querySelectorAll("table td")).toHaveLength(25);
+  });
+
+  it("rejects a height above the sane maximum the same way", () => {
+    buildFixture();
+    hydrate();
+
+    fireChange(heightInput(), "500");
+
+    expect(errorRegion().textContent).toBe(
+      "⚠ Width and height must be whole numbers from 1 to 60.",
+    );
+    expect(heightInput().value).toBe("5");
+    expect(document.querySelectorAll("table td")).toHaveLength(25);
+  });
+
+  it("accepts a width exactly at the sane maximum", () => {
+    buildFixture();
+    hydrate();
+
+    fireChange(widthInput(), "60");
+
+    expect(errorRegion().textContent).not.toMatch(/whole numbers/);
+    expect(widthInput().value).toBe("60");
+  });
+
+  it("disables the size inputs and shows a busy message while rebuilding a large grid, then re-enables and clears it once done", async () => {
+    buildFixture();
+    hydrate();
+
+    // 40x5=200 cells stays under the async threshold, so this first resize
+    // is still perfectly synchronous — matches every existing small-resize
+    // test's assumption that no flush is needed.
+    fireChange(widthInput(), "40");
+    expect(document.querySelectorAll("table td")).toHaveLength(200);
+
+    // 40x40=1600 cells crosses the threshold: the resize must yield-then-
+    // disable first, mirroring the image-import flow's own busy pattern,
+    // instead of freezing the page with no feedback (backlog item 060).
+    fireChange(heightInput(), "40");
+
+    expect(widthInput().disabled).toBe(true);
+    expect(heightInput().disabled).toBe(true);
+    expect(errorRegion().textContent).not.toBe("");
+    // The grid hasn't actually been rebuilt yet — the busy state is applied
+    // before the (potentially slow) work starts, not after.
+    expect(document.querySelectorAll("table td")).toHaveLength(200);
+
+    await flushAsync();
+
+    expect(document.querySelectorAll("table td")).toHaveLength(1600);
+    expect(widthInput().disabled).toBe(false);
+    expect(heightInput().disabled).toBe(false);
+    expect(errorRegion().textContent).toBe("");
   });
 
   it("exactly one swatch is pressed/checked at a time, and clicking another moves it", () => {

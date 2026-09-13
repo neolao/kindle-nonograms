@@ -113,7 +113,7 @@ describe("translate", () => {
       "This image took too long to load.",
     );
     expect(translate("en", "editor.error.invalidGridSize")).toBe(
-      "Width and height must be whole numbers greater than 0.",
+      "Width and height must be whole numbers from 1 to {max}.",
     );
     expect(translate("en", "editor.error.unexpected")).toBe(
       "Something went wrong. Please try again.",
@@ -198,7 +198,7 @@ describe("translate", () => {
       "Le chargement de cette image a pris trop de temps.",
     );
     expect(translate("fr", "editor.error.invalidGridSize")).toBe(
-      "La largeur et la hauteur doivent être des nombres entiers supérieurs à 0.",
+      "La largeur et la hauteur doivent être des nombres entiers de 1 à {max}.",
     );
     expect(translate("fr", "editor.error.unexpected")).toBe(
       "Une erreur est survenue. Veuillez réessayer.",

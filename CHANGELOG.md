@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - The library page's reward thumbnail for a solved or partially-solved puzzle now shows every real cell of the puzzle, instead of a coarser preview that could hide small painted details.
+- The puzzle editor's grid width/height fields now cap out at 60, with a clear message if a larger value is entered; resizing to a larger grid now shows a brief "Resizing…" indicator and disables the fields while it works, instead of freezing the page with no feedback.
 
 ## [2.34.0] - 2026-09-13
 

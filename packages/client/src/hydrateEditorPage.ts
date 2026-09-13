@@ -4,6 +4,7 @@ import {
   EDITOR_DEFAULT_MODE,
   EDITOR_DEFAULT_PALETTE,
   EDITOR_DEFAULT_WIDTH,
+  EDITOR_MAX_DIMENSION,
   type Locale,
   type Puzzle,
   PuzzleValidationError,
@@ -60,6 +61,15 @@ const MAX_IMPORT_PALETTE_SIZE = 16;
 // pathological file), the decode is raced against this timeout so the
 // import controls can never stay disabled forever — see backlog item 044.
 const IMAGE_IMPORT_TIMEOUT_MS = 15000;
+
+// A resize whose new width x height is at or above this cell count reuses
+// the image-import flow's own yield-then-disable pattern (below it, a
+// resize stays exactly as instant as it always has — no busy flash on
+// ordinary sizes). Set below the 45x45 (2025-cell) largest puzzle shipped
+// in data/puzzles/ today, so drafting anything in that range already gets
+// the busy indicator rather than only the largest allowed (60x60) sizes.
+// See backlog item 060.
+const RESIZE_ASYNC_THRESHOLD_CELLS = 625;
 
 // Same grid-fit tuning as hydratePlayPage.ts's own reused constants (see
 // its doc comment for the full legibility-floor reasoning) — this tool
@@ -271,9 +281,20 @@ export function triggerDownload(filename: string, content: string): void {
   URL.revokeObjectURL(url);
 }
 
-function parsePositiveInt(value: string): number | undefined {
+/**
+ * A width/height input's HTML `max="${EDITOR_MAX_DIMENSION}"` attribute
+ * (see `renderEditorPage.ts`) is a hint only — a browser doesn't stop a
+ * value above it from being typed, pasted, or reaching a `change` event —
+ * so this range check is the sole authority, exactly like
+ * `parseImportPaletteSize`'s own 1..`MAX_IMPORT_PALETTE_SIZE` check below.
+ */
+function parseGridDimension(value: string): number | undefined {
   const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+  return Number.isInteger(parsed) &&
+    parsed >= 1 &&
+    parsed <= EDITOR_MAX_DIMENSION
+    ? parsed
+    : undefined;
 }
 
 function render(elements: EditorElements, state: EditorState): void {
@@ -817,27 +838,63 @@ function findElements(): EditorElements | undefined {
  * which of the two triggered it). Clears the error region on every call, so
  * a stale message from a previous invalid entry never survives a later valid
  * one — same clear-first convention as `handleImport`/`handleExport` — then,
- * on an invalid value, reports into it *before* reverting the field, instead
- * of silently reverting with no explanation like every other editor field
- * already avoids (see backlog item 043).
+ * on an invalid value (including one above `EDITOR_MAX_DIMENSION`), reports
+ * into it *before* reverting the field, instead of silently reverting with no
+ * explanation like every other editor field already avoids (see backlog item
+ * 043).
+ *
+ * A resulting grid at or above `RESIZE_ASYNC_THRESHOLD_CELLS` reuses
+ * `handleImport`'s own yield-then-disable pattern: the size inputs are
+ * disabled and a busy message shown *before* the single `setTimeout(0)`
+ * yield, so that state is guaranteed to paint before the main thread blocks
+ * on rebuilding a big `<table>` — see backlog item 060. A smaller resize
+ * (the common case) stays exactly as instant as before: no yield, no busy
+ * flash. Focus is explicitly restored to `input` once the busy window ends,
+ * since disabling an element blurs it and re-enabling doesn't restore focus
+ * on its own.
  */
-function handleResize(
+async function handleResize(
   elements: EditorElements,
   state: EditorState,
   input: HTMLInputElement,
   apply: (value: number) => void,
   previous: number,
-): void {
+): Promise<void> {
   elements.error.textContent = "";
 
-  const parsed = parsePositiveInt(input.value);
+  const parsed = parseGridDimension(input.value);
   if (parsed === undefined) {
-    elements.error.textContent = `⚠ ${translate(state.locale, "editor.error.invalidGridSize")}`;
+    elements.error.textContent = `⚠ ${translate(state.locale, "editor.error.invalidGridSize").replace("{max}", String(EDITOR_MAX_DIMENSION))}`;
     input.value = String(previous);
     return;
   }
 
   apply(parsed);
+
+  const isLargeRebuild =
+    state.width * state.height >= RESIZE_ASYNC_THRESHOLD_CELLS;
+
+  if (isLargeRebuild) {
+    const hadFocus = document.activeElement === input;
+    elements.width.disabled = true;
+    elements.height.disabled = true;
+    elements.error.textContent = "Resizing…";
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    state.cells = resizeCells(state.cells, state.width, state.height);
+    state.hasUnsavedChanges = true;
+    render(elements, state);
+
+    elements.width.disabled = false;
+    elements.height.disabled = false;
+    elements.error.textContent = "";
+    if (hadFocus) {
+      input.focus();
+    }
+    return;
+  }
+
   state.cells = resizeCells(state.cells, state.width, state.height);
   state.hasUnsavedChanges = true;
   render(elements, state);
@@ -1074,8 +1131,8 @@ export function hydrate(): void {
   elements.width.value = String(state.width);
   elements.height.value = String(state.height);
 
-  elements.width.addEventListener("change", () =>
-    handleResize(
+  elements.width.addEventListener("change", () => {
+    void handleResize(
       elements,
       state,
       elements.width,
@@ -1083,10 +1140,10 @@ export function hydrate(): void {
         state.width = value;
       },
       state.width,
-    ),
-  );
-  elements.height.addEventListener("change", () =>
-    handleResize(
+    );
+  });
+  elements.height.addEventListener("change", () => {
+    void handleResize(
       elements,
       state,
       elements.height,
@@ -1094,8 +1151,8 @@ export function hydrate(): void {
         state.height = value;
       },
       state.height,
-    ),
-  );
+    );
+  });
 
   elements.name.addEventListener("change", () => {
     state.name = elements.name.value;

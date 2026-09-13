@@ -69,6 +69,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - If you have the same puzzle open in two browser tabs, solving or changing it in one tab now updates the other automatically, without needing to reload it.
 - Two new puzzles, "Lion" (15×15) and "Appareil photo" (16×16), are included in the puzzle library.
 - The small preview picture revealed for a solved or partly-solved puzzle now always shows its true detail, even on large puzzles, instead of a coarser approximation that could hide small painted details.
+- The puzzle editor's grid width and height fields now have a sane maximum, with a clear message if you go over it; resizing to a larger grid now shows a brief "Resizing…" notice while it works, instead of the page silently freezing.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

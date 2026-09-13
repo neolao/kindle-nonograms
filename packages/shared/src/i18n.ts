@@ -160,7 +160,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
       "Couldn't read this image file. Try a different one.",
     "editor.error.imageTimeout": "This image took too long to load.",
     "editor.error.invalidGridSize":
-      "Width and height must be whole numbers greater than 0.",
+      "Width and height must be whole numbers from 1 to {max}.",
     "editor.error.unexpected": "Something went wrong. Please try again.",
     "editor.exportConfirmation": "Exported {filename} — download started.",
     "play.swatchColorAriaLabel": "Color {number}",
@@ -230,7 +230,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.error.imageTimeout":
       "Le chargement de cette image a pris trop de temps.",
     "editor.error.invalidGridSize":
-      "La largeur et la hauteur doivent être des nombres entiers supérieurs à 0.",
+      "La largeur et la hauteur doivent être des nombres entiers de 1 à {max}.",
     "editor.error.unexpected": "Une erreur est survenue. Veuillez réessayer.",
     "editor.exportConfirmation": "Exporté {filename} — téléchargement lancé.",
     "play.swatchColorAriaLabel": "Couleur {number}",

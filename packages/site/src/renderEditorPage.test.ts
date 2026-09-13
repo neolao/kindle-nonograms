@@ -116,7 +116,7 @@ describe("renderEditorPage", () => {
     ).toBe(true);
   });
 
-  it("renders width/height number inputs with a minimum of 1", () => {
+  it("renders width/height number inputs with a minimum of 1 and a sane maximum", () => {
     const doc = parse(renderEditorPage());
 
     const width = doc.querySelector('[data-role="editor-width"]');
@@ -124,8 +124,10 @@ describe("renderEditorPage", () => {
 
     expect(width?.getAttribute("type")).toBe("number");
     expect(width?.getAttribute("min")).toBe("1");
+    expect(width?.getAttribute("max")).toBe("60");
     expect(height?.getAttribute("type")).toBe("number");
     expect(height?.getAttribute("min")).toBe("1");
+    expect(height?.getAttribute("max")).toBe("60");
   });
 
   it("renders the image import controls: file, palette size, background color, and an Import button", () => {

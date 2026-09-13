@@ -4,6 +4,7 @@ import {
   EDITOR_DEFAULT_HEIGHT,
   EDITOR_DEFAULT_PALETTE,
   EDITOR_DEFAULT_WIDTH,
+  EDITOR_MAX_DIMENSION,
   contrastingTextColor,
   translate,
 } from "@kindle-nonograms/shared";
@@ -142,9 +143,9 @@ ${renderEarlyLangScript()}
 <p class="section-label" data-i18n="editor.sizeLabel">Grid size</p>
 <div class="editor-size-controls">
 <label for="editor-width" data-i18n="editor.widthLabel">Width</label>
-<input type="number" id="editor-width" min="1" value="${EDITOR_DEFAULT_WIDTH}" data-role="editor-width" />
+<input type="number" id="editor-width" min="1" max="${EDITOR_MAX_DIMENSION}" value="${EDITOR_DEFAULT_WIDTH}" data-role="editor-width" />
 <label for="editor-height" data-i18n="editor.heightLabel">Height</label>
-<input type="number" id="editor-height" min="1" value="${EDITOR_DEFAULT_HEIGHT}" data-role="editor-height" />
+<input type="number" id="editor-height" min="1" max="${EDITOR_MAX_DIMENSION}" value="${EDITOR_DEFAULT_HEIGHT}" data-role="editor-height" />
 </div>
 </div>
 <div class="panel editor-panel">

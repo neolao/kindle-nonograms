@@ -22,6 +22,18 @@ export const EDITOR_DEFAULT_WIDTH = 5;
 /** The editor's starting grid height — never persisted across visits. */
 export const EDITOR_DEFAULT_HEIGHT = 5;
 
+/**
+ * Sane upper bound for the editor's width/height inputs, enforced both as
+ * the HTML `max` attribute (`renderEditorPage.ts`) and in
+ * `hydrateEditorPage.ts`'s own `handleResize` validation — a contributor
+ * typing an unbounded value (e.g. 500x500) used to rebuild the whole grid
+ * synchronously with zero feedback, freezing the page. The largest puzzle
+ * shipped in `data/puzzles/` today is 45x45; 60 leaves headroom for a
+ * bigger future puzzle while still ruling out a pathological value. See
+ * backlog item 060.
+ */
+export const EDITOR_MAX_DIMENSION = 60;
+
 /** The editor's starting palette — never persisted across visits. */
 export const EDITOR_DEFAULT_PALETTE: readonly string[] = ["#000000"];
 
