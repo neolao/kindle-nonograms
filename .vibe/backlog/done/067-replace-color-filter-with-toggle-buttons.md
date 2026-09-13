@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Replace Color Filter With Toggle Buttons
 
