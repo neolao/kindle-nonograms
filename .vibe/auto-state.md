@@ -1,9 +1,7 @@
 ---
-status: running
+status: idle
 started: 2026-09-13T11:22
 limit: 1
-current: 058
-attempt: 1
 ---
 # Auto run journal
 
@@ -20,4 +18,4 @@ attempt: 1
 - 058 — feature — stopped: 2nd attempt hit the account's monthly spend limit mid-implementation (not a per-item failure). Tests/lint/build were green at interruption; work committed as `wip: resume auto run (item 058) — implementation + tests green, closing steps pending` (d798906) rather than reverted, since it doesn't break CI. Closing steps (runtime verification, CHANGELOG, README, backlog status, close commit) still pending. Needs the user to raise the spend limit before a 3rd attempt.
 
 ## 2026-09-13T11:22 — run started (limit: 1)
-- 058 — feature — in progress
+- 058 — feature — done (e473312)
