@@ -71,6 +71,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The small preview picture revealed for a solved or partly-solved puzzle now always shows its true detail, even on large puzzles, instead of a coarser approximation that could hide small painted details.
 - The puzzle editor's grid width and height fields now have a sane maximum, with a clear message if you go over it; resizing to a larger grid now shows a brief "Resizing…" notice while it works, instead of the page silently freezing.
 - Two new puzzles, "Lunettes" and "Parapluie" (both 16×16, three colors), are included in the puzzle library.
+- The puzzle editor's grid no longer shrinks just because the browser window is short — it now sizes by the available width alone, keeping a normal size and letting the page scroll instead.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

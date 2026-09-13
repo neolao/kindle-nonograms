@@ -603,10 +603,13 @@ function renderGrid(elements: EditorElements, state: EditorState): void {
 }
 
 /**
- * Scales the grid wrapper to fit the viewport, exactly mirroring
- * hydratePlayPage.ts's `applyGridFit` (see its doc comment for the full
- * reasoning) — reused here so an editor grid drafted much larger than any
- * shipped puzzle never overflows the page.
+ * Scales the grid wrapper to fit the available width only — unlike
+ * hydratePlayPage.ts's `applyGridFit` (fixed no-scroll Kindle chrome, fit by
+ * width *and* height), the editor is a normally-scrolling desktop page, so a
+ * short browser window must never shrink the canvas just because height is
+ * scarce; the page simply grows taller and scrolls instead. Still reuses
+ * `computeFitFontSizePx` so an editor grid drafted much larger than any
+ * shipped puzzle never overflows the page horizontally.
  */
 function applyGridFit(wrapper: HTMLElement, table: HTMLElement): void {
   wrapper.style.fontSize = `${BASE_FONT_SIZE_PX}px`;
@@ -615,16 +618,11 @@ function applyGridFit(wrapper: HTMLElement, table: HTMLElement): void {
   const naturalHeight = table.scrollHeight;
   const availableWidth =
     document.documentElement.clientWidth - VIEWPORT_GUTTER_PX;
-  const availableHeight =
-    document.documentElement.clientHeight -
-    wrapper.getBoundingClientRect().top -
-    VIEWPORT_GUTTER_PX;
 
   const fontSizePx = computeFitFontSizePx({
     naturalWidth,
     naturalHeight,
     availableWidth,
-    availableHeight,
     baseFontSizePx: BASE_FONT_SIZE_PX,
     minScale: MIN_GRID_SCALE,
     maxScale: MAX_GRID_SCALE,
@@ -632,7 +630,6 @@ function applyGridFit(wrapper: HTMLElement, table: HTMLElement): void {
 
   wrapper.style.fontSize = `${fontSizePx}px`;
   wrapper.style.maxWidth = `${Math.max(availableWidth, 0)}px`;
-  wrapper.style.maxHeight = `${Math.max(availableHeight, 0)}px`;
 }
 
 /**

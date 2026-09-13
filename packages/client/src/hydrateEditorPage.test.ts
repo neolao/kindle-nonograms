@@ -873,6 +873,48 @@ describe("hydrate", () => {
     // instead let the raw fit-to-width ratio through unclamped here.
     expect(wrapper?.style.fontSize).toBe("10px");
   });
+
+  it("sizes the grid canvas by the available width alone, never shrunk by a short browser window's available height", () => {
+    buildFixture();
+
+    // A wide-but-short viewport (plenty of width, very little height) for a
+    // natural 200×800 table. The editor is a desktop authoring tool with a
+    // normally-scrolling page, unlike the play page's fixed no-scroll
+    // chrome — a short window must never shrink the canvas just because
+    // height is scarce.
+    const table = document.querySelector("table");
+    if (!table) {
+      throw new Error("fixture table not found");
+    }
+    Object.defineProperty(table, "scrollWidth", {
+      value: 200,
+      configurable: true,
+    });
+    Object.defineProperty(table, "scrollHeight", {
+      value: 800,
+      configurable: true,
+    });
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      value: 1008,
+      configurable: true,
+    });
+    Object.defineProperty(document.documentElement, "clientHeight", {
+      value: 50,
+      configurable: true,
+    });
+
+    hydrate();
+
+    const wrapper = document.querySelector<HTMLElement>(
+      '[data-role="editor-grid-wrapper"]',
+    );
+    // Width alone (1000px available ÷ 200px natural = 5x) is capped at the
+    // 2x max scale → 32px. If the fit were still also constrained by the
+    // scarce available height (42px ÷ 800px natural ≈ 0.05x), it would
+    // instead floor at the 10px legibility minimum, same as the
+    // narrow-screen test above.
+    expect(wrapper?.style.fontSize).toBe("32px");
+  });
 });
 
 function fireKeydown(el: Element, key: string): KeyboardEvent {

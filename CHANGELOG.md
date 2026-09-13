@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The puzzle editor's grid no longer shrinks just because the browser window is short — it now sizes only by the available width, so a wide-but-short window keeps the grid at a normal size and lets the page scroll instead.
+
 ## [2.35.0] - 2026-09-13
 
 ### Added
