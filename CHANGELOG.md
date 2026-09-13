@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The puzzle editor's canvas grid is now keyboard-operable: arrow keys move focus between cells (clamped at the grid's edges), Enter or Space paints/erases the focused cell exactly like a click, and each cell's `aria-label` states its current color or "Empty".
+
 ## [2.31.0] - 2026-09-13
 
 ### Added
