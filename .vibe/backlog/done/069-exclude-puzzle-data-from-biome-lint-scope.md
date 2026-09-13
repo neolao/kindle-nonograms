@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Exclude Puzzle Data From Biome Lint Scope
 
