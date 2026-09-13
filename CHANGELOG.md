@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.32.0] - 2026-09-13
+
 ### Added
 
 - The puzzle editor's canvas grid is now keyboard-operable: arrow keys move focus between cells (clamped at the grid's edges), Enter or Space paints/erases the focused cell exactly like a click, and each cell's `aria-label` states its current color or "Empty".
+- A new puzzle, "Pikachu" (15×15, four colors).
+
+### Fixed
+
+- The "Papillon" puzzle's palette used a near-white color that was hard to tell apart from the background; it's now a mid-gray.
 
 ## [2.31.0] - 2026-09-13
 
@@ -403,7 +410,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.31.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.32.0...HEAD
+[2.32.0]: https://github.com/neolao/kindle-nonograms/compare/v2.31.0...v2.32.0
 [2.31.0]: https://github.com/neolao/kindle-nonograms/compare/v2.30.0...v2.31.0
 [2.30.0]: https://github.com/neolao/kindle-nonograms/compare/v2.29.0...v2.30.0
 [2.29.0]: https://github.com/neolao/kindle-nonograms/compare/v2.28.0...v2.29.0

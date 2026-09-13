@@ -62,6 +62,8 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - A corrupted or unreadable puzzle library now logs a console warning, instead of silently looking identical to a library with zero puzzles.
 - The library page's "Contribute a puzzle on GitHub" link now tells screen reader users it opens in a new tab, not just sighted users via its arrow icon.
 - The puzzle editor's canvas can now be used entirely from the keyboard: arrow keys move between cells, Enter or Space paints or erases the focused cell, and each cell announces its current color (or "Empty") to a screen reader.
+- A new "Pikachu" puzzle (15×15, four colors) is included in the puzzle library.
+- The "Papillon" puzzle's palette color that was almost invisible against the background has been fixed.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->
