@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Show Partial Progress In Library Thumbnails
 
