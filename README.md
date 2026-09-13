@@ -59,6 +59,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - A new "Papillon" puzzle (15×15, four colors) is included in the puzzle library.
 - On a multi-color puzzle, each clue number now shows a solid background filled with its own color, with automatically legible text, instead of just a colored border on white.
 - In the puzzle editor, feedback about importing an image (missing file, bad palette size, progress, failures) now appears right next to the Import controls instead of far away near the Export button.
+- A corrupted or unreadable puzzle library now logs a console warning, instead of silently looking identical to a library with zero puzzles.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->
