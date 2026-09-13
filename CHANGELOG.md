@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The library page's reward thumbnail for a solved or partially-solved puzzle now shows every real cell of the puzzle, instead of a coarser preview that could hide small painted details.
+
 ## [2.34.0] - 2026-09-13
 
 ### Added

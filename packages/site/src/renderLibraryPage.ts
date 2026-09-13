@@ -224,7 +224,7 @@ li a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 .thumb{flex:0 0 auto;width:36px;height:36px;margin:${SPACING_PX.sm}px 0 ${SPACING_PX.sm}px ${SPACING_PX.sm}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .thumb-lock{color:${COLORS.muted};font-weight:bold;}
 .thumb-row{display:flex;}
-.thumb-cell{width:4px;height:4px;}
+.thumb-cell{flex-shrink:0;}
 .library-filters{display:flex;flex-wrap:wrap;gap:${SPACING_PX.md}px;margin:0 ${SPACING_PX.md}px ${SPACING_PX.sm}px;}
 .library-filters > div{display:flex;align-items:center;gap:${SPACING_PX.sm}px;}
 .filter-no-results{margin:${SPACING_PX.md}px;color:${COLORS.muted};}

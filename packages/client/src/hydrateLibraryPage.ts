@@ -2,7 +2,6 @@ import {
   LIBRARY_PAGE_SIZE,
   type Locale,
   type Puzzle,
-  buildThumbnail,
   isPuzzleSolved,
   isSupportedLocale,
   translate,
@@ -16,12 +15,17 @@ import {
 import { loadPuzzleOpenedAt } from "./openedStorage.js";
 import { loadProgress } from "./progressStorage.js";
 
-// Neither dimension of the revealed thumbnail exceeds this. Kept in sync
-// with the fixed 36px `.thumb` box and 4px `.thumb-cell` size in
-// renderLibraryPage.ts's stylesheet (8 * 4px fits inside 36px with room to
-// center) — see .vibe/decisions/012-solved-thumbnail-built-client-side-only.md
-// for why this is built here rather than embedded server-side.
-const THUMBNAIL_MAX_DIMENSION = 8;
+// The fixed pixel budget every revealed thumbnail's cells are scaled to fit
+// inside, on the puzzle's longer axis — kept in sync with the fixed 36px
+// `.thumb` box in renderLibraryPage.ts's stylesheet, with room to center a
+// non-square result. Every real puzzle cell is rendered (see
+// .vibe/decisions/038-thumbnail-drops-downsampling-renders-every-cell.md —
+// no cell is ever merged or dropped to fit); only each cell's own on-screen
+// size shrinks as the puzzle grows, computed as THUMBNAIL_BOX_PX divided by
+// the puzzle's longer dimension. See
+// .vibe/decisions/012-solved-thumbnail-built-client-side-only.md for why
+// this is built here rather than embedded server-side.
+const THUMBNAIL_BOX_PX = 32;
 
 /**
  * A missing script element (no puzzles-data at all) or empty text content is
@@ -111,29 +115,38 @@ function partialProgressCells(puzzle: Puzzle): (number | null)[][] | undefined {
 }
 
 /**
- * Builds a small preview: one `.thumb-row` per row of `buildThumbnail`'s
- * downsampled grid, one `.thumb-cell` per column, filled with `palette`'s
- * matching color (matching how a filled cell renders during play) or left
- * blank for an empty cell. Cell sizing itself lives in the stylesheet, not
- * inline, so only color varies per cell. Shared by the solved preview
- * (`cells` = the puzzle's own solution) and the partial-progress preview
- * (`cells` = the player's own painted cells, see `partialProgressCells`).
+ * Builds a small preview: one `.thumb-row` per row of `cells`, one
+ * `.thumb-cell` per column, filled with `palette`'s matching color (matching
+ * how a filled cell renders during play) or left blank for an empty cell.
+ * Every real cell is rendered — none merged or dropped, see
+ * .vibe/decisions/038-thumbnail-drops-downsampling-renders-every-cell.md —
+ * so each cell's own square size is computed here and set inline, scaled
+ * down from `THUMBNAIL_BOX_PX` by the puzzle's longer dimension; it can no
+ * longer be a single fixed value in the stylesheet since it now varies per
+ * puzzle. Shared by the solved preview (`cells` = the puzzle's own
+ * solution) and the partial-progress preview (`cells` = the player's own
+ * painted cells, see `partialProgressCells`).
  */
 function buildThumbnailPreview(
   cells: (number | null)[][],
   palette: string[],
 ): HTMLElement {
-  const grid = buildThumbnail(cells, THUMBNAIL_MAX_DIMENSION);
+  const height = cells.length;
+  const width = cells[0]?.length ?? 0;
+  const cellPx = THUMBNAIL_BOX_PX / Math.max(width, height, 1);
+
   const wrapper = document.createElement("span");
   wrapper.className = "thumb-grid";
 
-  for (const gridRow of grid) {
+  for (const gridRow of cells) {
     const rowEl = document.createElement("span");
     rowEl.className = "thumb-row";
 
     for (const colorIndex of gridRow) {
       const cellEl = document.createElement("span");
       cellEl.className = "thumb-cell";
+      cellEl.style.width = `${cellPx}px`;
+      cellEl.style.height = `${cellPx}px`;
       if (colorIndex !== null) {
         cellEl.style.backgroundColor = palette[colorIndex] ?? "";
       }

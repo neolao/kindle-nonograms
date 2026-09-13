@@ -55,6 +55,22 @@ const largeMonoPuzzle: Puzzle = {
   cells: Array.from({ length: 25 }, () => Array(25).fill(null)),
 };
 
+// 16 wide x 8 tall, exactly one filled cell (row 3, column 5) with every
+// other cell blank. Chosen so the old 8-cell-per-axis nearest-neighbor
+// sampler (scale factor 2, sampling only rows/columns 0, 2, 4, 6...) would
+// have skipped row 3 entirely — this fixture proves the fix that replaced
+// it: every real cell must now render, so this one detail can never vanish.
+const wideDetailPuzzle: Puzzle = {
+  id: "wide-detail",
+  name: "Wide Detail",
+  width: 16,
+  height: 8,
+  palette: ["#000000"],
+  cells: Array.from({ length: 8 }, (_, row) =>
+    Array.from({ length: 16 }, (_, col) => (row === 3 && col === 5 ? 0 : null)),
+  ),
+};
+
 // Three puzzles, in this fixed default order, for the "recently opened"
 // sort tests below — none carries a stored "opened" timestamp until a test
 // records one via `recordPuzzleOpened`.
@@ -441,6 +457,46 @@ describe("solved-puzzle thumbnail", () => {
     expect(() => hydrate()).not.toThrow();
     expect(thumbFor("cat").querySelector(".thumb-cell")).toBeNull();
     expect(thumbFor("cat").querySelector(".thumb-lock")?.textContent).toBe("?");
+  });
+
+  it("renders every real cell of a puzzle larger than the old sampling cap, never dropping a filled cell a coarser sampling would have skipped", () => {
+    saveProgress("wide-detail", { cells: wideDetailPuzzle.cells });
+    buildFixture([wideDetailPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    const cells = thumbFor("wide-detail").querySelectorAll(".thumb-cell");
+    expect(cells).toHaveLength(16 * 8);
+    // Row 3, column 5 (index 3*16+5 = 53) is the puzzle's one filled cell.
+    expect((cells[53] as HTMLElement).style.backgroundColor).toBe(
+      "rgb(0, 0, 0)",
+    );
+    // Its immediate neighbor stays blank — nothing is merged or smeared.
+    expect((cells[52] as HTMLElement).style.backgroundColor).toBe("");
+  });
+
+  it("sizes every cell as an equal square, scaled down uniformly from the puzzle's longer dimension", () => {
+    saveProgress("wide-detail", { cells: wideDetailPuzzle.cells });
+    buildFixture([wideDetailPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    const cells = thumbFor("wide-detail").querySelectorAll(".thumb-cell");
+    for (const cell of cells) {
+      expect((cell as HTMLElement).style.width).toBe("2px");
+      expect((cell as HTMLElement).style.height).toBe("2px");
+    }
+  });
+
+  it("does not truncate a puzzle much larger than the old cap — all cells render, not just the first few per axis", () => {
+    saveProgress("large-mono", { cells: largeMonoPuzzle.cells });
+    buildFixture([largeMonoPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    expect(thumbFor("large-mono").querySelectorAll(".thumb-cell")).toHaveLength(
+      25 * 25,
+    );
   });
 });
 
