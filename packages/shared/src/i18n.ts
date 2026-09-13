@@ -102,9 +102,7 @@ export type TranslationKey =
   | "editor.error.invalidGridSize"
   | "editor.error.unexpected"
   | "editor.exportConfirmation"
-  | "play.swatchColorAriaLabel"
-  | "editor.cellColorAriaLabel"
-  | "editor.cellEmptyAriaLabel";
+  | "play.swatchColorAriaLabel";
 
 const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
   en: {
@@ -176,8 +174,6 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.error.unexpected": "Something went wrong. Please try again.",
     "editor.exportConfirmation": "Exported {filename} — download started.",
     "play.swatchColorAriaLabel": "Color {number}",
-    "editor.cellColorAriaLabel": "Color {number}",
-    "editor.cellEmptyAriaLabel": "Empty",
   },
   fr: {
     "library.title": "Kindle Nonograms",
@@ -252,8 +248,6 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.error.unexpected": "Une erreur est survenue. Veuillez réessayer.",
     "editor.exportConfirmation": "Exporté {filename} — téléchargement lancé.",
     "play.swatchColorAriaLabel": "Couleur {number}",
-    "editor.cellColorAriaLabel": "Couleur {number}",
-    "editor.cellEmptyAriaLabel": "Vide",
   },
 };
 
