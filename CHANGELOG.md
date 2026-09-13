@@ -7,10 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.35.0] - 2026-09-13
+
 ### Added
 
 - The library page's reward thumbnail for a solved or partially-solved puzzle now shows every real cell of the puzzle, instead of a coarser preview that could hide small painted details.
 - The puzzle editor's grid width/height fields now cap out at 60, with a clear message if a larger value is entered; resizing to a larger grid now shows a brief "Resizing…" indicator and disables the fields while it works, instead of freezing the page with no feedback.
+- Two new puzzles, "Lunettes" and "Parapluie" (both 16×16, three colors).
 
 ## [2.34.0] - 2026-09-13
 
@@ -440,7 +443,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.34.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v2.35.0...HEAD
+[2.35.0]: https://github.com/neolao/kindle-nonograms/compare/v2.34.0...v2.35.0
 [2.34.0]: https://github.com/neolao/kindle-nonograms/compare/v2.33.0...v2.34.0
 [2.33.0]: https://github.com/neolao/kindle-nonograms/compare/v2.32.0...v2.33.0
 [2.32.0]: https://github.com/neolao/kindle-nonograms/compare/v2.31.0...v2.32.0
