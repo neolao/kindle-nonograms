@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The puzzle editor no longer has a separate "Paint" button — tapping any palette color now selects it and switches the canvas straight to paint mode.
 - The puzzle (play) page no longer has a separate "Fill" button for multi-color puzzles — tapping any color swatch now selects it and switches the grid straight to fill mode. Single-color puzzles, which have no swatches, keep the "Fill" button.
 - The library page no longer has a puzzle size filter — only the color filter remains.
+- The library's color filter is now two tappable "Mono-color"/"Multi-color" buttons instead of a dropdown — easier to use in Kindle's browser. Tapping the active button again clears it back to showing every puzzle.
 
 ### Fixed
 

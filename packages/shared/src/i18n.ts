@@ -57,7 +57,6 @@ export type TranslationKey =
   | "play.backToLibrary"
   | "library.sectionLabel"
   | "library.filterColorLabel"
-  | "library.filterColorAll"
   | "library.filterColorMono"
   | "library.filterColorMulti"
   | "library.filterNoResults"
@@ -121,7 +120,6 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.backToLibrary": "Back to puzzle list",
     "library.sectionLabel": "Choose a puzzle",
     "library.filterColorLabel": "Color",
-    "library.filterColorAll": "All colors",
     "library.filterColorMono": "Monochrome only",
     "library.filterColorMulti": "Multi-color only",
     "library.filterNoResults": "No puzzles match these filters.",
@@ -189,7 +187,6 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.backToLibrary": "Retour à la liste des puzzles",
     "library.sectionLabel": "Choisir un puzzle",
     "library.filterColorLabel": "Couleur",
-    "library.filterColorAll": "Toutes les couleurs",
     "library.filterColorMono": "Monochrome uniquement",
     "library.filterColorMulti": "Multicolore uniquement",
     "library.filterNoResults": "Aucun puzzle ne correspond à ces filtres.",

@@ -24,7 +24,6 @@ const ALL_KEYS: TranslationKey[] = [
   "play.backToLibrary",
   "library.sectionLabel",
   "library.filterColorLabel",
-  "library.filterColorAll",
   "library.filterColorMono",
   "library.filterColorMulti",
   "library.filterNoResults",
@@ -86,7 +85,6 @@ describe("translate", () => {
     expect(translate("en", "play.backToLibrary")).toBe("Back to puzzle list");
     expect(translate("en", "library.sectionLabel")).toBe("Choose a puzzle");
     expect(translate("en", "library.filterColorLabel")).toBe("Color");
-    expect(translate("en", "library.filterColorAll")).toBe("All colors");
     expect(translate("en", "library.filterColorMono")).toBe("Monochrome only");
     expect(translate("en", "library.filterColorMulti")).toBe(
       "Multi-color only",
@@ -167,9 +165,6 @@ describe("translate", () => {
     );
     expect(translate("fr", "library.sectionLabel")).toBe("Choisir un puzzle");
     expect(translate("fr", "library.filterColorLabel")).toBe("Couleur");
-    expect(translate("fr", "library.filterColorAll")).toBe(
-      "Toutes les couleurs",
-    );
     expect(translate("fr", "library.filterColorMono")).toBe(
       "Monochrome uniquement",
     );

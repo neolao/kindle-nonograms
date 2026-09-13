@@ -469,20 +469,32 @@ describe("renderLibraryPage", () => {
     ).toBeNull();
   });
 
-  it("bakes the color filter already selected on 'all', and a hidden 'no results' message", () => {
+  it("bakes the color filter as two unpressed toggle buttons (mono/multi), 'all' being neither pressed, plus a hidden 'no results' message", () => {
     const doc = parse(renderLibraryPage(puzzles));
 
-    const colorSelect = doc.querySelector(
-      '[data-role="library-filter-color-select"]',
+    const monoButton = doc.querySelector(
+      '[data-role="library-filter-color-mono"]',
     );
-    expect(
-      colorSelect?.querySelector("option[selected]")?.getAttribute("value"),
-    ).toBe("all");
+    const multiButton = doc.querySelector(
+      '[data-role="library-filter-color-multi"]',
+    );
+    expect(monoButton?.getAttribute("aria-pressed")).toBe("false");
+    expect(multiButton?.getAttribute("aria-pressed")).toBe("false");
+    expect(monoButton?.textContent).toBe("Monochrome only");
+    expect(multiButton?.textContent).toBe("Multi-color only");
 
     const noResults = doc.querySelector(
       '[data-i18n="library.filterNoResults"]',
     );
     expect(noResults?.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("no longer bakes a color filter select", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    expect(
+      doc.querySelector('[data-role="library-filter-color-select"]'),
+    ).toBeNull();
   });
 
   it("hides the pagination controls by default when every puzzle already fits on one page", () => {

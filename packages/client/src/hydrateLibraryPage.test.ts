@@ -174,12 +174,22 @@ function click(button: HTMLButtonElement): void {
   button.dispatchEvent(new Event("click", { bubbles: true }));
 }
 
-function colorFilterSelect(): HTMLSelectElement {
-  const found = document.querySelector<HTMLSelectElement>(
-    '[data-role="library-filter-color-select"]',
+function monoFilterButton(): HTMLButtonElement {
+  const found = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-filter-color-mono"]',
   );
   if (!found) {
-    throw new Error("fixture color filter select not found");
+    throw new Error("fixture mono color filter button not found");
+  }
+  return found;
+}
+
+function multiFilterButton(): HTMLButtonElement {
+  const found = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-filter-color-multi"]',
+  );
+  if (!found) {
+    throw new Error("fixture multi color filter button not found");
   }
   return found;
 }
@@ -192,11 +202,6 @@ function isRowVisible(puzzleId: string): boolean {
     throw new Error(`fixture row for ${puzzleId} not found`);
   }
   return !row.hidden;
-}
-
-function selectValue(select: HTMLSelectElement, value: string): void {
-  select.value = value;
-  select.dispatchEvent(new Event("change"));
 }
 
 beforeEach(() => {
@@ -495,26 +500,40 @@ describe("library filters", () => {
     hydrate();
   });
 
-  it("shows every puzzle by default, with the color filter set to 'all'", () => {
-    expect(colorFilterSelect().value).toBe("all");
+  it("shows every puzzle by default, with neither color filter button pressed ('all')", () => {
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(multiFilterButton().getAttribute("aria-pressed")).toBe("false");
     expect(isRowVisible("small-mono")).toBe(true);
     expect(isRowVisible("medium-multi")).toBe(true);
     expect(isRowVisible("large-mono")).toBe(true);
   });
 
-  it("hides puzzles that don't match the selected color filter", () => {
-    selectValue(colorFilterSelect(), "mono");
+  it("hides puzzles that don't match the selected color filter, and presses only that button", () => {
+    click(monoFilterButton());
 
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("true");
+    expect(multiFilterButton().getAttribute("aria-pressed")).toBe("false");
     expect(isRowVisible("small-mono")).toBe(true);
     expect(isRowVisible("medium-multi")).toBe(false);
     expect(isRowVisible("large-mono")).toBe(true);
+  });
+
+  it("switches directly from one color filter to the other, keeping only one button pressed", () => {
+    click(monoFilterButton());
+    click(multiFilterButton());
+
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(multiFilterButton().getAttribute("aria-pressed")).toBe("true");
+    expect(isRowVisible("small-mono")).toBe(false);
+    expect(isRowVisible("medium-multi")).toBe(true);
+    expect(isRowVisible("large-mono")).toBe(false);
   });
 
   it("shows a 'no puzzles match' message when the color filter matches nothing", () => {
     buildFixture([smallMonoPuzzle, largeMonoPuzzle]);
     hydrate();
 
-    selectValue(colorFilterSelect(), "multi");
+    click(multiFilterButton());
 
     expect(isRowVisible("small-mono")).toBe(false);
     expect(isRowVisible("large-mono")).toBe(false);
@@ -528,8 +547,8 @@ describe("library filters", () => {
     buildFixture([smallMonoPuzzle, largeMonoPuzzle]);
     hydrate();
 
-    selectValue(colorFilterSelect(), "multi");
-    selectValue(colorFilterSelect(), "all");
+    click(multiFilterButton());
+    click(multiFilterButton());
 
     expect(isRowVisible("small-mono")).toBe(true);
     const message = document.querySelector<HTMLElement>(
@@ -538,10 +557,11 @@ describe("library filters", () => {
     expect(message?.hidden).toBe(true);
   });
 
-  it("restores every puzzle when the color filter is reset back to 'all'", () => {
-    selectValue(colorFilterSelect(), "mono");
-    selectValue(colorFilterSelect(), "all");
+  it("restores every puzzle, and un-presses the button, when the active color filter is tapped again", () => {
+    click(monoFilterButton());
+    click(monoFilterButton());
 
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("false");
     expect(isRowVisible("small-mono")).toBe(true);
     expect(isRowVisible("medium-multi")).toBe(true);
     expect(isRowVisible("large-mono")).toBe(true);
@@ -549,7 +569,7 @@ describe("library filters", () => {
 
   it("keeps the puzzle still solved-checkable after being hidden by a filter", () => {
     saveProgress("small-mono", { cells: [[0, null]] });
-    selectValue(colorFilterSelect(), "multi");
+    click(multiFilterButton());
 
     // Hydration's own solved-badge reveal already ran once during the
     // shared beforeEach's `hydrate()` call, before progress was saved here
@@ -562,17 +582,15 @@ describe("library filters", () => {
     expect(row?.querySelector(".solved-badge")).not.toBeNull();
   });
 
-  it("keeps the active filter selection and re-translates option labels when the language is changed", () => {
-    selectValue(colorFilterSelect(), "mono");
+  it("keeps the active filter selection and re-translates the button labels when the language is changed", () => {
+    click(monoFilterButton());
     switcherSelect().value = "fr";
     switcherSelect().dispatchEvent(new Event("change"));
 
-    expect(colorFilterSelect().value).toBe("mono");
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("true");
     expect(isRowVisible("small-mono")).toBe(true);
     expect(isRowVisible("medium-multi")).toBe(false);
-    expect(
-      colorFilterSelect().querySelector('option[value="mono"]')?.textContent,
-    ).toBe("Monochrome uniquement");
+    expect(monoFilterButton().textContent).toBe("Monochrome uniquement");
   });
 });
 
@@ -672,7 +690,7 @@ describe("library pagination", () => {
     hydrate();
     click(paginationNextButton());
 
-    selectValue(colorFilterSelect(), "multi");
+    click(multiFilterButton());
 
     expect(paginationContainer().hidden).toBe(true);
     expect(isRowVisible("medium-multi")).toBe(true);
@@ -682,10 +700,10 @@ describe("library pagination", () => {
   it("shows pagination again once a filter narrowing below the page size is cleared", () => {
     buildFixture(buildPuzzles(30));
     hydrate();
-    selectValue(colorFilterSelect(), "multi");
+    click(multiFilterButton());
     expect(paginationContainer().hidden).toBe(true);
 
-    selectValue(colorFilterSelect(), "all");
+    click(multiFilterButton());
 
     expect(paginationContainer().hidden).toBe(false);
     expect(isRowVisible("p0")).toBe(true);

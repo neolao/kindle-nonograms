@@ -2,7 +2,6 @@ import {
   DEFAULT_LOCALE,
   LIBRARY_PAGE_SIZE,
   type Puzzle,
-  type TranslationKey,
   isMultiColorPuzzle,
   translate,
 } from "@kindle-nonograms/shared";
@@ -19,43 +18,28 @@ import {
   SPACING_PX,
 } from "./theme.js";
 
-type ColorFilterValue = "all" | "mono" | "multi";
-
-const COLOR_FILTER_OPTIONS: ReadonlyArray<{
-  value: ColorFilterValue;
-  key: TranslationKey;
-}> = [
-  { value: "all", key: "library.filterColorAll" },
-  { value: "mono", key: "library.filterColorMono" },
-  { value: "multi", key: "library.filterColorMulti" },
-];
-
 /**
- * Renders the library's default chrome — the color filter (at "all"), the
- * "no results" message (hidden — the default filter always matches at
- * least one puzzle whenever the library itself isn't empty), and
- * Previous/Next pagination (hidden unless there are more puzzles than fit
- * on one page, its total-page count computed here from the fixed puzzle
- * count) — baked into the static HTML so the page already looks complete
- * on first paint instead of popping in once `hydrateLibraryPage.ts` builds
- * it. See `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`;
- * mirrors exactly what that script's own `setUpFiltersAndPagination`
- * produced before this change. `hydrateLibraryPage.ts` now locates this
- * same markup by its `data-role` attributes and attaches behavior to it.
+ * Renders the library's default chrome — the color filter (as two
+ * unpressed toggle buttons, "all" being the state where neither is
+ * pressed), the "no results" message (hidden — the default filter always
+ * matches at least one puzzle whenever the library itself isn't empty),
+ * and Previous/Next pagination (hidden unless there are more puzzles than
+ * fit on one page, its total-page count computed here from the fixed
+ * puzzle count) — baked into the static HTML so the page already looks
+ * complete on first paint instead of popping in once
+ * `hydrateLibraryPage.ts` builds it. See
+ * `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`; mirrors
+ * exactly what that script's own `setUpFiltersAndPagination` produced
+ * before this change. `hydrateLibraryPage.ts` now locates this same
+ * markup by its `data-role` attributes and attaches behavior to it.
+ * Plain tappable buttons, not a `<select>`, per backlog item 067 — a
+ * dropdown is hard to operate in Kindle's browser.
  */
-function renderFilterSelect(
-  id: string,
-  labelKey: TranslationKey,
-  dataRole: string,
-  options: ReadonlyArray<{ value: string; key: TranslationKey }>,
-): string {
-  const optionsHtml = options
-    .map(
-      (option) =>
-        `<option value="${option.value}" data-i18n="${option.key}"${option.value === "all" ? " selected" : ""}>${translate(DEFAULT_LOCALE, option.key)}</option>`,
-    )
-    .join("");
-  return `<div><label for="${id}" data-i18n="${labelKey}">${translate(DEFAULT_LOCALE, labelKey)}</label><select id="${id}" data-role="${dataRole}">${optionsHtml}</select></div>`;
+function renderColorFilterButtons(): string {
+  const groupLabel = translate(DEFAULT_LOCALE, "library.filterColorLabel");
+  const monoLabel = translate(DEFAULT_LOCALE, "library.filterColorMono");
+  const multiLabel = translate(DEFAULT_LOCALE, "library.filterColorMulti");
+  return `<div><span data-i18n="library.filterColorLabel">${groupLabel}</span><button type="button" data-role="library-filter-color-mono" data-i18n="library.filterColorMono" aria-pressed="false">${monoLabel}</button><button type="button" data-role="library-filter-color-multi" data-i18n="library.filterColorMulti" aria-pressed="false">${multiLabel}</button></div>`;
 }
 
 function renderFiltersAndPagination(puzzleCount: number): {
@@ -63,7 +47,7 @@ function renderFiltersAndPagination(puzzleCount: number): {
   noResults: string;
   pagination: string;
 } {
-  const filters = `<div class="library-filters">${renderFilterSelect("library-filter-color", "library.filterColorLabel", "library-filter-color-select", COLOR_FILTER_OPTIONS)}</div>`;
+  const filters = `<div class="library-filters">${renderColorFilterButtons()}</div>`;
 
   const noResults = `<p class="filter-no-results" data-role="library-filter-no-results" data-i18n="library.filterNoResults" hidden>${translate(DEFAULT_LOCALE, "library.filterNoResults")}</p>`;
 
@@ -234,8 +218,6 @@ li a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 .thumb-cell{width:4px;height:4px;}
 .library-filters{display:flex;flex-wrap:wrap;gap:${SPACING_PX.md}px;margin:0 ${SPACING_PX.md}px ${SPACING_PX.sm}px;}
 .library-filters > div{display:flex;align-items:center;gap:${SPACING_PX.sm}px;}
-.library-filters select{font-family:${LABEL_FONT_STACK};min-height:${MIN_TAP_TARGET_PX}px;padding:0 ${SPACING_PX.sm}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};}
-.library-filters select:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 .filter-no-results{margin:${SPACING_PX.md}px;color:${COLORS.muted};}
 .library-pagination:not([hidden]){display:flex;align-items:center;justify-content:center;gap:${SPACING_PX.md}px;margin:${SPACING_PX.sm}px ${SPACING_PX.md}px;}
 .library-pagination button:disabled{color:${COLORS.muted};border-color:${COLORS.muted};box-shadow:none;}

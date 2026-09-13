@@ -184,10 +184,12 @@ function setUpLanguageSwitcher(): Locale {
   return locale;
 }
 
+type ColorFilterValue = "all" | "mono" | "multi";
+
 /**
- * Locates the library page's already-baked color filter select, "no
- * results" message, and pagination controls (see `renderLibraryPage.ts`'s
- * `renderFiltersAndPagination` and
+ * Locates the library page's already-baked color filter toggle buttons,
+ * "no results" message, and pagination controls (see
+ * `renderLibraryPage.ts`'s `renderFiltersAndPagination` and
  * .ux/decisions/001-frozen-chrome-blocking-reconciliation.md), and wires
  * them into one shared `render()` pass: a row is visible only if it
  * matches the filter AND falls inside the current page's slice of the
@@ -202,8 +204,11 @@ function setUpLanguageSwitcher(): Locale {
  * `hydrateEditorPage.ts`.
  */
 function setUpFiltersAndPagination(): void {
-  const colorSelect = document.querySelector<HTMLSelectElement>(
-    '[data-role="library-filter-color-select"]',
+  const monoButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-filter-color-mono"]',
+  );
+  const multiButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-filter-color-multi"]',
   );
   const noResultsMessage = document.querySelector<HTMLElement>(
     '[data-role="library-filter-no-results"]',
@@ -221,7 +226,8 @@ function setUpFiltersAndPagination(): void {
     '[data-role="library-pagination-position"]',
   );
   if (
-    !colorSelect ||
+    !monoButton ||
+    !multiButton ||
     !noResultsMessage ||
     !paginationContainer ||
     !prevButton ||
@@ -233,10 +239,17 @@ function setUpFiltersAndPagination(): void {
 
   let currentPage = 1;
   let totalPages = 1;
+  // "all" ⇔ neither button pressed — the only state a `<select>`'s three
+  // options ("all"/"mono"/"multi") can't represent directly with two plain
+  // toggle buttons. Tapping the already-active button returns here.
+  let colorValue: ColorFilterValue = "all";
+
+  function refreshFilterButtons(): void {
+    monoButton?.setAttribute("aria-pressed", String(colorValue === "mono"));
+    multiButton?.setAttribute("aria-pressed", String(colorValue === "multi"));
+  }
 
   function render(): void {
-    const colorValue = colorSelect?.value;
-
     const allRows = Array.from(
       document.querySelectorAll<HTMLElement>("[data-puzzle-id]"),
     );
@@ -266,11 +279,14 @@ function setUpFiltersAndPagination(): void {
     }
   }
 
-  const onFilterChange = () => {
+  const selectColorFilter = (value: ColorFilterValue): void => {
+    colorValue = colorValue === value ? "all" : value;
+    refreshFilterButtons();
     currentPage = 1;
     render();
   };
-  colorSelect.addEventListener("change", onFilterChange);
+  monoButton.addEventListener("click", () => selectColorFilter("mono"));
+  multiButton.addEventListener("click", () => selectColorFilter("multi"));
 
   const list = document.querySelector("ul");
 
