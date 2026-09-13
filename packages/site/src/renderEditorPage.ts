@@ -1,5 +1,6 @@
 import {
   DEFAULT_LOCALE,
+  EDITOR_CANVAS_LABEL_ID,
   EDITOR_DEFAULT_HEIGHT,
   EDITOR_DEFAULT_PALETTE,
   EDITOR_DEFAULT_WIDTH,
@@ -62,15 +63,27 @@ function renderDefaultToolbar(): string {
   return `<button type="button" data-role="mode-paint" data-i18n="editor.modePaint" aria-pressed="true">${translate(DEFAULT_LOCALE, "editor.modePaint")}</button><button type="button" data-role="mode-erase" data-i18n="editor.modeErase" aria-pressed="false">${translate(DEFAULT_LOCALE, "editor.modeErase")}</button>`;
 }
 
+/**
+ * Renders the editor's default (all-empty) canvas as a keyboard-operable
+ * ARIA grid: `role="grid"/"row"/"gridcell"` so a screen reader's own
+ * browse-mode arrow-key navigation doesn't collide with the app's, a roving
+ * tabindex (only the first cell is a Tab stop; `hydrateEditorPage.ts` moves
+ * it as focus moves), and a state-describing `aria-label` on every cell
+ * (every cell starts empty here — see `editor.cellEmptyAriaLabel`) that
+ * carries a matching `data-i18n-aria` so a later language switch
+ * retranslates it via the existing generic `applyLocale()` sweep — see
+ * .vibe/decisions/034-editor-canvas-roving-tabindex-with-clamped-focus-preservation.md.
+ */
 function renderDefaultGrid(): string {
+  const emptyLabel = translate(DEFAULT_LOCALE, "editor.cellEmptyAriaLabel");
   const rows = Array.from({ length: EDITOR_DEFAULT_HEIGHT }, (_, y) => {
-    const cells = Array.from(
-      { length: EDITOR_DEFAULT_WIDTH },
-      (_, x) => `<td data-row="${y}" data-col="${x}"></td>`,
-    ).join("");
-    return `<tr>${cells}</tr>`;
+    const cells = Array.from({ length: EDITOR_DEFAULT_WIDTH }, (_, x) => {
+      const tabIndex = x === 0 && y === 0 ? "0" : "-1";
+      return `<td data-row="${y}" data-col="${x}" role="gridcell" tabindex="${tabIndex}" aria-label="${emptyLabel}" data-i18n-aria="editor.cellEmptyAriaLabel"></td>`;
+    }).join("");
+    return `<tr role="row">${cells}</tr>`;
   }).join("");
-  return `<table><tbody>${rows}</tbody></table>`;
+  return `<table role="grid" aria-labelledby="${EDITOR_CANVAS_LABEL_ID}"><tbody>${rows}</tbody></table>`;
 }
 
 /**
@@ -152,7 +165,7 @@ ${renderEarlyLangScript()}
 <div class="editor-palette" data-role="editor-palette">${renderDefaultPalette()}</div>
 </div>
 <div class="panel editor-panel">
-<p class="section-label" data-i18n="editor.canvasLabel">Canvas</p>
+<p class="section-label" id="${EDITOR_CANVAS_LABEL_ID}" data-i18n="editor.canvasLabel">Canvas</p>
 <div class="editor-toolbar" data-role="editor-toolbar">${renderDefaultToolbar()}</div>
 <div class="grid-center">
 <div class="grid-wrapper" data-role="editor-grid-wrapper">${renderDefaultGrid()}</div>
@@ -197,6 +210,7 @@ ${sharedStyles()}
 .grid-wrapper{display:inline-block;vertical-align:top;text-align:left;overflow:auto;box-sizing:border-box;border:${BORDER_WIDTH.medium} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};}
 .grid-wrapper table{border-collapse:collapse;}
 .grid-wrapper td{border:${BORDER_WIDTH.thin} solid ${COLORS.border};width:2em;height:2em;min-width:2em;min-height:2em;padding:0;cursor:pointer;}
+.grid-wrapper td:focus{outline:none;box-shadow:inset 0 0 0 ${BORDER_WIDTH.medium} ${COLORS.panel},inset 0 0 0 5px ${COLORS.focusOutline};}
 .grid-wrapper tbody td:nth-child(5n+1){border-left-width:${BORDER_WIDTH.medium};}
 .grid-wrapper tbody tr:nth-child(5n+1) td{border-top-width:${BORDER_WIDTH.medium};}
 `;

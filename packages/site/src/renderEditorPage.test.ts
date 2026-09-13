@@ -261,6 +261,32 @@ describe("renderEditorPage", () => {
     );
   });
 
+  it("bakes the default grid as a keyboard-operable, labelled ARIA grid", () => {
+    const doc = parse(renderEditorPage());
+    const table = doc.querySelector("table");
+    const canvasLabel = doc.querySelector('[data-i18n="editor.canvasLabel"]');
+
+    expect(table?.getAttribute("role")).toBe("grid");
+    expect(canvasLabel?.id).toBeTruthy();
+    expect(table?.getAttribute("aria-labelledby")).toBe(canvasLabel?.id);
+    expect(doc.querySelector("tr")?.getAttribute("role")).toBe("row");
+  });
+
+  it("makes exactly the first default cell a tab stop, with a state-describing empty aria-label", () => {
+    const doc = parse(renderEditorPage());
+    const cells = Array.from(doc.querySelectorAll("td"));
+
+    expect(cells[0]?.getAttribute("tabindex")).toBe("0");
+    expect(
+      cells.slice(1).every((td) => td.getAttribute("tabindex") === "-1"),
+    ).toBe(true);
+    expect(cells[0]?.getAttribute("role")).toBe("gridcell");
+    expect(cells[0]?.getAttribute("aria-label")).toBe("Empty");
+    expect(cells[0]?.getAttribute("data-i18n-aria")).toBe(
+      "editor.cellEmptyAriaLabel",
+    );
+  });
+
   it("places the early lang-setting script immediately after the charset meta, ahead of styles and the module bundle", () => {
     const html = renderEditorPage();
 
