@@ -72,6 +72,45 @@ describe("renderEditorPage", () => {
     expect(eraseButton?.getAttribute("aria-pressed")).toBe("false");
   });
 
+  it("bakes the default grid as a keyboard-operable ARIA grid, labelled by the Canvas heading", () => {
+    const doc = parse(renderEditorPage());
+    const table = doc.querySelector("table");
+    const canvasLabel = doc.querySelector('[data-i18n="editor.canvasLabel"]');
+
+    expect(table?.getAttribute("role")).toBe("grid");
+    expect(canvasLabel?.id).toBeTruthy();
+    expect(table?.getAttribute("aria-labelledby")).toBe(canvasLabel?.id);
+    expect(doc.querySelector("tr")?.getAttribute("role")).toBe("row");
+  });
+
+  it("makes exactly the first default cell a tab stop, every other cell excluded from the tab order", () => {
+    const doc = parse(renderEditorPage());
+    const cells = Array.from(doc.querySelectorAll("td"));
+
+    expect(cells[0]?.getAttribute("tabindex")).toBe("0");
+    expect(
+      cells.slice(1).every((td) => td.getAttribute("tabindex") === "-1"),
+    ).toBe(true);
+  });
+
+  it("gives every default cell a state-describing, retranslatable empty aria-label", () => {
+    const doc = parse(renderEditorPage());
+    const cells = Array.from(doc.querySelectorAll("td"));
+
+    expect(cells.every((td) => td.getAttribute("role") === "gridcell")).toBe(
+      true,
+    );
+    expect(cells.every((td) => td.getAttribute("aria-label") === "Empty")).toBe(
+      true,
+    );
+    expect(
+      cells.every(
+        (td) =>
+          td.getAttribute("data-i18n-aria") === "editor.cellEmptyAriaLabel",
+      ),
+    ).toBe(true);
+  });
+
   it("renders width/height number inputs with a minimum of 1", () => {
     const doc = parse(renderEditorPage());
 

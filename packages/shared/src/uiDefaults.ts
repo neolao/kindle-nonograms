@@ -29,6 +29,15 @@ export const EDITOR_DEFAULT_PALETTE: readonly string[] = ["#000000"];
 export const EDITOR_DEFAULT_MODE = "paint";
 
 /**
+ * Id of the editor's "Canvas" section heading, reused (never duplicated) as
+ * the canvas `<table>`'s own accessible name via `aria-labelledby` — both
+ * `renderEditorPage.ts`'s baked default grid and `hydrateEditorPage.ts`'s
+ * rebuilt one must reference the exact same id. See
+ * .vibe/decisions/034-editor-canvas-roving-tabindex-with-clamped-focus-preservation.md.
+ */
+export const EDITOR_CANVAS_LABEL_ID = "editor-canvas-label";
+
+/**
  * Border widths in px (not `em`), so they stay crisp regardless of the grid
  * wrapper's own font-size-driven scaling. Exactly the three weights already
  * used across the app — a base grid line, the 5-cell group divider, and a

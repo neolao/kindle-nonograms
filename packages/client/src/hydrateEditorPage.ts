@@ -1,4 +1,5 @@
 import {
+  EDITOR_CANVAS_LABEL_ID,
   EDITOR_DEFAULT_HEIGHT,
   EDITOR_DEFAULT_MODE,
   EDITOR_DEFAULT_PALETTE,
@@ -24,6 +25,11 @@ import { withTimeout } from "./withTimeout.js";
 
 type EditorMode = "paint" | "erase";
 
+interface GridCoordinate {
+  x: number;
+  y: number;
+}
+
 interface EditorState {
   width: number;
   height: number;
@@ -35,6 +41,12 @@ interface EditorState {
   filename: string;
   hasUnsavedChanges: boolean;
   locale: Locale;
+  // The canvas's roving-tabindex cell (the grid's single Tab stop) — kept
+  // across a full `renderGrid()` rebuild (resize, palette edit, import),
+  // clamped to the new bounds, rather than always resetting to the
+  // top-left cell. See .vibe/decisions/
+  // 034-editor-canvas-roving-tabindex-with-clamped-focus-preservation.md.
+  focusedCell: GridCoordinate;
 }
 
 const NEW_COLOR_DEFAULT = "#888888";
@@ -103,6 +115,45 @@ export function paintCell(
       ? row.map((cell, colIndex) => (colIndex === x ? value : cell))
       : row,
   );
+}
+
+/** Clamps `value` into `[0, size - 1]`, or `0` when `size` is `0` or less. */
+function clampCoordinate(value: number, size: number): number {
+  if (size <= 0) {
+    return 0;
+  }
+  return Math.min(Math.max(value, 0), size - 1);
+}
+
+const ARROW_KEY_DELTAS: Record<string, GridCoordinate> = {
+  ArrowUp: { x: 0, y: -1 },
+  ArrowDown: { x: 0, y: 1 },
+  ArrowLeft: { x: -1, y: 0 },
+  ArrowRight: { x: 1, y: 0 },
+};
+
+/**
+ * Computes the roving-tabindex cell an arrow key press moves to from
+ * `(x, y)`, clamped at the grid's edges (no wraparound) — matches the
+ * standard grid/spreadsheet keyboard pattern. Returns `undefined` for any
+ * key this canvas doesn't handle (Tab, Enter, a letter, ...), so a caller
+ * can leave every other key alone rather than guessing a default direction.
+ */
+export function nextCellCoordinate(
+  x: number,
+  y: number,
+  key: string,
+  width: number,
+  height: number,
+): GridCoordinate | undefined {
+  const delta = ARROW_KEY_DELTAS[key];
+  if (!delta) {
+    return undefined;
+  }
+  return {
+    x: clampCoordinate(x + delta.x, width),
+    y: clampCoordinate(y + delta.y, height),
+  };
 }
 
 /** Appends a new palette color. */
@@ -427,24 +478,99 @@ function renderToolbar(elements: EditorElements, state: EditorState): void {
   wireToolbarButtons(paintButton, eraseButton, state);
 }
 
+/**
+ * A cell's state-describing aria-label: "Color N" (matching the palette
+ * swatch numbering convention — the palette has no real color names, see
+ * .vibe/decisions/029-swatch-aria-label-number-placeholder.md) or "Empty".
+ */
+function cellAriaLabel(locale: Locale, value: number | null): string {
+  return value === null
+    ? translate(locale, "editor.cellEmptyAriaLabel")
+    : translate(locale, "editor.cellColorAriaLabel").replace(
+        "{number}",
+        String(value + 1),
+      );
+}
+
+/**
+ * Paints a single cell (background color) and keeps its accessible state in
+ * sync: the aria-label text itself (for right now) plus `data-i18n-aria` /
+ * `data-color-index` (so a later language switch retranslates it via the
+ * existing generic `applyLocale()` sweep, exactly like the palette swatches)
+ * — recomputed on every paint/erase, not only at initial render, so it can
+ * never go stale relative to the visible fill. See .vibe/decisions/
+ * 034-editor-canvas-roving-tabindex-with-clamped-focus-preservation.md.
+ */
 function paintGridCell(
   td: HTMLTableCellElement,
   value: number | null,
   state: EditorState,
 ): void {
   td.style.backgroundColor = value === null ? "" : (state.palette[value] ?? "");
+  td.setAttribute("aria-label", cellAriaLabel(state.locale, value));
+  if (value === null) {
+    td.dataset.i18nAria = "editor.cellEmptyAriaLabel";
+    delete td.dataset.colorIndex;
+  } else {
+    td.dataset.i18nAria = "editor.cellColorAriaLabel";
+    td.dataset.colorIndex = String(value);
+  }
 }
 
+/**
+ * Moves the canvas's roving tabindex to `(x, y)`: exactly one cell stays a
+ * Tab stop at a time (the rest `-1`), matching the grid/spreadsheet
+ * keyboard pattern. See .vibe/decisions/
+ * 034-editor-canvas-roving-tabindex-with-clamped-focus-preservation.md.
+ */
+function setRovingTabIndex(
+  gridWrapper: HTMLElement,
+  x: number,
+  y: number,
+): void {
+  const cells = gridWrapper.querySelectorAll<HTMLTableCellElement>(
+    "td[data-row][data-col]",
+  );
+  for (const td of Array.from(cells)) {
+    td.tabIndex =
+      td.dataset.row === String(y) && td.dataset.col === String(x) ? 0 : -1;
+  }
+}
+
+/**
+ * Rebuilds the canvas `<table>` from `state` as a keyboard-operable ARIA
+ * grid (`role="grid"/"row"/"gridcell"` over the real `<table>`/`<tr>`/`<td>`
+ * structure, one roving-tabindex cell). The roving-tabindex cell survives
+ * the rebuild: its coordinates are clamped to the new width/height, and if
+ * focus was actually inside the *old* grid at the moment of rebuild, focus
+ * is restored to the clamped cell in the new one, after it is attached to
+ * the document — otherwise focus is left wherever it already was (on
+ * whatever control triggered the rebuild), never stolen into the grid. See
+ * .vibe/decisions/034-editor-canvas-roving-tabindex-with-clamped-focus-preservation.md.
+ */
 function renderGrid(elements: EditorElements, state: EditorState): void {
+  const hadFocusInGrid =
+    document.activeElement instanceof HTMLElement &&
+    elements.gridWrapper.contains(document.activeElement);
+
+  const focusX = clampCoordinate(state.focusedCell.x, state.width);
+  const focusY = clampCoordinate(state.focusedCell.y, state.height);
+  state.focusedCell = { x: focusX, y: focusY };
+
   const table = document.createElement("table");
+  table.setAttribute("role", "grid");
+  table.setAttribute("aria-labelledby", EDITOR_CANVAS_LABEL_ID);
   const tbody = document.createElement("tbody");
 
   for (let y = 0; y < state.height; y++) {
     const tr = document.createElement("tr");
+    tr.setAttribute("role", "row");
     for (let x = 0; x < state.width; x++) {
       const td = document.createElement("td");
+      td.setAttribute("role", "gridcell");
       td.dataset.row = String(y);
       td.dataset.col = String(x);
+      td.tabIndex = x === focusX && y === focusY ? 0 : -1;
       paintGridCell(td, state.cells[y]?.[x] ?? null, state);
       tr.append(td);
     }
@@ -455,6 +581,14 @@ function renderGrid(elements: EditorElements, state: EditorState): void {
   elements.gridWrapper.textContent = "";
   elements.gridWrapper.append(table);
   applyGridFit(elements.gridWrapper, table);
+
+  if (hadFocusInGrid) {
+    elements.gridWrapper
+      .querySelector<HTMLTableCellElement>(
+        `td[data-row="${focusY}"][data-col="${focusX}"]`,
+      )
+      ?.focus();
+  }
 }
 
 /**
@@ -488,6 +622,40 @@ function applyGridFit(wrapper: HTMLElement, table: HTMLElement): void {
   wrapper.style.fontSize = `${fontSizePx}px`;
   wrapper.style.maxWidth = `${Math.max(availableWidth, 0)}px`;
   wrapper.style.maxHeight = `${Math.max(availableHeight, 0)}px`;
+}
+
+/**
+ * Resolves the `<td data-row data-col>` a delegated grid event actually
+ * targeted — `event.target` can be the `<td>` itself or, in principle, a
+ * descendant, so this always walks up via `closest()` rather than assuming.
+ * Returns `undefined` for any event outside a real grid cell.
+ */
+function findCellFromEventTarget(
+  target: EventTarget | null,
+): HTMLTableCellElement | undefined {
+  if (!(target instanceof HTMLElement)) {
+    return undefined;
+  }
+  return (
+    target.closest<HTMLTableCellElement>("td[data-row][data-col]") ?? undefined
+  );
+}
+
+/**
+ * Paints or erases `td` (per `state.mode`) and keeps `state.cells` and
+ * `state.hasUnsavedChanges` in sync — the one shared code path a click, an
+ * Enter press and a Space press on a grid cell all funnel through, so
+ * keyboard parity with the mouse can never drift. Updates the existing
+ * `<td>` in place; never triggers a full `renderGrid()` rebuild, so
+ * painting can never disturb the roving-tabindex cell or focus.
+ */
+function paintCellElement(td: HTMLTableCellElement, state: EditorState): void {
+  const x = Number(td.dataset.col);
+  const y = Number(td.dataset.row);
+  const value = state.mode === "erase" ? null : state.activeColorIndex;
+  state.cells = paintCell(state.cells, x, y, value);
+  paintGridCell(td, value, state);
+  state.hasUnsavedChanges = true;
 }
 
 /**
@@ -911,6 +1079,7 @@ export function hydrate(): void {
     filename: "",
     hasUnsavedChanges: false,
     locale: resolveLocale(readLocaleCookie(), navigator.language),
+    focusedCell: { x: 0, y: 0 },
   };
 
   setUpLanguageSwitcher(state);
@@ -962,21 +1131,60 @@ export function hydrate(): void {
   // replaces itself (only the `<table>` inside it) — so it keeps working
   // across every grid rebuild instead of being lost with the old table.
   elements.gridWrapper.addEventListener("click", (event) => {
-    if (!(event.target instanceof HTMLElement)) {
+    const td = findCellFromEventTarget(event.target);
+    if (!td) {
       return;
     }
-    const td = event.target.closest<HTMLTableCellElement>(
-      "td[data-row][data-col]",
-    );
+    paintCellElement(td, state);
+  });
+
+  // One delegated `focusin` listener is the single source of truth for
+  // which cell is "current" — covering Tab-in, a mouse click (clicking a
+  // focusable `<td>` focuses it natively) and an arrow-key-driven `.focus()`
+  // call alike, so a mouse click and a keyboard move can never disagree
+  // about the roving-tabindex cell. See .vibe/decisions/
+  // 034-editor-canvas-roving-tabindex-with-clamped-focus-preservation.md.
+  elements.gridWrapper.addEventListener("focusin", (event) => {
+    const td = findCellFromEventTarget(event.target);
     if (!td) {
       return;
     }
     const x = Number(td.dataset.col);
     const y = Number(td.dataset.row);
-    const value = state.mode === "erase" ? null : state.activeColorIndex;
-    state.cells = paintCell(state.cells, x, y, value);
-    paintGridCell(td, value, state);
-    state.hasUnsavedChanges = true;
+    state.focusedCell = { x, y };
+    setRovingTabIndex(elements.gridWrapper, x, y);
+  });
+
+  // Arrow keys move the roving-tabindex cell (clamped at the grid's edges);
+  // Enter/Space paint/erase the focused cell through the exact same code
+  // path as a click, updating the existing <td> in place rather than
+  // triggering a full renderGrid() rebuild, so keyboard-painting can never
+  // destroy its own focus. See .vibe/decisions/
+  // 034-editor-canvas-roving-tabindex-with-clamped-focus-preservation.md.
+  elements.gridWrapper.addEventListener("keydown", (event) => {
+    const td = findCellFromEventTarget(event.target);
+    if (!td) {
+      return;
+    }
+    const x = Number(td.dataset.col);
+    const y = Number(td.dataset.row);
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      paintCellElement(td, state);
+      return;
+    }
+
+    const next = nextCellCoordinate(x, y, event.key, state.width, state.height);
+    if (!next) {
+      return;
+    }
+    event.preventDefault();
+    elements.gridWrapper
+      .querySelector<HTMLTableCellElement>(
+        `td[data-row="${next.y}"][data-col="${next.x}"]`,
+      )
+      ?.focus();
   });
 
   window.addEventListener("beforeunload", (event) => {

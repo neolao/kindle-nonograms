@@ -19,6 +19,7 @@ import {
   buildPuzzleCandidate,
   createEmptyCells,
   hydrate,
+  nextCellCoordinate,
   paintCell,
   removePaletteColor,
   resizeCells,
@@ -241,6 +242,49 @@ describe("pure grid helpers", () => {
   it("paintCell is a no-op for out-of-range coordinates", () => {
     const cells = [[null]];
     expect(paintCell(cells, 5, 5, 0)).toBe(cells);
+  });
+});
+
+describe("nextCellCoordinate", () => {
+  it("moves one step per arrow key from a mid-grid cell", () => {
+    expect(nextCellCoordinate(2, 2, "ArrowUp", 5, 5)).toEqual({ x: 2, y: 1 });
+    expect(nextCellCoordinate(2, 2, "ArrowDown", 5, 5)).toEqual({ x: 2, y: 3 });
+    expect(nextCellCoordinate(2, 2, "ArrowLeft", 5, 5)).toEqual({ x: 1, y: 2 });
+    expect(nextCellCoordinate(2, 2, "ArrowRight", 5, 5)).toEqual({
+      x: 3,
+      y: 2,
+    });
+  });
+
+  it("clamps at the top-left edge instead of wrapping around", () => {
+    expect(nextCellCoordinate(0, 0, "ArrowUp", 5, 5)).toEqual({ x: 0, y: 0 });
+    expect(nextCellCoordinate(0, 0, "ArrowLeft", 5, 5)).toEqual({
+      x: 0,
+      y: 0,
+    });
+  });
+
+  it("clamps at the bottom-right edge instead of wrapping around", () => {
+    expect(nextCellCoordinate(4, 4, "ArrowDown", 5, 5)).toEqual({
+      x: 4,
+      y: 4,
+    });
+    expect(nextCellCoordinate(4, 4, "ArrowRight", 5, 5)).toEqual({
+      x: 4,
+      y: 4,
+    });
+  });
+
+  it("returns undefined for a key the grid doesn't handle, so callers leave it untouched", () => {
+    expect(nextCellCoordinate(2, 2, "Tab", 5, 5)).toBeUndefined();
+    expect(nextCellCoordinate(2, 2, "a", 5, 5)).toBeUndefined();
+  });
+
+  it("clamps into a zero-size grid without throwing", () => {
+    expect(nextCellCoordinate(0, 0, "ArrowRight", 0, 0)).toEqual({
+      x: 0,
+      y: 0,
+    });
   });
 });
 
@@ -747,6 +791,189 @@ describe("hydrate", () => {
     // from — a still-too-low floor (e.g. the old 0.3 ratio, ~4.8px) would
     // instead let the raw fit-to-width ratio through unclamped here.
     expect(wrapper?.style.fontSize).toBe("10px");
+  });
+});
+
+function fireKeydown(el: Element, key: string): KeyboardEvent {
+  const event = new KeyboardEvent("keydown", {
+    key,
+    bubbles: true,
+    cancelable: true,
+  });
+  el.dispatchEvent(event);
+  return event;
+}
+
+describe("keyboard grid operation", () => {
+  it("makes exactly one cell a tab stop, the rest excluded from tab order", () => {
+    buildFixture();
+    hydrate();
+
+    expect(cell(0, 0).tabIndex).toBe(0);
+    expect(cell(1, 0).tabIndex).toBe(-1);
+    expect(cell(4, 4).tabIndex).toBe(-1);
+  });
+
+  it("gives every cell a state-describing aria-label, starting as empty", () => {
+    buildFixture();
+    hydrate();
+
+    expect(cell(0, 0).getAttribute("aria-label")).toBe("Empty");
+    expect(cell(0, 0).getAttribute("data-i18n-aria")).toBe(
+      "editor.cellEmptyAriaLabel",
+    );
+  });
+
+  it("updates a cell's aria-label to its color after painting it", () => {
+    buildFixture();
+    hydrate();
+
+    fireClick(cell(0, 0));
+
+    expect(cell(0, 0).getAttribute("aria-label")).toBe("Color 1");
+    expect(cell(0, 0).getAttribute("data-i18n-aria")).toBe(
+      "editor.cellColorAriaLabel",
+    );
+  });
+
+  it("reverts a cell's aria-label to empty after erasing it", () => {
+    buildFixture();
+    hydrate();
+
+    fireClick(cell(0, 0));
+    fireClick(document.querySelector('[data-role="mode-erase"]') as Element);
+    fireClick(cell(0, 0));
+
+    expect(cell(0, 0).getAttribute("aria-label")).toBe("Empty");
+    expect(cell(0, 0).getAttribute("data-i18n-aria")).toBe(
+      "editor.cellEmptyAriaLabel",
+    );
+  });
+
+  it("moves focus and the roving tab stop with the arrow keys", () => {
+    buildFixture();
+    hydrate();
+    cell(0, 0).focus();
+
+    fireKeydown(cell(0, 0), "ArrowRight");
+
+    expect(document.activeElement).toBe(cell(1, 0));
+    expect(cell(1, 0).tabIndex).toBe(0);
+    expect(cell(0, 0).tabIndex).toBe(-1);
+  });
+
+  it("clamps arrow navigation at the grid edge instead of leaving the grid", () => {
+    buildFixture();
+    hydrate();
+    cell(0, 0).focus();
+
+    const event = fireKeydown(cell(0, 0), "ArrowUp");
+
+    expect(document.activeElement).toBe(cell(0, 0));
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("keeps the roving tab stop in sync when a cell is focused by click", () => {
+    buildFixture();
+    hydrate();
+
+    cell(2, 1).focus();
+
+    expect(cell(2, 1).tabIndex).toBe(0);
+    expect(cell(0, 0).tabIndex).toBe(-1);
+  });
+
+  it("paints the focused cell on Enter, the same as a click", () => {
+    buildFixture();
+    hydrate();
+    cell(0, 0).focus();
+
+    fireKeydown(cell(0, 0), "Enter");
+
+    expect(cell(0, 0).style.backgroundColor).not.toBe("");
+    expect(cell(0, 0).getAttribute("aria-label")).toBe("Color 1");
+  });
+
+  it("paints the focused cell on Space, the same as a click", () => {
+    buildFixture();
+    hydrate();
+    cell(0, 0).focus();
+
+    const event = fireKeydown(cell(0, 0), " ");
+
+    expect(cell(0, 0).style.backgroundColor).not.toBe("");
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("erases the focused cell on Enter when erase mode is active", () => {
+    buildFixture();
+    hydrate();
+    fireClick(cell(0, 0));
+    fireClick(document.querySelector('[data-role="mode-erase"]') as Element);
+    cell(0, 0).focus();
+
+    fireKeydown(cell(0, 0), "Enter");
+
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+  });
+
+  it("ignores a key it doesn't handle, painting nothing and keeping focus put", () => {
+    buildFixture();
+    hydrate();
+    cell(0, 0).focus();
+
+    fireKeydown(cell(0, 0), "a");
+
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+    expect(document.activeElement).toBe(cell(0, 0));
+  });
+
+  it("restores focus to the same (clamped) cell after a resize shrinks the grid", () => {
+    buildFixture();
+    hydrate();
+    cell(4, 4).focus();
+
+    fireChange(widthInput(), "2");
+    fireChange(heightInput(), "2");
+
+    expect(document.activeElement).toBe(cell(1, 1));
+    expect(cell(1, 1).tabIndex).toBe(0);
+  });
+
+  it("does not steal focus into the grid when a resize is triggered from outside it", () => {
+    buildFixture();
+    hydrate();
+    // Focus never enters the grid in this scenario — the width input drives
+    // the resize, matching how a contributor actually triggers one.
+    widthInput().focus();
+
+    fireChange(widthInput(), "2");
+
+    expect(document.activeElement).toBe(widthInput());
+  });
+
+  it("re-translates a painted cell's aria-label on a language switch", () => {
+    buildFixture();
+    hydrate();
+    fireClick(cell(0, 0));
+
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    expect(cell(0, 0).getAttribute("aria-label")).toBe("Couleur 1");
+  });
+
+  it("gives the canvas grid/row/cell roles labelled by the Canvas heading", () => {
+    buildFixture();
+    hydrate();
+
+    const table = document.querySelector("table");
+    const labelId = table?.getAttribute("aria-labelledby");
+    expect(table?.getAttribute("role")).toBe("grid");
+    expect(labelId).toBeTruthy();
+    expect(document.getElementById(labelId ?? "")?.textContent).toBe("Canvas");
+    expect(document.querySelector("tr")?.getAttribute("role")).toBe("row");
+    expect(cell(0, 0).getAttribute("role")).toBe("gridcell");
   });
 });
 

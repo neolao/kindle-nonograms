@@ -49,6 +49,8 @@ const ALL_KEYS: TranslationKey[] = [
   "editor.editColorAriaLabel",
   "editor.removeColorAriaLabel",
   "library.opensInNewTab",
+  "editor.cellColorAriaLabel",
+  "editor.cellEmptyAriaLabel",
 ];
 
 describe("SUPPORTED_LOCALES and DEFAULT_LOCALE", () => {
@@ -140,6 +142,8 @@ describe("translate", () => {
       "Remove color {number}",
     );
     expect(translate("en", "library.opensInNewTab")).toBe("opens in a new tab");
+    expect(translate("en", "editor.cellColorAriaLabel")).toBe("Color {number}");
+    expect(translate("en", "editor.cellEmptyAriaLabel")).toBe("Empty");
   });
 
   it("returns the exact French string for each key", () => {
@@ -232,6 +236,10 @@ describe("translate", () => {
     expect(translate("fr", "library.opensInNewTab")).toBe(
       "s'ouvre dans un nouvel onglet",
     );
+    expect(translate("fr", "editor.cellColorAriaLabel")).toBe(
+      "Couleur {number}",
+    );
+    expect(translate("fr", "editor.cellEmptyAriaLabel")).toBe("Vide");
   });
 
   it("has a non-empty string for every key in every supported locale", () => {
