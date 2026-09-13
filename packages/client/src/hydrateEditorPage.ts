@@ -432,26 +432,22 @@ function renderPalette(elements: EditorElements, state: EditorState): void {
 }
 
 /**
- * Attaches the Paint/Erase mode buttons' behavior to `paintButton`/
- * `eraseButton`, whether they were just created by `renderToolbar` (a
- * rebuild) or are the default buttons `renderEditorPage.ts` already baked
- * into the static page (see `attachInitialToolbar`). Syncs their
- * `aria-pressed` state immediately, matching `state.mode`.
+ * Attaches the Erase mode button's behavior to `eraseButton`, whether it
+ * was just created by `renderToolbar` (a rebuild) or is the default button
+ * `renderEditorPage.ts` already baked into the static page (see
+ * `attachInitialToolbar`). Syncs its `aria-pressed` state immediately,
+ * matching `state.mode`. There is no separate Paint button: a palette
+ * color swatch tap (`wirePaletteRow`) is the only way back into paint
+ * mode, see backlog item 065.
  */
 function wireToolbarButtons(
-  paintButton: HTMLButtonElement,
   eraseButton: HTMLButtonElement,
   state: EditorState,
 ): void {
   const refresh = (): void => {
-    paintButton.setAttribute("aria-pressed", String(state.mode === "paint"));
     eraseButton.setAttribute("aria-pressed", String(state.mode === "erase"));
   };
 
-  paintButton.addEventListener("click", () => {
-    state.mode = "paint";
-    refresh();
-  });
   eraseButton.addEventListener("click", () => {
     state.mode = "erase";
     refresh();
@@ -462,20 +458,14 @@ function wireToolbarButtons(
 function renderToolbar(elements: EditorElements, state: EditorState): void {
   elements.toolbar.textContent = "";
 
-  const paintButton = document.createElement("button");
-  paintButton.type = "button";
-  paintButton.dataset.role = "mode-paint";
-  paintButton.dataset.i18n = "editor.modePaint";
-  paintButton.textContent = translate(state.locale, "editor.modePaint");
-
   const eraseButton = document.createElement("button");
   eraseButton.type = "button";
   eraseButton.dataset.role = "mode-erase";
   eraseButton.dataset.i18n = "editor.modeErase";
   eraseButton.textContent = translate(state.locale, "editor.modeErase");
 
-  elements.toolbar.append(paintButton, eraseButton);
-  wireToolbarButtons(paintButton, eraseButton, state);
+  elements.toolbar.append(eraseButton);
+  wireToolbarButtons(eraseButton, state);
 }
 
 /**
@@ -696,14 +686,11 @@ function attachInitialToolbar(
   elements: EditorElements,
   state: EditorState,
 ): void {
-  const paintButton = elements.toolbar.querySelector<HTMLButtonElement>(
-    '[data-role="mode-paint"]',
-  );
   const eraseButton = elements.toolbar.querySelector<HTMLButtonElement>(
     '[data-role="mode-erase"]',
   );
-  if (paintButton && eraseButton) {
-    wireToolbarButtons(paintButton, eraseButton, state);
+  if (eraseButton) {
+    wireToolbarButtons(eraseButton, state);
   }
 }
 

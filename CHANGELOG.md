@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The puzzle editor no longer has a separate "Paint" button — tapping any palette color now selects it and switches the canvas straight to paint mode.
+
 ### Fixed
 
 - Running `npm run lint` no longer reformats puzzle data files under `data/puzzles/`.

@@ -462,19 +462,34 @@ describe("hydrate", () => {
     expect(cell(0, 0).style.backgroundColor).toBe("");
   });
 
-  it("keeps paint and erase mode mutually exclusive via aria-pressed", () => {
+  it("does not render a separate Paint mode button", () => {
     buildFixture();
     hydrate();
 
-    const paint = document.querySelector('[data-role="mode-paint"]') as Element;
-    const erase = document.querySelector('[data-role="mode-erase"]') as Element;
+    expect(document.querySelector('[data-role="mode-paint"]')).toBeNull();
+  });
 
-    expect(paint.getAttribute("aria-pressed")).toBe("true");
-    expect(erase.getAttribute("aria-pressed")).toBe("false");
+  it("reflects erase mode via aria-pressed, and returns to paint mode as soon as a color swatch is tapped", () => {
+    buildFixture();
+    hydrate();
+    const erase = (): Element =>
+      document.querySelector('[data-role="mode-erase"]') as Element;
 
-    fireClick(erase);
-    expect(paint.getAttribute("aria-pressed")).toBe("false");
-    expect(erase.getAttribute("aria-pressed")).toBe("true");
+    expect(erase().getAttribute("aria-pressed")).toBe("false");
+
+    fireClick(erase());
+    expect(erase().getAttribute("aria-pressed")).toBe("true");
+
+    fireClick(cell(0, 0));
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+
+    // The swatch click rebuilds the toolbar (`render()`), so `erase` is
+    // re-queried above rather than reused from before the click.
+    fireClick(swatches()[0] as Element);
+    expect(erase().getAttribute("aria-pressed")).toBe("false");
+
+    fireClick(cell(0, 0));
+    expect(cell(0, 0).style.backgroundColor).not.toBe("");
   });
 
   it("resizing preserves painted cells still in bounds and drops the rest, live", () => {
@@ -1069,9 +1084,9 @@ describe("image import", () => {
     expect(swatches()[0]?.style.backgroundColor).toBe("rgb(200, 0, 0)");
     expect(
       (
-        document.querySelector('[data-role="mode-paint"]') as Element
+        document.querySelector('[data-role="mode-erase"]') as Element
       ).getAttribute("aria-pressed"),
-    ).toBe("true");
+    ).toBe("false");
     expect(importErrorRegion().textContent).toBe("");
   });
 
@@ -1302,8 +1317,8 @@ describe("language switcher", () => {
 
     expect(document.documentElement.lang).toBe("fr");
     expect(
-      document.querySelector('[data-role="mode-paint"]')?.textContent,
-    ).toBe("Peindre");
+      document.querySelector('[data-role="mode-erase"]')?.textContent,
+    ).toBe("Effacer");
     expect(swatches()[0]?.getAttribute("aria-label")).toBe(
       "Choisir la couleur 1",
     );
@@ -1329,8 +1344,8 @@ describe("language switcher", () => {
       document.querySelector('[data-role="editor-add-color"]') as Element,
     );
 
-    const toolbarPaint = document.querySelector('[data-role="mode-paint"]');
-    expect(toolbarPaint?.textContent).toBe("Peindre");
+    const toolbarErase = document.querySelector('[data-role="mode-erase"]');
+    expect(toolbarErase?.textContent).toBe("Effacer");
     expect(swatches()[0]?.getAttribute("aria-label")).toBe(
       "Choisir la couleur 1",
     );

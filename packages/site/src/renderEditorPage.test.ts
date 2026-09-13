@@ -66,10 +66,15 @@ describe("renderEditorPage", () => {
     expect(gridWrapper?.querySelectorAll("td")).toHaveLength(25);
 
     const toolbar = doc.querySelector('[data-role="editor-toolbar"]');
-    const paintButton = toolbar?.querySelector('[data-role="mode-paint"]');
     const eraseButton = toolbar?.querySelector('[data-role="mode-erase"]');
-    expect(paintButton?.getAttribute("aria-pressed")).toBe("true");
     expect(eraseButton?.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("no longer bakes a separate Paint mode button — a color swatch is the only way to select paint mode", () => {
+    const doc = parse(renderEditorPage());
+
+    const toolbar = doc.querySelector('[data-role="editor-toolbar"]');
+    expect(toolbar?.querySelector('[data-role="mode-paint"]')).toBeNull();
   });
 
   it("bakes the default grid as a keyboard-operable ARIA grid, labelled by the Canvas heading", () => {

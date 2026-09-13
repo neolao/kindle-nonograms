@@ -60,7 +60,7 @@ function renderDefaultPalette(): string {
 }
 
 function renderDefaultToolbar(): string {
-  return `<button type="button" data-role="mode-paint" data-i18n="editor.modePaint" aria-pressed="true">${translate(DEFAULT_LOCALE, "editor.modePaint")}</button><button type="button" data-role="mode-erase" data-i18n="editor.modeErase" aria-pressed="false">${translate(DEFAULT_LOCALE, "editor.modeErase")}</button>`;
+  return `<button type="button" data-role="mode-erase" data-i18n="editor.modeErase" aria-pressed="false">${translate(DEFAULT_LOCALE, "editor.modeErase")}</button>`;
 }
 
 /**

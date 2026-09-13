@@ -89,7 +89,6 @@ export type TranslationKey =
   | "editor.filenameLabel"
   | "editor.export"
   | "editor.addColor"
-  | "editor.modePaint"
   | "editor.modeErase"
   | "editor.selectColorAriaLabel"
   | "editor.editColorAriaLabel"
@@ -160,7 +159,6 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.filenameLabel": "Filename (id)",
     "editor.export": "Export",
     "editor.addColor": "Add color",
-    "editor.modePaint": "Paint",
     "editor.modeErase": "Erase",
     "editor.selectColorAriaLabel": "Select color {number}",
     "editor.editColorAriaLabel": "Edit color {number}",
@@ -234,7 +232,6 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.filenameLabel": "Nom de fichier (id)",
     "editor.export": "Exporter",
     "editor.addColor": "Ajouter une couleur",
-    "editor.modePaint": "Peindre",
     "editor.modeErase": "Effacer",
     "editor.selectColorAriaLabel": "Choisir la couleur {number}",
     "editor.editColorAriaLabel": "Modifier la couleur {number}",
