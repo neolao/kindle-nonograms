@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Sort Library By Recently Opened
 
