@@ -109,6 +109,25 @@ describe("renderEditorPage", () => {
     ).toBe("BUTTON");
   });
 
+  it("reserves an empty, accessible status/error region next to the import controls, before the hint text", () => {
+    const doc = parse(renderEditorPage());
+    const importPanel = doc
+      .querySelector('[data-role="editor-import-button"]')
+      ?.closest(".editor-panel");
+    const status = importPanel?.querySelector(
+      '[data-role="editor-import-error"]',
+    );
+    const hint = importPanel?.querySelector(".editor-import-hint");
+
+    expect(status).not.toBeNull();
+    expect(status?.getAttribute("aria-live")).toBe("polite");
+    expect(status?.textContent).toBe("");
+    // Feedback must be seen/announced before the static explanatory hint.
+    expect(status?.compareDocumentPosition(hint as Node)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
   it("renders name and filename text inputs plus an Export button", () => {
     const doc = parse(renderEditorPage());
 

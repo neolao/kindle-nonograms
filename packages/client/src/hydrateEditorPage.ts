@@ -563,6 +563,7 @@ interface EditorElements {
   importPaletteSize: HTMLInputElement;
   importBackground: HTMLInputElement;
   importButton: HTMLButtonElement;
+  importError: HTMLElement;
 }
 
 function findElements(): EditorElements | undefined {
@@ -609,6 +610,9 @@ function findElements(): EditorElements | undefined {
   const importButton = document.querySelector<HTMLButtonElement>(
     '[data-role="editor-import-button"]',
   );
+  const importError = document.querySelector<HTMLElement>(
+    '[data-role="editor-import-error"]',
+  );
 
   if (
     !root ||
@@ -625,7 +629,8 @@ function findElements(): EditorElements | undefined {
     !importFile ||
     !importPaletteSize ||
     !importBackground ||
-    !importButton
+    !importButton ||
+    !importError
   ) {
     return undefined;
   }
@@ -646,6 +651,7 @@ function findElements(): EditorElements | undefined {
     importPaletteSize,
     importBackground,
     importButton,
+    importError,
   };
 }
 
@@ -761,17 +767,17 @@ async function handleImport(
   elements: EditorElements,
   state: EditorState,
 ): Promise<void> {
-  elements.error.textContent = "";
+  elements.importError.textContent = "";
 
   const file = elements.importFile.files?.[0];
   if (!file) {
-    elements.error.textContent = "⚠ Choose an image file first.";
+    elements.importError.textContent = "⚠ Choose an image file first.";
     return;
   }
 
   const paletteSize = parseImportPaletteSize(elements.importPaletteSize.value);
   if (paletteSize === undefined) {
-    elements.error.textContent = `⚠ Palette size must be a whole number from 1 to ${MAX_IMPORT_PALETTE_SIZE}.`;
+    elements.importError.textContent = `⚠ Palette size must be a whole number from 1 to ${MAX_IMPORT_PALETTE_SIZE}.`;
     return;
   }
 
@@ -787,7 +793,7 @@ async function handleImport(
   elements.importFile.disabled = true;
   elements.importPaletteSize.disabled = true;
   elements.importButton.disabled = true;
-  elements.error.textContent = "Importing…";
+  elements.importError.textContent = "Importing…";
 
   await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -809,10 +815,10 @@ async function handleImport(
     state.activeColorIndex = 0;
     state.mode = "paint";
     state.hasUnsavedChanges = true;
-    elements.error.textContent = "";
+    elements.importError.textContent = "";
     render(elements, state);
   } catch (error) {
-    elements.error.textContent = `⚠ ${describeImportError(error, state.locale)}`;
+    elements.importError.textContent = `⚠ ${describeImportError(error, state.locale)}`;
   } finally {
     elements.importFile.disabled = false;
     elements.importPaletteSize.disabled = false;

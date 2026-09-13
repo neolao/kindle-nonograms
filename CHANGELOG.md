@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The puzzle editor's Import section now shows its own status and error messages (missing file, bad palette size, "Importing…", failures) right next to its own controls, instead of in the unrelated Name and export panel; that shared region now only carries Export feedback.
+
 ## [2.28.0] - 2026-09-12
 
 ### Added

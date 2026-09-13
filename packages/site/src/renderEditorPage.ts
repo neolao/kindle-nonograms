@@ -78,8 +78,11 @@ function renderDefaultGrid(): string {
  * (run in a normal desktop browser, not on Kindle) that lets someone build a
  * `Puzzle` by hand and export it as a ready-to-submit JSON file — see
  * .vibe/backlog/done/029-web-based-puzzle-editor.md. The size controls, the
- * name/filename/export controls and the reserved error region are plain
- * static markup; the palette editor, paint/erase toolbar and grid canvas
+ * import controls with their own reserved status/error region right next to
+ * them (see `.vibe/backlog/done/055-move-import-feedback-next-to-the-import-controls.md`
+ * — the shared bottom error/confirmation region near the export action is
+ * Export-only now), and the name/filename/export controls are plain static
+ * markup; the palette editor, paint/erase toolbar and grid canvas
  * (`data-role="editor-*"`) are also real markup now, already showing the
  * page's fixed default (5×5, one black color, Paint mode — see
  * `renderDefaultPalette`/`renderDefaultToolbar`/`renderDefaultGrid` above)
@@ -141,6 +144,7 @@ ${renderEarlyLangScript()}
 <input type="color" id="editor-import-background" value="#ffffff" data-role="editor-import-background" />
 <button type="button" data-role="editor-import-button" data-i18n="editor.importButton">Import</button>
 </div>
+<p class="editor-error" data-role="editor-import-error" aria-live="polite"></p>
 <p class="editor-import-hint" data-i18n="editor.importHint">The image is fitted to the grid size above and reduced to the palette size above; pixels close to the background color become blank.</p>
 </div>
 <div class="panel editor-panel">

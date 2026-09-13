@@ -70,6 +70,11 @@ function confirmationRegion(): HTMLElement {
     '[data-role="editor-confirmation"]',
   ) as HTMLElement;
 }
+function importErrorRegion(): HTMLElement {
+  return document.querySelector(
+    '[data-role="editor-import-error"]',
+  ) as HTMLElement;
+}
 function swatches(): HTMLButtonElement[] {
   return Array.from(document.querySelectorAll('[data-role="swatch"]'));
 }
@@ -759,7 +764,10 @@ describe("image import", () => {
     await flushAsync();
 
     expect(decodeImageFile).not.toHaveBeenCalled();
-    expect(errorRegion().textContent).toMatch(/choose an image file/i);
+    expect(importErrorRegion().textContent).toMatch(/choose an image file/i);
+    // The shared bottom region is Export-only feedback now — Import never
+    // writes into it.
+    expect(errorRegion().textContent).toBe("");
   });
 
   it("shows an inline error and never decodes when the palette size is out of range", async () => {
@@ -772,7 +780,7 @@ describe("image import", () => {
     await flushAsync();
 
     expect(decodeImageFile).not.toHaveBeenCalled();
-    expect(errorRegion().textContent).toMatch(/palette size/i);
+    expect(importErrorRegion().textContent).toMatch(/palette size/i);
   });
 
   it("imports directly with no confirmation when the grid is still empty", async () => {
@@ -792,7 +800,7 @@ describe("image import", () => {
 
     expect(confirmSpy).not.toHaveBeenCalled();
     expect(swatches()).toHaveLength(1);
-    expect(errorRegion().textContent).toBe("");
+    expect(importErrorRegion().textContent).toBe("");
   });
 
   it("asks for confirmation before overwriting an already-painted grid, and applies nothing when declined", async () => {
@@ -837,7 +845,7 @@ describe("image import", () => {
         document.querySelector('[data-role="mode-paint"]') as Element
       ).getAttribute("aria-pressed"),
     ).toBe("true");
-    expect(errorRegion().textContent).toBe("");
+    expect(importErrorRegion().textContent).toBe("");
   });
 
   it("uses the width/height fields' value at click time, not at file-pick time", async () => {
@@ -879,10 +887,27 @@ describe("image import", () => {
     fireClick(importButton());
     await flushAsync();
 
-    expect(errorRegion().textContent).toBe(
+    expect(importErrorRegion().textContent).toBe(
       "⚠ Couldn't read this image file. Try a different one.",
     );
     expect(cell(0, 0).style.backgroundColor).toBe(paintedColor);
+    expect(errorRegion().textContent).toBe("");
+  });
+
+  it("leaves an import error visible in its own region after an unrelated successful export, since the two panels no longer share one node", async () => {
+    buildFixture();
+    hydrate();
+    stubDownload();
+    fireClick(importButton()); // no file chosen -> import error
+    await flushAsync();
+    expect(importErrorRegion().textContent).not.toBe("");
+
+    fireChange(nameInput(), "Small Heart");
+    fireChange(filenameInput(), "small-heart");
+    fireClick(exportButton());
+
+    expect(errorRegion().textContent).toBe("");
+    expect(importErrorRegion().textContent).not.toBe("");
   });
 
   it("surfaces a fixed, translated error when the browser can't decode images", async () => {
@@ -899,7 +924,7 @@ describe("image import", () => {
     fireClick(importButton());
     await flushAsync();
 
-    expect(errorRegion().textContent).toBe(
+    expect(importErrorRegion().textContent).toBe(
       "⚠ This browser can't import images.",
     );
   });
@@ -918,10 +943,12 @@ describe("image import", () => {
     fireClick(importButton());
     await flushAsync();
 
-    expect(errorRegion().textContent).toBe(
+    expect(importErrorRegion().textContent).toBe(
       "⚠ Something went wrong. Please try again.",
     );
-    expect(errorRegion().textContent).not.toMatch(/getImageData|source width/);
+    expect(importErrorRegion().textContent).not.toMatch(
+      /getImageData|source width/,
+    );
   });
 
   it("re-enables the import controls after a failed import", async () => {
@@ -965,7 +992,7 @@ describe("image import", () => {
       await vi.advanceTimersByTimeAsync(0); // handleImport's own pre-decode yield
       await vi.advanceTimersByTimeAsync(15000);
 
-      expect(errorRegion().textContent).toBe(
+      expect(importErrorRegion().textContent).toBe(
         "⚠ This image took too long to load.",
       );
       expect(importFileInput().disabled).toBe(false);
@@ -999,12 +1026,12 @@ describe("image import", () => {
       });
       await vi.advanceTimersByTimeAsync(0);
 
-      expect(errorRegion().textContent).toBe("");
+      expect(importErrorRegion().textContent).toBe("");
       expect(swatches()).toHaveLength(1);
 
       // The now-irrelevant timer must not fire afterward and overwrite success.
       await vi.advanceTimersByTimeAsync(200);
-      expect(errorRegion().textContent).toBe("");
+      expect(importErrorRegion().textContent).toBe("");
     });
   });
 });
