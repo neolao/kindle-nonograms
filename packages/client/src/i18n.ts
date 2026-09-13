@@ -131,6 +131,11 @@ export function applyLocale(locale: Locale): void {
  *   than duplicated so the puzzle link's spoken solved status can never
  *   drift from the visible badge's own text — see
  *   `.vibe/decisions/031-solved-link-aria-label-composes-badge-translation.md`.
+ * - `{row}`/`{column}`: the element's own 1-based `data-row`/`data-col` —
+ *   the puzzle editor's grid cells already carry these for click/keyboard
+ *   handling, reused here rather than a second position-tracking scheme, so
+ *   a screen-reader user gets the same "row 3, column 7" context a sighted
+ *   contributor now reads off the grid's own row/column number headers.
  */
 function interpolateAriaLabelTokens(
   label: string,
@@ -143,7 +148,19 @@ function interpolateAriaLabelTokens(
       ? label
       : label.replace("{number}", String(Number(colorIndexAttr) + 1));
 
-  return withNumber
+  const rowAttr = element.getAttribute("data-row");
+  const withRow =
+    rowAttr === null
+      ? withNumber
+      : withNumber.replace("{row}", String(Number(rowAttr) + 1));
+
+  const columnAttr = element.getAttribute("data-col");
+  const withColumn =
+    columnAttr === null
+      ? withRow
+      : withRow.replace("{column}", String(Number(columnAttr) + 1));
+
+  return withColumn
     .replace("{label}", element.textContent ?? "")
     .replace("{status}", translate(locale, "library.solvedBadge"));
 }

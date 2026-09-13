@@ -1,0 +1,13 @@
+---
+date: 2026-09-13
+status: accepted
+---
+# The editor's grid gets native table row/column number headers, not a separate overlay
+
+**Context:** The solvability check (and its new single-cell fix suggestion) names rows/columns in plain text ("problem rows: 1, 2, 3"), but the editor's grid had no visible numbering, leaving a contributor to count cells by hand to find the one being described.
+
+**Decision:** Row and column numbers (1-based, matching every existing message's own numbering) are added as real `<thead>`/`<th>` cells inside the *same* `<table>` the grid already uses — a `<th scope="col" role="columnheader">` header row above the data rows, a `<th scope="row" role="rowheader">` prepended to each body row, and an inert `aria-hidden` corner cell where the two meet. The number glyph sits in a nested `<span>` with its own smaller `font-size`, so the header cell's own box stays sized at `2em` against the *inherited* (unshrunk) font-size — matching a data cell's own `2em` box exactly at every grid-fit scale, without the header's smaller text throwing off its own width. Existing `td[data-row][data-col]` cells, the roving-tabindex logic, and all keyboard/click handling are untouched; headers carry no `data-row`/`data-col`/`tabindex` and are invisible to that code. Each cell's own aria-label also gained a "Row R, column C" prefix (substituted the same way the existing `{number}` token already is), so a screen-reader user gets the same benefit a sighted contributor gets from the visible headers, rather than only the latter.
+
+**Reason:** Living inside the same `<table>` means the numbering scales in lockstep with the grid's own font-size-driven fit at every size (10px floor to 32px) for free — a separate positioned overlay would need its own synchronization logic and could drift. Native `<th scope>` plus the matching ARIA header roles is the standard, correct way to add row/column headers to an ARIA grid pattern, and doing it natively — rather than styling plain `<td>`s to look like headers — keeps the semantics honest for assistive tech.
+
+**Rejected alternatives:** A CSS-grid-based overlay (numbers positioned alongside, not inside, the `<table>`) — rejected: keeping two independently-sized layouts (the table's own column widths and the overlay's assumed widths) in sync across every resize/import/grid-fit change is extra state for no benefit over just using the table's own header row/column, which requires no synchronization at all. Visual-only numbering with no aria-label change — rejected once accessibility review flagged it as creating an equity gap between sighted and screen-reader users the brief hadn't actually intended.

@@ -25,7 +25,30 @@ export type SolvabilityDiagnosis =
       problemRows: number[];
       /** Same, for columns. */
       problemColumns: number[];
+      /** Every individual cell that couldn't be determined (or that a
+       * deduced value contradicted), row-major order — the exact set
+       * `problemRows`/`problemColumns` only summarize as touched axes. */
+      problemCells: { row: number; column: number }[];
     };
+
+/** A single-cell change that would make an ambiguous puzzle solvable — see {@link suggestSolvabilityFix}. */
+export interface SolvabilityFixSuggestion {
+  row: number;
+  column: number;
+  /** The cell's suggested new value (`null` = clear it). */
+  value: number | null;
+}
+
+// `suggestSolvabilityFix` only searches a small ambiguous area: every real
+// puzzle that actually required guessing (found via a genuine incident —
+// see .vibe/decisions/041-solvability-single-cell-fix-suggestion-bounded.md)
+// had a much larger, spread-out ambiguity with no single-cell fix at all, so
+// a bigger search would only ever cost time without ever finding anything.
+const SUGGESTION_MAX_PROBLEM_CELLS = 6;
+// A second, independent hard cap on top of the cell-count one above: keeps
+// the worst case bounded regardless of how large the puzzle's own palette
+// is, since each attempt re-runs a full solvability check.
+const SUGGESTION_MAX_ATTEMPTS = 40;
 
 /** A cell during solving: a forced value, or `undefined` while undetermined. */
 type CellState = number | null | undefined;
@@ -179,12 +202,14 @@ export function diagnoseSolvability(puzzle: Puzzle): SolvabilityDiagnosis {
 
   const problemRows = new Set(infeasibleRows);
   const problemColumns = new Set(infeasibleColumns);
+  const problemCells: { row: number; column: number }[] = [];
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       if (grid[y][x] === undefined || grid[y][x] !== solution[y][x]) {
         problemRows.add(y);
         problemColumns.add(x);
+        problemCells.push({ row: y, column: x });
       }
     }
   }
@@ -198,7 +223,67 @@ export function diagnoseSolvability(puzzle: Puzzle): SolvabilityDiagnosis {
     kind: "ambiguous",
     problemRows: [...problemRows].sort((a, b) => a - b),
     problemColumns: [...problemColumns].sort((a, b) => a - b),
+    problemCells,
   };
+}
+
+/**
+ * Looks for a single cell whose value alone, if changed, would make an
+ * ambiguous puzzle solvable — a concrete, actionable fix for the puzzle
+ * editor's "check solvability" button to suggest, on top of the plain
+ * row/column list {@link diagnoseSolvability} already reports. Tries every
+ * other value at every reported problem cell, re-checking full solvability
+ * after each trial, and returns the first one that works.
+ *
+ * Deliberately narrow in scope: only attempted when the ambiguous area has
+ * at most `SUGGESTION_MAX_PROBLEM_CELLS` cells, and abandoned after at most
+ * `SUGGESTION_MAX_ATTEMPTS` trials regardless — both caps exist because a
+ * spread-out ambiguity (the kind real removed puzzles actually had) has no
+ * single-cell fix to find anyway, so searching one is only ever wasted
+ * work; see .vibe/decisions/041-solvability-single-cell-fix-suggestion-bounded.md.
+ * Returns `undefined` when the puzzle is already fair, has no filled cells,
+ * the ambiguous area is too large, or no single-cell fix exists within the
+ * attempt budget.
+ */
+export function suggestSolvabilityFix(
+  puzzle: Puzzle,
+): SolvabilityFixSuggestion | undefined {
+  const diagnosis = diagnoseSolvability(puzzle);
+  if (diagnosis.ok || diagnosis.kind !== "ambiguous") {
+    return undefined;
+  }
+  if (diagnosis.problemCells.length > SUGGESTION_MAX_PROBLEM_CELLS) {
+    return undefined;
+  }
+
+  const candidateValues: (number | null)[] = puzzle.palette.map(
+    (_, index) => index,
+  );
+  candidateValues.unshift(null);
+
+  let attempts = 0;
+  for (const { row, column } of diagnosis.problemCells) {
+    const original = puzzle.cells[row][column];
+
+    for (const value of candidateValues) {
+      if (value === original) {
+        continue;
+      }
+      if (attempts >= SUGGESTION_MAX_ATTEMPTS) {
+        return undefined;
+      }
+      attempts++;
+
+      const trialCells = puzzle.cells.map((line) => line.slice());
+      trialCells[row][column] = value;
+
+      if (checkSolvability({ ...puzzle, cells: trialCells }).ok) {
+        return { row, column, value };
+      }
+    }
+  }
+
+  return undefined;
 }
 
 /** Applies newly-forced values from `forced` onto `line`; returns whether anything changed. */

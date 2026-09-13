@@ -554,6 +554,47 @@ describe("hydrate", () => {
     expect(cell(4, 4).style.backgroundColor).toBe("");
   });
 
+  it("regenerates the row/column number headers to match the new size on every resize, leaving no stale numbers behind", () => {
+    buildFixture();
+    hydrate();
+
+    fireChange(widthInput(), "3");
+    fireChange(heightInput(), "7");
+
+    const columnHeaders = Array.from(
+      document.querySelectorAll(
+        'thead th[role="columnheader"]:not([aria-hidden])',
+      ),
+    );
+    expect(columnHeaders.map((th) => th.textContent)).toEqual(["1", "2", "3"]);
+
+    const rowHeaders = Array.from(
+      document.querySelectorAll('tbody th[role="rowheader"]'),
+    );
+    expect(rowHeaders.map((th) => th.textContent)).toEqual([
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+    ]);
+
+    // Shrinking back down must not leave any header from the larger size.
+    fireChange(widthInput(), "2");
+    fireChange(heightInput(), "2");
+
+    expect(
+      document.querySelectorAll(
+        'thead th[role="columnheader"]:not([aria-hidden])',
+      ),
+    ).toHaveLength(2);
+    expect(
+      document.querySelectorAll('tbody th[role="rowheader"]'),
+    ).toHaveLength(2);
+  });
+
   it("shows a translated error and reverts the field when width is zero", () => {
     buildFixture();
     hydrate();
@@ -982,19 +1023,27 @@ describe("keyboard grid operation", () => {
     buildFixture();
     hydrate();
 
-    expect(cell(0, 0).getAttribute("aria-label")).toBe("Empty");
+    expect(cell(0, 0).getAttribute("aria-label")).toBe(
+      "Row 1, column 1, Empty",
+    );
     expect(cell(0, 0).getAttribute("data-i18n-aria")).toBe(
       "editor.cellEmptyAriaLabel",
     );
   });
 
-  it("updates a cell's aria-label to its color after painting it", () => {
+  it("updates a cell's aria-label to its color after painting it, including its row/column position", () => {
     buildFixture();
     hydrate();
 
     fireClick(cell(0, 0));
+    fireClick(cell(2, 1));
 
-    expect(cell(0, 0).getAttribute("aria-label")).toBe("Color 1");
+    expect(cell(0, 0).getAttribute("aria-label")).toBe(
+      "Row 1, column 1, Color 1",
+    );
+    expect(cell(2, 1).getAttribute("aria-label")).toBe(
+      "Row 2, column 3, Color 1",
+    );
     expect(cell(0, 0).getAttribute("data-i18n-aria")).toBe(
       "editor.cellColorAriaLabel",
     );
@@ -1008,7 +1057,9 @@ describe("keyboard grid operation", () => {
     fireClick(document.querySelector('[data-role="mode-erase"]') as Element);
     fireClick(cell(0, 0));
 
-    expect(cell(0, 0).getAttribute("aria-label")).toBe("Empty");
+    expect(cell(0, 0).getAttribute("aria-label")).toBe(
+      "Row 1, column 1, Empty",
+    );
     expect(cell(0, 0).getAttribute("data-i18n-aria")).toBe(
       "editor.cellEmptyAriaLabel",
     );
@@ -1055,7 +1106,9 @@ describe("keyboard grid operation", () => {
     fireKeydown(cell(0, 0), "Enter");
 
     expect(cell(0, 0).style.backgroundColor).not.toBe("");
-    expect(cell(0, 0).getAttribute("aria-label")).toBe("Color 1");
+    expect(cell(0, 0).getAttribute("aria-label")).toBe(
+      "Row 1, column 1, Color 1",
+    );
   });
 
   it("paints the focused cell on Space, the same as a click", () => {
@@ -1124,7 +1177,27 @@ describe("keyboard grid operation", () => {
     switcherSelect().value = "fr";
     switcherSelect().dispatchEvent(new Event("change"));
 
-    expect(cell(0, 0).getAttribute("aria-label")).toBe("Couleur 1");
+    expect(cell(0, 0).getAttribute("aria-label")).toBe(
+      "Ligne 1, colonne 1, Couleur 1",
+    );
+  });
+
+  it("does nothing when a row/column number header is clicked — it never paints and is never a tab stop", () => {
+    buildFixture();
+    hydrate();
+
+    const columnHeader = document.querySelector(
+      'thead th[role="columnheader"]:not([aria-hidden])',
+    ) as HTMLElement;
+    const rowHeader = document.querySelector(
+      'tbody th[role="rowheader"]',
+    ) as HTMLElement;
+
+    expect(() => fireClick(columnHeader)).not.toThrow();
+    expect(() => fireClick(rowHeader)).not.toThrow();
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+    expect(columnHeader.hasAttribute("tabindex")).toBe(false);
+    expect(rowHeader.hasAttribute("tabindex")).toBe(false);
   });
 
   it("gives the canvas grid/row/cell roles labelled by the Canvas heading", () => {
@@ -1664,6 +1737,43 @@ describe("solvability check", () => {
       "⚠ Not solvable without guessing. Problem rows: 1, 2, 3. Problem columns: 1, 2, 3.",
     );
     expect(solvabilityConfirmationRegion().textContent).toBe("");
+  });
+
+  it("appends a concrete single-cell fix suggestion when the ambiguous area is small enough", async () => {
+    buildFixture();
+    hydrate();
+    fireChange(widthInput(), "2");
+    fireChange(heightInput(), "2");
+    // The classic 2x2 permutation ambiguity — see solvability.test.ts's
+    // `suggestSolvabilityFix` tests for why changing (0,0) to empty is the
+    // (first, deterministic) single-cell fix.
+    fireClick(cell(0, 0));
+    fireClick(cell(1, 1));
+
+    fireClick(checkSolvabilityButton());
+    await flushAsync();
+
+    expect(solvabilityErrorRegion().textContent).toBe(
+      "⚠ Not solvable without guessing. Problem rows: 1, 2. Problem columns: 1, 2." +
+        " Also try: change row 1, column 1 to Empty — that alone would make it solvable.",
+    );
+  });
+
+  it("does not append a fix suggestion when the ambiguous area is too large to search", async () => {
+    buildFixture();
+    hydrate();
+    fireChange(widthInput(), "3");
+    fireChange(heightInput(), "3");
+    fireClick(cell(0, 0));
+    fireClick(cell(1, 1));
+    fireClick(cell(2, 2));
+
+    fireClick(checkSolvabilityButton());
+    await flushAsync();
+
+    expect(solvabilityErrorRegion().textContent).toBe(
+      "⚠ Not solvable without guessing. Problem rows: 1, 2, 3. Problem columns: 1, 2, 3.",
+    );
   });
 
   it("clears a previous problem result once a later check on a now-solvable grid succeeds", async () => {

@@ -109,6 +109,9 @@ export type TranslationKey =
   | "editor.solvabilityOk"
   | "editor.error.solvabilityNoFilledCells"
   | "editor.error.solvabilityProblem"
+  | "editor.solvabilitySuggestion"
+  | "editor.valueEmptyLabel"
+  | "editor.valueColorLabel"
   | "play.swatchColorAriaLabel"
   | "editor.cellColorAriaLabel"
   | "editor.cellEmptyAriaLabel";
@@ -194,9 +197,13 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
       "This puzzle has no filled cells — nothing to check.",
     "editor.error.solvabilityProblem":
       "Not solvable without guessing. Problem rows: {rows}. Problem columns: {columns}.",
+    "editor.solvabilitySuggestion":
+      "Also try: change row {row}, column {column} to {value} — that alone would make it solvable.",
+    "editor.valueEmptyLabel": "Empty",
+    "editor.valueColorLabel": "Color {number}",
     "play.swatchColorAriaLabel": "Color {number}",
-    "editor.cellColorAriaLabel": "Color {number}",
-    "editor.cellEmptyAriaLabel": "Empty",
+    "editor.cellColorAriaLabel": "Row {row}, column {column}, Color {number}",
+    "editor.cellEmptyAriaLabel": "Row {row}, column {column}, Empty",
   },
   fr: {
     "library.title": "Kindle Nonograms",
@@ -282,9 +289,14 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
       "Ce puzzle n'a aucune case remplie — rien à vérifier.",
     "editor.error.solvabilityProblem":
       "Non résolvable sans deviner. Lignes concernées : {rows}. Colonnes concernées : {columns}.",
+    "editor.solvabilitySuggestion":
+      "Essayez aussi : changez la case ligne {row}, colonne {column} en {value} — cela suffirait à le rendre solvable.",
+    "editor.valueEmptyLabel": "Vide",
+    "editor.valueColorLabel": "Couleur {number}",
     "play.swatchColorAriaLabel": "Couleur {number}",
-    "editor.cellColorAriaLabel": "Couleur {number}",
-    "editor.cellEmptyAriaLabel": "Vide",
+    "editor.cellColorAriaLabel":
+      "Ligne {row}, colonne {column}, Couleur {number}",
+    "editor.cellEmptyAriaLabel": "Ligne {row}, colonne {column}, Vide",
   },
 };
 

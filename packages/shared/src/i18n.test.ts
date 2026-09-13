@@ -59,6 +59,9 @@ const ALL_KEYS: TranslationKey[] = [
   "editor.solvabilityOk",
   "editor.error.solvabilityNoFilledCells",
   "editor.error.solvabilityProblem",
+  "editor.solvabilitySuggestion",
+  "editor.valueEmptyLabel",
+  "editor.valueColorLabel",
 ];
 
 describe("SUPPORTED_LOCALES and DEFAULT_LOCALE", () => {
@@ -145,8 +148,12 @@ describe("translate", () => {
       "Remove color {number}",
     );
     expect(translate("en", "library.opensInNewTab")).toBe("opens in a new tab");
-    expect(translate("en", "editor.cellColorAriaLabel")).toBe("Color {number}");
-    expect(translate("en", "editor.cellEmptyAriaLabel")).toBe("Empty");
+    expect(translate("en", "editor.cellColorAriaLabel")).toBe(
+      "Row {row}, column {column}, Color {number}",
+    );
+    expect(translate("en", "editor.cellEmptyAriaLabel")).toBe(
+      "Row {row}, column {column}, Empty",
+    );
     expect(translate("en", "editor.importJsonLabel")).toBe("Import puzzle");
     expect(translate("en", "editor.importJsonFileLabel")).toBe("Puzzle file");
     expect(translate("en", "editor.importJsonButton")).toBe("Import");
@@ -180,6 +187,11 @@ describe("translate", () => {
     expect(translate("en", "editor.error.solvabilityProblem")).toBe(
       "Not solvable without guessing. Problem rows: {rows}. Problem columns: {columns}.",
     );
+    expect(translate("en", "editor.solvabilitySuggestion")).toBe(
+      "Also try: change row {row}, column {column} to {value} — that alone would make it solvable.",
+    );
+    expect(translate("en", "editor.valueEmptyLabel")).toBe("Empty");
+    expect(translate("en", "editor.valueColorLabel")).toBe("Color {number}");
   });
 
   it("returns the exact French string for each key", () => {
@@ -268,9 +280,11 @@ describe("translate", () => {
       "s'ouvre dans un nouvel onglet",
     );
     expect(translate("fr", "editor.cellColorAriaLabel")).toBe(
-      "Couleur {number}",
+      "Ligne {row}, colonne {column}, Couleur {number}",
     );
-    expect(translate("fr", "editor.cellEmptyAriaLabel")).toBe("Vide");
+    expect(translate("fr", "editor.cellEmptyAriaLabel")).toBe(
+      "Ligne {row}, colonne {column}, Vide",
+    );
     expect(translate("fr", "editor.importJsonLabel")).toBe(
       "Importer un puzzle",
     );
@@ -308,6 +322,11 @@ describe("translate", () => {
     expect(translate("fr", "editor.error.solvabilityProblem")).toBe(
       "Non résolvable sans deviner. Lignes concernées : {rows}. Colonnes concernées : {columns}.",
     );
+    expect(translate("fr", "editor.solvabilitySuggestion")).toBe(
+      "Essayez aussi : changez la case ligne {row}, colonne {column} en {value} — cela suffirait à le rendre solvable.",
+    );
+    expect(translate("fr", "editor.valueEmptyLabel")).toBe("Vide");
+    expect(translate("fr", "editor.valueColorLabel")).toBe("Couleur {number}");
   });
 
   it("has a non-empty string for every key in every supported locale", () => {

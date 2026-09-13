@@ -173,6 +173,28 @@ describe("applyLocale", () => {
     );
   });
 
+  it("substitutes {row} and {column} aria-label placeholders with the element's 1-based data-row/data-col", () => {
+    document.body.innerHTML =
+      '<table><tr><td data-i18n-aria="editor.cellEmptyAriaLabel" data-row="2" data-col="6"></td></tr></table>';
+
+    applyLocale("fr");
+
+    expect(document.querySelector("td")?.getAttribute("aria-label")).toBe(
+      "Ligne 3, colonne 7, Vide",
+    );
+  });
+
+  it("leaves an unrelated data-i18n-aria label with no {row}/{column} token untouched even when data-row/data-col are present", () => {
+    document.body.innerHTML =
+      '<table><tr><td data-i18n-aria="editor.addColor" data-row="0" data-col="0"></td></tr></table>';
+
+    applyLocale("fr");
+
+    expect(document.querySelector("td")?.getAttribute("aria-label")).toBe(
+      "Ajouter une couleur",
+    );
+  });
+
   it("substitutes {label} with the element's own text and {status} with the translated solved-badge word", () => {
     document.body.innerHTML =
       '<a data-i18n-aria="library.solvedPuzzleLinkAriaLabel">Cat — 2 × 1</a>';

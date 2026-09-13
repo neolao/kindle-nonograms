@@ -13,6 +13,7 @@ import {
   diagnoseSolvability,
   isSupportedLocale,
   parsePuzzleSource,
+  suggestSolvabilityFix,
   translate,
 } from "@kindle-nonograms/shared";
 import { ImageDecodeError, decodeImageFile } from "./decodeImageFile.js";
@@ -492,17 +493,31 @@ function renderToolbar(elements: EditorElements, state: EditorState): void {
 }
 
 /**
- * A cell's state-describing aria-label: "Color N" (matching the palette
- * swatch numbering convention — the palette has no real color names, see
- * .vibe/decisions/029-swatch-aria-label-number-placeholder.md) or "Empty".
+ * A cell's state-describing aria-label: "Row R, column C, Color N"
+ * (matching the palette swatch numbering convention — the palette has no
+ * real color names, see
+ * .vibe/decisions/029-swatch-aria-label-number-placeholder.md) or
+ * "Row R, column C, Empty" — the position prefix matches the grid's own
+ * 1-based row/column number headers and the solvability check's own
+ * "row R, column C" wording, so all three can never disagree (see
+ * .vibe/decisions/042-editor-grid-row-column-numbering.md).
  */
-function cellAriaLabel(locale: Locale, value: number | null): string {
-  return value === null
-    ? translate(locale, "editor.cellEmptyAriaLabel")
-    : translate(locale, "editor.cellColorAriaLabel").replace(
-        "{number}",
-        String(value + 1),
-      );
+function cellAriaLabel(
+  locale: Locale,
+  value: number | null,
+  row: number,
+  column: number,
+): string {
+  const template =
+    value === null
+      ? translate(locale, "editor.cellEmptyAriaLabel")
+      : translate(locale, "editor.cellColorAriaLabel").replace(
+          "{number}",
+          String(value + 1),
+        );
+  return template
+    .replace("{row}", String(row + 1))
+    .replace("{column}", String(column + 1));
 }
 
 /**
@@ -519,8 +534,13 @@ function paintGridCell(
   value: number | null,
   state: EditorState,
 ): void {
+  const row = Number(td.dataset.row);
+  const column = Number(td.dataset.col);
   td.style.backgroundColor = value === null ? "" : (state.palette[value] ?? "");
-  td.setAttribute("aria-label", cellAriaLabel(state.locale, value));
+  td.setAttribute(
+    "aria-label",
+    cellAriaLabel(state.locale, value, row, column),
+  );
   if (value === null) {
     td.dataset.i18nAria = "editor.cellEmptyAriaLabel";
     delete td.dataset.colorIndex;
@@ -551,6 +571,51 @@ function setRovingTabIndex(
 }
 
 /**
+ * Builds the `<thead>` row of 1-based column-number headers, plus an
+ * empty, inert corner cell at its start (aligned with the row-number
+ * column {@link buildGridRowHeader} adds to every body row). `aria-hidden`
+ * on the corner cell keeps assistive-tech table-browsing commands from
+ * landing on a meaningless blank stop — mirrors `renderEditorPage.ts`'s own
+ * static markup exactly, see
+ * .vibe/decisions/042-editor-grid-row-column-numbering.md.
+ */
+function buildGridColumnHeaders(width: number): HTMLTableSectionElement {
+  const thead = document.createElement("thead");
+  const tr = document.createElement("tr");
+  tr.setAttribute("role", "row");
+
+  const corner = document.createElement("th");
+  corner.setAttribute("scope", "col");
+  corner.setAttribute("role", "columnheader");
+  corner.setAttribute("aria-hidden", "true");
+  tr.append(corner);
+
+  for (let x = 0; x < width; x++) {
+    const th = document.createElement("th");
+    th.setAttribute("scope", "col");
+    th.setAttribute("role", "columnheader");
+    const span = document.createElement("span");
+    span.textContent = String(x + 1);
+    th.append(span);
+    tr.append(th);
+  }
+
+  thead.append(tr);
+  return thead;
+}
+
+/** Builds a body row's leading 1-based row-number header cell. */
+function buildGridRowHeader(y: number): HTMLTableCellElement {
+  const th = document.createElement("th");
+  th.setAttribute("scope", "row");
+  th.setAttribute("role", "rowheader");
+  const span = document.createElement("span");
+  span.textContent = String(y + 1);
+  th.append(span);
+  return th;
+}
+
+/**
  * Rebuilds the canvas `<table>` from `state` as a keyboard-operable ARIA
  * grid (`role="grid"/"row"/"gridcell"` over the real `<table>`/`<tr>`/`<td>`
  * structure, one roving-tabindex cell). The roving-tabindex cell survives
@@ -573,11 +638,13 @@ function renderGrid(elements: EditorElements, state: EditorState): void {
   const table = document.createElement("table");
   table.setAttribute("role", "grid");
   table.setAttribute("aria-labelledby", EDITOR_CANVAS_LABEL_ID);
+  table.append(buildGridColumnHeaders(state.width));
   const tbody = document.createElement("tbody");
 
   for (let y = 0; y < state.height; y++) {
     const tr = document.createElement("tr");
     tr.setAttribute("role", "row");
+    tr.append(buildGridRowHeader(y));
     for (let x = 0; x < state.width; x++) {
       const td = document.createElement("td");
       td.setAttribute("role", "gridcell");
@@ -1263,12 +1330,26 @@ async function handleCheckSolvability(
 
   const rows = result.problemRows.map((row) => row + 1).join(", ");
   const columns = result.problemColumns.map((column) => column + 1).join(", ");
-  elements.solvabilityError.textContent = `⚠ ${translate(
-    state.locale,
-    "editor.error.solvabilityProblem",
-  )
+  let message = translate(state.locale, "editor.error.solvabilityProblem")
     .replace("{rows}", rows)
-    .replace("{columns}", columns)}`;
+    .replace("{columns}", columns);
+
+  const suggestion = suggestSolvabilityFix(puzzle);
+  if (suggestion) {
+    const valueLabel =
+      suggestion.value === null
+        ? translate(state.locale, "editor.valueEmptyLabel")
+        : translate(state.locale, "editor.valueColorLabel").replace(
+            "{number}",
+            String(suggestion.value + 1),
+          );
+    message += ` ${translate(state.locale, "editor.solvabilitySuggestion")
+      .replace("{row}", String(suggestion.row + 1))
+      .replace("{column}", String(suggestion.column + 1))
+      .replace("{value}", valueLabel)}`;
+  }
+
+  elements.solvabilityError.textContent = `⚠ ${message}`;
 }
 
 function handleExport(elements: EditorElements, state: EditorState): void {

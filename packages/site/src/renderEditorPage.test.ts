@@ -88,6 +88,45 @@ describe("renderEditorPage", () => {
     expect(doc.querySelector("tr")?.getAttribute("role")).toBe("row");
   });
 
+  it("bakes 1-based column and row number headers matching the default 5x5 grid, with an inert corner cell", () => {
+    const doc = parse(renderEditorPage());
+
+    const columnHeaders = Array.from(
+      doc.querySelectorAll('thead th[role="columnheader"]:not([aria-hidden])'),
+    );
+    expect(columnHeaders.map((th) => th.textContent)).toEqual([
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+    ]);
+
+    const corner = doc.querySelector('thead th[aria-hidden="true"]');
+    expect(corner).not.toBeNull();
+    expect(corner?.textContent).toBe("");
+
+    const rowHeaders = Array.from(
+      doc.querySelectorAll('tbody th[role="rowheader"]'),
+    );
+    expect(rowHeaders.map((th) => th.textContent)).toEqual([
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+    ]);
+  });
+
+  it("keeps header cells outside the keyboard grid: no data-row/data-col, no tabindex", () => {
+    const doc = parse(renderEditorPage());
+    const headers = Array.from(doc.querySelectorAll("th"));
+
+    expect(headers.every((th) => !th.hasAttribute("data-row"))).toBe(true);
+    expect(headers.every((th) => !th.hasAttribute("data-col"))).toBe(true);
+    expect(headers.every((th) => !th.hasAttribute("tabindex"))).toBe(true);
+  });
+
   it("makes exactly the first default cell a tab stop, every other cell excluded from the tab order", () => {
     const doc = parse(renderEditorPage());
     const cells = Array.from(doc.querySelectorAll("td"));
@@ -105,9 +144,15 @@ describe("renderEditorPage", () => {
     expect(cells.every((td) => td.getAttribute("role") === "gridcell")).toBe(
       true,
     );
-    expect(cells.every((td) => td.getAttribute("aria-label") === "Empty")).toBe(
-      true,
-    );
+    expect(
+      cells.every(
+        (td) =>
+          td.getAttribute("aria-label") ===
+          `Row ${Number(td.getAttribute("data-row")) + 1}, column ${
+            Number(td.getAttribute("data-col")) + 1
+          }, Empty`,
+      ),
+    ).toBe(true);
     expect(
       cells.every(
         (td) =>

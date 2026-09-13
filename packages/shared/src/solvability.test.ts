@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { Puzzle } from "./puzzle.js";
-import { checkSolvability, diagnoseSolvability } from "./solvability.js";
+import {
+  checkSolvability,
+  diagnoseSolvability,
+  suggestSolvabilityFix,
+} from "./solvability.js";
 
 function fixture(overrides: Partial<Puzzle>): Puzzle {
   return {
@@ -136,6 +140,17 @@ describe("diagnoseSolvability", () => {
       kind: "ambiguous",
       problemRows: [0, 1, 2],
       problemColumns: [0, 1, 2],
+      problemCells: [
+        { row: 0, column: 0 },
+        { row: 0, column: 1 },
+        { row: 0, column: 2 },
+        { row: 1, column: 0 },
+        { row: 1, column: 1 },
+        { row: 1, column: 2 },
+        { row: 2, column: 0 },
+        { row: 2, column: 1 },
+        { row: 2, column: 2 },
+      ],
     });
   });
 
@@ -166,6 +181,12 @@ describe("diagnoseSolvability", () => {
       kind: "ambiguous",
       problemRows: [0, 1],
       problemColumns: [0, 1],
+      problemCells: [
+        { row: 0, column: 0 },
+        { row: 0, column: 1 },
+        { row: 1, column: 0 },
+        { row: 1, column: 1 },
+      ],
     });
   });
 
@@ -181,5 +202,68 @@ describe("diagnoseSolvability", () => {
       ok: false,
       kind: "noFilledCells",
     });
+  });
+});
+
+describe("suggestSolvabilityFix", () => {
+  it("finds a single-cell change that makes a small ambiguous puzzle solvable", () => {
+    // The classic 2x2 permutation ambiguity. Independently verified by
+    // hand: changing (0,0) from filled to empty gives [[null,null],[null,0]]
+    // — row0/col0 both become the special "nothing filled" clue, forcing
+    // (0,1) and (1,0) empty too, which in turn pins row1's/col1's lone run
+    // to (1,1). Every cell ends up determined, so this is a genuine fix,
+    // and it's the first candidate the function tries (cell (0,0), before
+    // (0,1)/(1,0)/(1,1), with `null` tried before any color).
+    const puzzle = fixture({
+      cells: [
+        [0, null],
+        [null, 0],
+      ],
+    });
+
+    expect(suggestSolvabilityFix(puzzle)).toEqual({
+      row: 0,
+      column: 0,
+      value: null,
+    });
+  });
+
+  it("suggests nothing for a puzzle that's already solvable", () => {
+    const puzzle = fixture({
+      cells: [
+        [0, 0],
+        [0, null],
+      ],
+    });
+
+    expect(suggestSolvabilityFix(puzzle)).toBeUndefined();
+  });
+
+  it("suggests nothing when the ambiguous area is too large to search", () => {
+    // The 3x3 full-permutation diagonal: 9 ambiguous cells, over the
+    // small-area search cap, and (per the real puzzles that motivated this
+    // cap) not fixable by any single cell anyway.
+    const puzzle = fixture({
+      width: 3,
+      height: 3,
+      cells: [
+        [0, null, null],
+        [null, 0, null],
+        [null, null, 0],
+      ],
+    });
+
+    expect(suggestSolvabilityFix(puzzle)).toBeUndefined();
+  });
+
+  it("suggests nothing for a puzzle with no filled cells", () => {
+    const puzzle = fixture({
+      cells: [
+        [null, null],
+        [null, null],
+      ],
+    });
+
+    expect(suggestSolvabilityFix(puzzle)).toBeUndefined();
   });
 });

@@ -77,15 +77,44 @@ function renderDefaultToolbar(): string {
  * .vibe/decisions/034-editor-canvas-roving-tabindex-with-clamped-focus-preservation.md.
  */
 function renderDefaultGrid(): string {
-  const emptyLabel = translate(DEFAULT_LOCALE, "editor.cellEmptyAriaLabel");
+  const emptyLabelTemplate = translate(
+    DEFAULT_LOCALE,
+    "editor.cellEmptyAriaLabel",
+  );
   const rows = Array.from({ length: EDITOR_DEFAULT_HEIGHT }, (_, y) => {
     const cells = Array.from({ length: EDITOR_DEFAULT_WIDTH }, (_, x) => {
       const tabIndex = x === 0 && y === 0 ? "0" : "-1";
+      const emptyLabel = emptyLabelTemplate
+        .replace("{row}", String(y + 1))
+        .replace("{column}", String(x + 1));
       return `<td data-row="${y}" data-col="${x}" role="gridcell" tabindex="${tabIndex}" aria-label="${emptyLabel}" data-i18n-aria="editor.cellEmptyAriaLabel"></td>`;
     }).join("");
-    return `<tr role="row">${cells}</tr>`;
+    return `<tr role="row">${renderGridRowHeader(y)}${cells}</tr>`;
   }).join("");
-  return `<table role="grid" aria-labelledby="${EDITOR_CANVAS_LABEL_ID}"><tbody>${rows}</tbody></table>`;
+  return `<table role="grid" aria-labelledby="${EDITOR_CANVAS_LABEL_ID}">${renderGridColumnHeaders(EDITOR_DEFAULT_WIDTH)}<tbody>${rows}</tbody></table>`;
+}
+
+/**
+ * Renders the `<thead>` row of 1-based column-number headers, plus an
+ * empty, inert corner cell at its start (aligned with the row-number column
+ * every body row also gets — see the row's own leading `<th>` next to
+ * `renderDefaultGrid`'s cells above). `aria-hidden` on the corner cell keeps
+ * assistive-tech table-browsing commands from ever landing on a
+ * meaningless blank stop — see
+ * .vibe/decisions/042-editor-grid-row-column-numbering.md.
+ */
+function renderGridColumnHeaders(width: number): string {
+  const corner = `<th scope="col" role="columnheader" aria-hidden="true"></th>`;
+  const columns = Array.from(
+    { length: width },
+    (_, x) => `<th scope="col" role="columnheader"><span>${x + 1}</span></th>`,
+  ).join("");
+  return `<thead><tr role="row">${corner}${columns}</tr></thead>`;
+}
+
+/** Renders a body row's leading 1-based row-number header cell. */
+function renderGridRowHeader(y: number): string {
+  return `<th scope="row" role="rowheader"><span>${y + 1}</span></th>`;
 }
 
 /**
@@ -230,6 +259,10 @@ ${sharedStyles()}
 .grid-wrapper table{border-collapse:collapse;}
 .grid-wrapper td{border:${BORDER_WIDTH.thin} solid ${COLORS.border};width:2em;height:2em;min-width:2em;min-height:2em;padding:0;cursor:pointer;}
 .grid-wrapper td:focus{outline:none;box-shadow:inset 0 0 0 ${BORDER_WIDTH.medium} ${COLORS.panel},inset 0 0 0 5px ${COLORS.focusOutline};}
-.grid-wrapper tbody td:nth-child(5n+1){border-left-width:${BORDER_WIDTH.medium};}
+.grid-wrapper tbody td:nth-child(5n+2){border-left-width:${BORDER_WIDTH.medium};}
 .grid-wrapper tbody tr:nth-child(5n+1) td{border-top-width:${BORDER_WIDTH.medium};}
+.grid-wrapper th{width:2em;height:2em;min-width:2em;min-height:2em;padding:0;box-sizing:border-box;font-weight:normal;color:${COLORS.muted};background:${COLORS.paper};text-align:center;vertical-align:middle;}
+.grid-wrapper th span{font-size:0.6em;}
+.grid-wrapper thead th{border-bottom:${BORDER_WIDTH.thin} solid ${COLORS.panelEdge};}
+.grid-wrapper tbody th{border-right:${BORDER_WIDTH.thin} solid ${COLORS.panelEdge};}
 `;
