@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A corrupted or unreadable puzzle library now logs a console warning, instead of silently looking identical to a library with zero puzzles.
+
 ## [2.29.0] - 2026-09-13
 
 ### Added

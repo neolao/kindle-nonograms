@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import type { Puzzle } from "@kindle-nonograms/shared";
 import { renderLibraryPage } from "@kindle-nonograms/site";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { extractBodyHtml } from "./htmlFixture.js";
 import { hydrate } from "./hydrateLibraryPage.js";
 import { saveProgress } from "./progressStorage.js";
@@ -279,6 +279,51 @@ describe("hydrate", () => {
 
     expect(() => hydrate()).not.toThrow();
     expect(badgeFor("cat").hidden).toBe(true);
+  });
+});
+
+describe("embedded puzzles data parse failure", () => {
+  it("logs a console warning when the embedded puzzles JSON fails to parse", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    document.body.innerHTML =
+      '<ul><li data-puzzle-id="cat"><span class="solved-badge" hidden>Solved</span></li></ul><script type="application/json" id="puzzles-data">not json[</script>';
+
+    hydrate();
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+
+  it("logs a console warning when the embedded puzzles JSON parses to something other than an array", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    document.body.innerHTML =
+      '<ul><li data-puzzle-id="cat"><span class="solved-badge" hidden>Solved</span></li></ul><script type="application/json" id="puzzles-data">{"not":"an array"}</script>';
+
+    hydrate();
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+
+  it("does not log a console warning for a genuinely empty library (an actual [])", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    buildEmptyFixture();
+
+    hydrate();
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("does not log a console warning when the embedded puzzles script element is entirely missing", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    document.body.innerHTML =
+      '<ul><li data-puzzle-id="cat"><span class="solved-badge" hidden>Solved</span></li></ul>';
+
+    expect(() => hydrate()).not.toThrow();
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 });
 

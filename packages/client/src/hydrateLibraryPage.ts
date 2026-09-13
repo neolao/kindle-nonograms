@@ -22,18 +22,40 @@ import { loadProgress } from "./progressStorage.js";
 // for why this is built here rather than embedded server-side.
 const THUMBNAIL_MAX_DIMENSION = 8;
 
+/**
+ * A missing script element (no puzzles-data at all) or empty text content is
+ * not a parse failure — it just means there's nothing embedded to read, so
+ * it's treated the same as a genuinely empty library, silently. A syntax
+ * error or an unexpected (non-array) shape, however, means the embedded data
+ * is corrupted rather than empty — both are logged so a broken build doesn't
+ * silently look identical to a library with zero puzzles (see backlog item
+ * 056).
+ */
 function readPuzzles(): Puzzle[] {
   const script = document.getElementById("puzzles-data");
   if (!(script instanceof HTMLScriptElement) || !script.textContent) {
     return [];
   }
 
+  let parsed: unknown;
   try {
-    const parsed: unknown = JSON.parse(script.textContent);
-    return Array.isArray(parsed) ? (parsed as Puzzle[]) : [];
-  } catch {
+    parsed = JSON.parse(script.textContent);
+  } catch (error) {
+    console.warn(
+      "Failed to parse the embedded puzzles data — treating the library as empty.",
+      error,
+    );
     return [];
   }
+
+  if (!Array.isArray(parsed)) {
+    console.warn(
+      "Embedded puzzles data is not an array — treating the library as empty.",
+    );
+    return [];
+  }
+
+  return parsed as Puzzle[];
 }
 
 function isSolved(puzzle: Puzzle): boolean {
