@@ -174,16 +174,6 @@ function click(button: HTMLButtonElement): void {
   button.dispatchEvent(new Event("click", { bubbles: true }));
 }
 
-function sizeFilterSelect(): HTMLSelectElement {
-  const found = document.querySelector<HTMLSelectElement>(
-    '[data-role="library-filter-size-select"]',
-  );
-  if (!found) {
-    throw new Error("fixture size filter select not found");
-  }
-  return found;
-}
-
 function colorFilterSelect(): HTMLSelectElement {
   const found = document.querySelector<HTMLSelectElement>(
     '[data-role="library-filter-color-select"]',
@@ -505,20 +495,11 @@ describe("library filters", () => {
     hydrate();
   });
 
-  it("shows every puzzle by default, with both filters set to 'all'", () => {
-    expect(sizeFilterSelect().value).toBe("all");
+  it("shows every puzzle by default, with the color filter set to 'all'", () => {
     expect(colorFilterSelect().value).toBe("all");
     expect(isRowVisible("small-mono")).toBe(true);
     expect(isRowVisible("medium-multi")).toBe(true);
     expect(isRowVisible("large-mono")).toBe(true);
-  });
-
-  it("hides puzzles that don't match the selected size filter", () => {
-    selectValue(sizeFilterSelect(), "small");
-
-    expect(isRowVisible("small-mono")).toBe(true);
-    expect(isRowVisible("medium-multi")).toBe(false);
-    expect(isRowVisible("large-mono")).toBe(false);
   });
 
   it("hides puzzles that don't match the selected color filter", () => {
@@ -529,21 +510,13 @@ describe("library filters", () => {
     expect(isRowVisible("large-mono")).toBe(true);
   });
 
-  it("combines the size and color filters with AND logic, not OR", () => {
-    selectValue(sizeFilterSelect(), "medium");
+  it("shows a 'no puzzles match' message when the color filter matches nothing", () => {
+    buildFixture([smallMonoPuzzle, largeMonoPuzzle]);
+    hydrate();
+
     selectValue(colorFilterSelect(), "multi");
 
     expect(isRowVisible("small-mono")).toBe(false);
-    expect(isRowVisible("medium-multi")).toBe(true);
-    expect(isRowVisible("large-mono")).toBe(false);
-  });
-
-  it("shows a 'no puzzles match' message when the filter combination matches nothing", () => {
-    selectValue(sizeFilterSelect(), "small");
-    selectValue(colorFilterSelect(), "multi");
-
-    expect(isRowVisible("small-mono")).toBe(false);
-    expect(isRowVisible("medium-multi")).toBe(false);
     expect(isRowVisible("large-mono")).toBe(false);
     const message = document.querySelector<HTMLElement>(
       "[data-i18n='library.filterNoResults']",
@@ -552,7 +525,9 @@ describe("library filters", () => {
   });
 
   it("hides the 'no puzzles match' message again once a matching puzzle reappears", () => {
-    selectValue(sizeFilterSelect(), "small");
+    buildFixture([smallMonoPuzzle, largeMonoPuzzle]);
+    hydrate();
+
     selectValue(colorFilterSelect(), "multi");
     selectValue(colorFilterSelect(), "all");
 
@@ -563,10 +538,8 @@ describe("library filters", () => {
     expect(message?.hidden).toBe(true);
   });
 
-  it("restores every puzzle when both filters are reset back to 'all'", () => {
-    selectValue(sizeFilterSelect(), "small");
+  it("restores every puzzle when the color filter is reset back to 'all'", () => {
     selectValue(colorFilterSelect(), "mono");
-    selectValue(sizeFilterSelect(), "all");
     selectValue(colorFilterSelect(), "all");
 
     expect(isRowVisible("small-mono")).toBe(true);
@@ -576,7 +549,7 @@ describe("library filters", () => {
 
   it("keeps the puzzle still solved-checkable after being hidden by a filter", () => {
     saveProgress("small-mono", { cells: [[0, null]] });
-    selectValue(sizeFilterSelect(), "medium");
+    selectValue(colorFilterSelect(), "multi");
 
     // Hydration's own solved-badge reveal already ran once during the
     // shared beforeEach's `hydrate()` call, before progress was saved here
@@ -590,16 +563,16 @@ describe("library filters", () => {
   });
 
   it("keeps the active filter selection and re-translates option labels when the language is changed", () => {
-    selectValue(sizeFilterSelect(), "small");
+    selectValue(colorFilterSelect(), "mono");
     switcherSelect().value = "fr";
     switcherSelect().dispatchEvent(new Event("change"));
 
-    expect(sizeFilterSelect().value).toBe("small");
+    expect(colorFilterSelect().value).toBe("mono");
     expect(isRowVisible("small-mono")).toBe(true);
     expect(isRowVisible("medium-multi")).toBe(false);
     expect(
-      sizeFilterSelect().querySelector('option[value="small"]')?.textContent,
-    ).toBe("Petit");
+      colorFilterSelect().querySelector('option[value="mono"]')?.textContent,
+    ).toBe("Monochrome uniquement");
   });
 });
 
@@ -693,13 +666,13 @@ describe("library pagination", () => {
   it("resets to the first page and hides pagination once a filter narrows the result set below the page size", () => {
     const puzzles = [
       ...buildPuzzles(30),
-      mediumMultiPuzzle, // the only non-small, non-mono puzzle in the mix
+      mediumMultiPuzzle, // the only multi-color puzzle in the mix
     ];
     buildFixture(puzzles);
     hydrate();
     click(paginationNextButton());
 
-    selectValue(sizeFilterSelect(), "medium");
+    selectValue(colorFilterSelect(), "multi");
 
     expect(paginationContainer().hidden).toBe(true);
     expect(isRowVisible("medium-multi")).toBe(true);
@@ -709,10 +682,10 @@ describe("library pagination", () => {
   it("shows pagination again once a filter narrowing below the page size is cleared", () => {
     buildFixture(buildPuzzles(30));
     hydrate();
-    selectValue(sizeFilterSelect(), "large");
+    selectValue(colorFilterSelect(), "multi");
     expect(paginationContainer().hidden).toBe(true);
 
-    selectValue(sizeFilterSelect(), "all");
+    selectValue(colorFilterSelect(), "all");
 
     expect(paginationContainer().hidden).toBe(false);
     expect(isRowVisible("p0")).toBe(true);

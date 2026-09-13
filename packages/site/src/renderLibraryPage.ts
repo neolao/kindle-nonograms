@@ -4,7 +4,6 @@ import {
   type Puzzle,
   type TranslationKey,
   isMultiColorPuzzle,
-  puzzleSizeBucket,
   translate,
 } from "@kindle-nonograms/shared";
 import { renderEarlyLangScript } from "./earlyLangScript.js";
@@ -20,18 +19,7 @@ import {
   SPACING_PX,
 } from "./theme.js";
 
-type SizeFilterValue = "all" | "small" | "medium" | "large";
 type ColorFilterValue = "all" | "mono" | "multi";
-
-const SIZE_FILTER_OPTIONS: ReadonlyArray<{
-  value: SizeFilterValue;
-  key: TranslationKey;
-}> = [
-  { value: "all", key: "library.filterSizeAll" },
-  { value: "small", key: "library.filterSizeSmall" },
-  { value: "medium", key: "library.filterSizeMedium" },
-  { value: "large", key: "library.filterSizeLarge" },
-];
 
 const COLOR_FILTER_OPTIONS: ReadonlyArray<{
   value: ColorFilterValue;
@@ -43,9 +31,9 @@ const COLOR_FILTER_OPTIONS: ReadonlyArray<{
 ];
 
 /**
- * Renders the library's default chrome — size/color filters (both at
- * "all"), the "no results" message (hidden — the default filters always
- * match at least one puzzle whenever the library itself isn't empty), and
+ * Renders the library's default chrome — the color filter (at "all"), the
+ * "no results" message (hidden — the default filter always matches at
+ * least one puzzle whenever the library itself isn't empty), and
  * Previous/Next pagination (hidden unless there are more puzzles than fit
  * on one page, its total-page count computed here from the fixed puzzle
  * count) — baked into the static HTML so the page already looks complete
@@ -75,7 +63,7 @@ function renderFiltersAndPagination(puzzleCount: number): {
   noResults: string;
   pagination: string;
 } {
-  const filters = `<div class="library-filters">${renderFilterSelect("library-filter-size", "library.filterSizeLabel", "library-filter-size-select", SIZE_FILTER_OPTIONS)}${renderFilterSelect("library-filter-color", "library.filterColorLabel", "library-filter-color-select", COLOR_FILTER_OPTIONS)}</div>`;
+  const filters = `<div class="library-filters">${renderFilterSelect("library-filter-color", "library.filterColorLabel", "library-filter-color-select", COLOR_FILTER_OPTIONS)}</div>`;
 
   const noResults = `<p class="filter-no-results" data-role="library-filter-no-results" data-i18n="library.filterNoResults" hidden>${translate(DEFAULT_LOCALE, "library.filterNoResults")}</p>`;
 
@@ -151,10 +139,10 @@ function stripeGradient(palette: string[]): string {
  * The whole page sits inside one bordered/shadowed `.panel`, safe to wrap
  * everything here (unlike the puzzle page) since this page has no
  * fit-to-viewport measurement that padding could throw off. Each row also
- * carries its `puzzleSizeBucket`/`isMultiColorPuzzle` result as
- * `data-size-bucket`/`data-color-type` attributes for the size/color filter
- * controls (also baked here now, see `renderFiltersAndPagination`) to read
- * directly rather than re-deriving them from the embedded puzzle JSON. The
+ * carries its `isMultiColorPuzzle` result as a `data-color-type` attribute
+ * for the color filter control (also baked here now, see
+ * `renderFiltersAndPagination`) to read directly rather than re-deriving
+ * it from the embedded puzzle JSON. The
  * footer's language switcher, the filters, the "no results" message, the
  * pagination controls, and every row beyond the first page are all real
  * markup already in their default shape — see
@@ -221,16 +209,15 @@ const THUMBNAIL_PLACEHOLDER = `<span class="thumb" aria-hidden="true"><span clas
 function renderLibraryItem(puzzle: Puzzle, index: number): string {
   const href = `puzzles/${encodeURIComponent(puzzle.id)}/`;
   const label = `${escapeHtml(puzzle.name)} — ${puzzle.width} × ${puzzle.height}`;
-  const sizeBucket = puzzleSizeBucket(puzzle);
   const colorType = isMultiColorPuzzle(puzzle) ? "multi" : "mono";
-  // The default filters always match every puzzle ("all"/"all"), so the
-  // first page of that default result set is simply this list's own first
+  // The default filter always matches every puzzle ("all"), so the first
+  // page of that default result set is simply this list's own first
   // `LIBRARY_PAGE_SIZE` items — baked here so pagination is already correct
   // on first paint (see `renderFiltersAndPagination`). Re-filtering or
   // paging afterward keeps toggling this same attribute, exactly as before.
   const hidden = index >= LIBRARY_PAGE_SIZE ? " hidden" : "";
 
-  return `<li class="stripe-${index}" data-puzzle-id="${escapeHtml(puzzle.id)}" data-size-bucket="${sizeBucket}" data-color-type="${colorType}"${hidden}>${THUMBNAIL_PLACEHOLDER}<a href="${href}">${label}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span></li>`;
+  return `<li class="stripe-${index}" data-puzzle-id="${escapeHtml(puzzle.id)}" data-color-type="${colorType}"${hidden}>${THUMBNAIL_PLACEHOLDER}<a href="${href}">${label}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span></li>`;
 }
 
 const STYLE = `

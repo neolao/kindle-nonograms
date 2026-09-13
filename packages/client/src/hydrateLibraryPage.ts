@@ -185,25 +185,23 @@ function setUpLanguageSwitcher(): Locale {
 }
 
 /**
- * Locates the library page's already-baked size/color filter selects,
- * "no results" message, and pagination controls (see
- * `renderLibraryPage.ts`'s `renderFiltersAndPagination` and
+ * Locates the library page's already-baked color filter select, "no
+ * results" message, and pagination controls (see `renderLibraryPage.ts`'s
+ * `renderFiltersAndPagination` and
  * .ux/decisions/001-frozen-chrome-blocking-reconciliation.md), and wires
- * them into one shared `render()` pass: a row is visible only if it matches
- * both filters AND falls inside the current page's slice of the *filtered*
- * result set. Rows are only ever toggled via `hidden`, never removed or
- * reordered, so the solved-badge/thumbnail hydration in `hydrate` keeps
- * finding every row regardless of its current filter/page state. `render()`
- * still runs once at setup even though the static defaults (page 1, both
- * filters at "all") already match its result — a safe, invisible no-op
- * that also initializes this closure's own `currentPage`/`totalPages`
- * state. A missing control (unexpected page shape) leaves this a no-op,
- * same defensive spirit as `findElements` in `hydrateEditorPage.ts`.
+ * them into one shared `render()` pass: a row is visible only if it
+ * matches the filter AND falls inside the current page's slice of the
+ * *filtered* result set. Rows are only ever toggled via `hidden`, never
+ * removed or reordered, so the solved-badge/thumbnail hydration in
+ * `hydrate` keeps finding every row regardless of its current filter/page
+ * state. `render()` still runs once at setup even though the static
+ * defaults (page 1, filter at "all") already match its result — a safe,
+ * invisible no-op that also initializes this closure's own
+ * `currentPage`/`totalPages` state. A missing control (unexpected page
+ * shape) leaves this a no-op, same defensive spirit as `findElements` in
+ * `hydrateEditorPage.ts`.
  */
 function setUpFiltersAndPagination(): void {
-  const sizeSelect = document.querySelector<HTMLSelectElement>(
-    '[data-role="library-filter-size-select"]',
-  );
   const colorSelect = document.querySelector<HTMLSelectElement>(
     '[data-role="library-filter-color-select"]',
   );
@@ -223,7 +221,6 @@ function setUpFiltersAndPagination(): void {
     '[data-role="library-pagination-position"]',
   );
   if (
-    !sizeSelect ||
     !colorSelect ||
     !noResultsMessage ||
     !paginationContainer ||
@@ -238,16 +235,13 @@ function setUpFiltersAndPagination(): void {
   let totalPages = 1;
 
   function render(): void {
-    const sizeValue = sizeSelect?.value;
     const colorValue = colorSelect?.value;
 
     const allRows = Array.from(
       document.querySelectorAll<HTMLElement>("[data-puzzle-id]"),
     );
     const matched = allRows.filter(
-      (row) =>
-        (sizeValue === "all" || row.dataset.sizeBucket === sizeValue) &&
-        (colorValue === "all" || row.dataset.colorType === colorValue),
+      (row) => colorValue === "all" || row.dataset.colorType === colorValue,
     );
 
     totalPages = Math.max(1, Math.ceil(matched.length / LIBRARY_PAGE_SIZE));
@@ -276,7 +270,6 @@ function setUpFiltersAndPagination(): void {
     currentPage = 1;
     render();
   };
-  sizeSelect.addEventListener("change", onFilterChange);
   colorSelect.addEventListener("change", onFilterChange);
 
   const list = document.querySelector("ul");
@@ -324,8 +317,8 @@ function scrollListIntoView(list: Element): void {
 
 /**
  * Hydrates the generated library page: inserts the language switcher,
- * reads every puzzle's data embedded in the page, sets up the size/color
- * filter controls, checks each puzzle's saved progress against its
+ * reads every puzzle's data embedded in the page, sets up the color
+ * filter control, checks each puzzle's saved progress against its
  * solution, and reveals the already-reserved "solved" badge (see
  * .vibe/decisions/004-library-page-reserves-solved-badge-node.md) for
  * every puzzle solved correctly — at the same time folding that solved
