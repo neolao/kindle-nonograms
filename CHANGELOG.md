@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Running `npm run lint` no longer reformats puzzle data files under `data/puzzles/`.
+
 ## [2.32.0] - 2026-09-13
 
 ### Added
