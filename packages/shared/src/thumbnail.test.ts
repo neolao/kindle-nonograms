@@ -1,34 +1,22 @@
 import { describe, expect, it } from "vitest";
-import type { Puzzle } from "./puzzle.js";
 import { buildThumbnail } from "./thumbnail.js";
 
-function puzzleWithCells(cells: (number | null)[][]): Puzzle {
-  return {
-    id: "fixture",
-    name: "Fixture",
-    width: cells[0].length,
-    height: cells.length,
-    palette: ["#000000"],
-    cells,
-  };
-}
-
 describe("buildThumbnail", () => {
-  it("returns the solution unchanged when it is already within the size cap", () => {
-    const puzzle = puzzleWithCells([
+  it("returns the grid unchanged when it is already within the size cap", () => {
+    const cells: (number | null)[][] = [
       [0, null, 0],
       [null, 0, null],
-    ]);
+    ];
 
-    expect(buildThumbnail(puzzle, 8)).toEqual([
+    expect(buildThumbnail(cells, 8)).toEqual([
       [0, null, 0],
       [null, 0, null],
     ]);
   });
 
-  it("downsamples a square solution larger than the cap by nearest-neighbor sampling", () => {
-    // 8x8 solution, capped to 4x4: every output cell samples the source
-    // cell at (row*2, col*2) — hand-picked so each sampled corner has a
+  it("downsamples a square grid larger than the cap by nearest-neighbor sampling", () => {
+    // 8x8 grid, capped to 4x4: every output cell samples the source cell
+    // at (row*2, col*2) — hand-picked so each sampled corner has a
     // distinct, independently-verifiable value.
     const row0 = [0, 9, 0, 9, 0, 9, 0, 9];
     const row2 = [1, 9, 1, 9, 1, 9, 1, 9];
@@ -45,16 +33,8 @@ describe("buildThumbnail", () => {
       row6,
       filler,
     ];
-    const puzzle: Puzzle = {
-      id: "big",
-      name: "Big",
-      width: 8,
-      height: 8,
-      palette: new Array(10).fill("#000000"),
-      cells,
-    };
 
-    expect(buildThumbnail(puzzle, 4)).toEqual([
+    expect(buildThumbnail(cells, 4)).toEqual([
       [0, 0, 0, 0],
       [1, 1, 1, 1],
       [2, 2, 2, 2],
@@ -62,7 +42,7 @@ describe("buildThumbnail", () => {
     ]);
   });
 
-  it("scales both dimensions by the same factor, preserving a non-square solution's proportions", () => {
+  it("scales both dimensions by the same factor, preserving a non-square grid's proportions", () => {
     // 12 wide x 4 tall, capped at 4 on the longer (width) axis: a single
     // scale of 3 applies to both axes, giving a 4x2 thumbnail — not a
     // distorted 4x4 square.
@@ -100,37 +80,25 @@ describe("buildThumbnail", () => {
       ],
     ];
 
-    const puzzle: Puzzle = {
-      id: "wide",
-      name: "Wide",
-      width: 12,
-      height: 4,
-      palette: new Array(8).fill("#000000"),
-      cells,
-    };
-
-    expect(buildThumbnail(puzzle, 4)).toEqual([
+    expect(buildThumbnail(cells, 4)).toEqual([
       [0, 1, 2, 3],
       [4, 5, 6, 7],
     ]);
   });
 
-  it("returns a 1x1 grid for the smallest possible puzzle without throwing", () => {
-    const puzzle = puzzleWithCells([[0]]);
-
-    expect(buildThumbnail(puzzle, 8)).toEqual([[0]]);
+  it("returns a 1x1 grid for the smallest possible grid without throwing", () => {
+    expect(buildThumbnail([[0]], 8)).toEqual([[0]]);
   });
 
-  it("does not mutate the puzzle's own cells array", () => {
+  it("does not mutate the given cells array", () => {
     const cells: (number | null)[][] = [
       [0, null],
       [null, 0],
     ];
-    const puzzle = puzzleWithCells(cells);
 
-    buildThumbnail(puzzle, 1);
+    buildThumbnail(cells, 1);
 
-    expect(puzzle.cells).toEqual([
+    expect(cells).toEqual([
       [0, null],
       [null, 0],
     ]);

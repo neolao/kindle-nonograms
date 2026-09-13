@@ -444,6 +444,83 @@ describe("solved-puzzle thumbnail", () => {
   });
 });
 
+describe("partial-progress thumbnail", () => {
+  it("reveals a preview built from the player's own filled cells for a puzzle with partial (unsolved) progress", () => {
+    // catPuzzle's solution is [[0, null]] (cell 0 filled, cell 1 empty).
+    // Progress here paints the wrong cell (1) and leaves the right one (0)
+    // untouched — unsolved, but not untouched either.
+    saveProgress("cat", { cells: [[null, 0]] });
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    const cells = thumbFor("cat").querySelectorAll(".thumb-cell");
+    expect(cells).toHaveLength(2);
+    expect(thumbFor("cat").querySelector(".thumb-lock")).toBeNull();
+    // The preview reflects exactly what the player painted, not the
+    // solution — cell 0 (which the solution actually requires) stays
+    // blank since the player never touched it.
+    expect((cells[0] as HTMLElement).style.backgroundColor).toBe("");
+    expect((cells[1] as HTMLElement).style.backgroundColor).toBe(
+      "rgb(0, 0, 0)",
+    );
+  });
+
+  it("renders a marked (excluded) cell as blank, the same as an untouched cell, not as filled", () => {
+    saveProgress("cat", { cells: [["marked", 0]] });
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    const cells = thumbFor("cat").querySelectorAll(".thumb-cell");
+    expect((cells[0] as HTMLElement).style.backgroundColor).toBe("");
+    expect((cells[1] as HTMLElement).style.backgroundColor).toBe(
+      "rgb(0, 0, 0)",
+    );
+  });
+
+  it("keeps the neutral '?' placeholder when the only saved progress is marks, with nothing actually painted", () => {
+    saveProgress("cat", { cells: [["marked", null]] });
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    expect(thumbFor("cat").querySelector(".thumb-cell")).toBeNull();
+    expect(thumbFor("cat").querySelector(".thumb-lock")?.textContent).toBe("?");
+  });
+
+  it("keeps the neutral '?' placeholder when there is no saved progress at all", () => {
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    expect(thumbFor("dog").querySelector(".thumb-cell")).toBeNull();
+    expect(thumbFor("dog").querySelector(".thumb-lock")?.textContent).toBe("?");
+  });
+
+  it("prefers the full solved thumbnail over the partial one once the puzzle becomes fully correct", () => {
+    saveProgress("cat", { cells: [[0, null]] });
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    expect(thumbFor("cat").querySelector(".solved-badge")).toBeNull();
+    const badge = document
+      .querySelector('[data-puzzle-id="cat"]')
+      ?.querySelector(".solved-badge") as HTMLElement;
+    expect(badge.hidden).toBe(false);
+  });
+
+  it("falls back to the placeholder instead of a broken thumbnail when partial progress is corrupted", () => {
+    saveProgress("cat", { cells: [[0, null, 0]] });
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    expect(() => hydrate()).not.toThrow();
+    expect(thumbFor("cat").querySelector(".thumb-cell")).toBeNull();
+    expect(thumbFor("cat").querySelector(".thumb-lock")?.textContent).toBe("?");
+  });
+});
+
 describe("language switcher", () => {
   it("inserts the language switcher into the page footer, not right after the heading", () => {
     buildFixture([catPuzzle, dogPuzzle]);

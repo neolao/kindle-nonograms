@@ -1,23 +1,23 @@
-import type { Puzzle } from "./puzzle.js";
-
 /**
- * Downsamples a puzzle's solution grid to a small preview grid, capped so
- * neither dimension exceeds `maxDimension`. A single scale factor (derived
- * from the puzzle's longer side) applies to both axes, so the thumbnail
- * keeps the solution's true proportions instead of being squashed into a
- * square. Sampling is nearest-neighbor: each output cell copies the source
- * cell at its scaled-up position, never averaged or blended — cheap, and
- * exact enough for a small decorative preview.
+ * Downsamples a cell grid (a puzzle's solution, or a player's in-progress
+ * marks converted to the same shape — see backlog item 071) to a small
+ * preview grid, capped so neither dimension exceeds `maxDimension`. A
+ * single scale factor (derived from the grid's longer side) applies to
+ * both axes, so the thumbnail keeps the grid's true proportions instead of
+ * being squashed into a square. Sampling is nearest-neighbor: each output
+ * cell copies the source cell at its scaled-up position, never averaged or
+ * blended — cheap, and exact enough for a small decorative preview.
  *
- * Never mutates `puzzle.cells`. A puzzle already within the cap on both
- * axes is returned unchanged (scale 1), so small puzzles keep their full,
- * exact picture rather than being stretched or resampled for no reason.
+ * Never mutates `cells`. A grid already within the cap on both axes is
+ * returned unchanged (scale 1), so a small grid keeps its full, exact
+ * picture rather than being stretched or resampled for no reason.
  */
 export function buildThumbnail(
-  puzzle: Puzzle,
+  cells: (number | null)[][],
   maxDimension: number,
 ): (number | null)[][] {
-  const { width, height, cells } = puzzle;
+  const height = cells.length;
+  const width = cells[0]?.length ?? 0;
   const scale = Math.max(1, Math.ceil(Math.max(width, height) / maxDimension));
   const outWidth = Math.ceil(width / scale);
   const outHeight = Math.ceil(height / scale);

@@ -103,7 +103,7 @@ export function renderPuzzlePreviewPng(
   const maxGridDimension =
     options.maxGridDimension ?? DEFAULT_MAX_GRID_DIMENSION;
 
-  const grid = buildThumbnail(puzzle, maxGridDimension);
+  const grid = buildThumbnail(puzzle.cells, maxGridDimension);
   const gridHeight = grid.length;
   const gridWidth = gridHeight === 0 ? 0 : grid[0].length;
 

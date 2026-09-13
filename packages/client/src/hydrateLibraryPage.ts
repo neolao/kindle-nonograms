@@ -75,14 +75,55 @@ function isSolved(puzzle: Puzzle): boolean {
 }
 
 /**
- * Builds the small solved-puzzle preview: one `.thumb-row` per row of
- * `buildThumbnail`'s downsampled grid, one `.thumb-cell` per column, filled
- * with the puzzle's own palette color (matching how a filled cell renders
- * during play) or left blank for an empty cell. Cell sizing itself lives in
- * the stylesheet, not inline, so only color varies per cell.
+ * A not-yet-solved puzzle's saved progress, converted to a plain solution-
+ * shaped grid for `buildThumbnail` — every actually-painted cell keeps its
+ * color, `"marked"` and untouched cells both become `null` (a mark is a
+ * deliberate exclusion, not a color, so it stays neutral in the preview
+ * exactly like an untouched cell — backlog item 071). Returns `undefined`
+ * when there's no saved progress, when it doesn't match this puzzle's
+ * shape (corrupted or stale entry, same defensive spirit as `isSolved`),
+ * or when nothing has actually been painted yet (every cell `null`/
+ * `"marked"`) — that last case keeps the neutral "?" placeholder instead of
+ * revealing a preview indistinguishable from "never opened".
  */
-function buildThumbnailPreview(puzzle: Puzzle): HTMLElement {
-  const grid = buildThumbnail(puzzle, THUMBNAIL_MAX_DIMENSION);
+function partialProgressCells(puzzle: Puzzle): (number | null)[][] | undefined {
+  const progress = loadProgress(puzzle.id);
+  if (!progress) {
+    return undefined;
+  }
+
+  const { cells } = progress;
+  if (
+    cells.length !== puzzle.height ||
+    cells.some((row) => row.length !== puzzle.width)
+  ) {
+    return undefined;
+  }
+
+  const solutionShapedCells = cells.map((row) =>
+    row.map((mark) => (typeof mark === "number" ? mark : null)),
+  );
+  const hasAnyPaintedCell = solutionShapedCells.some((row) =>
+    row.some((cell) => cell !== null),
+  );
+
+  return hasAnyPaintedCell ? solutionShapedCells : undefined;
+}
+
+/**
+ * Builds a small preview: one `.thumb-row` per row of `buildThumbnail`'s
+ * downsampled grid, one `.thumb-cell` per column, filled with `palette`'s
+ * matching color (matching how a filled cell renders during play) or left
+ * blank for an empty cell. Cell sizing itself lives in the stylesheet, not
+ * inline, so only color varies per cell. Shared by the solved preview
+ * (`cells` = the puzzle's own solution) and the partial-progress preview
+ * (`cells` = the player's own painted cells, see `partialProgressCells`).
+ */
+function buildThumbnailPreview(
+  cells: (number | null)[][],
+  palette: string[],
+): HTMLElement {
+  const grid = buildThumbnail(cells, THUMBNAIL_MAX_DIMENSION);
   const wrapper = document.createElement("span");
   wrapper.className = "thumb-grid";
 
@@ -94,7 +135,7 @@ function buildThumbnailPreview(puzzle: Puzzle): HTMLElement {
       const cellEl = document.createElement("span");
       cellEl.className = "thumb-cell";
       if (colorIndex !== null) {
-        cellEl.style.backgroundColor = puzzle.palette[colorIndex] ?? "";
+        cellEl.style.backgroundColor = palette[colorIndex] ?? "";
       }
       rowEl.appendChild(cellEl);
     }
@@ -106,20 +147,25 @@ function buildThumbnailPreview(puzzle: Puzzle): HTMLElement {
 }
 
 /**
- * Replaces a solved puzzle's neutral "?" placeholder with its real preview,
- * built fresh from the puzzle's own solution — never pre-rendered
- * server-side (see .vibe/decisions/012-solved-thumbnail-built-client-side-only.md).
- * A missing `.thumb` node (unexpected markup) is a silent no-op, same
+ * Replaces a puzzle's neutral "?" placeholder with a real preview built
+ * from `cells` (the solution for a solved puzzle, or the player's own
+ * partial progress — never pre-rendered server-side, see
+ * .vibe/decisions/012-solved-thumbnail-built-client-side-only.md). A
+ * missing `.thumb` node (unexpected markup) is a silent no-op, same
  * defensive spirit as the solved-badge reveal below.
  */
-function revealThumbnail(row: HTMLElement, puzzle: Puzzle): void {
+function revealThumbnail(
+  row: HTMLElement,
+  cells: (number | null)[][],
+  palette: string[],
+): void {
   const thumb = row.querySelector<HTMLElement>(".thumb");
   if (!thumb) {
     return;
   }
 
   thumb.textContent = "";
-  thumb.appendChild(buildThumbnailPreview(puzzle));
+  thumb.appendChild(buildThumbnailPreview(cells, palette));
 }
 
 /**
@@ -396,7 +442,10 @@ function scrollListIntoView(list: Element): void {
  * status into the puzzle link's own accessible name (see
  * .vibe/decisions/031-solved-link-aria-label-composes-badge-translation.md),
  * since the visible badge is a sibling `<span>`, not part of the link's
- * accessible name on its own.
+ * accessible name on its own. A puzzle that isn't solved but does have
+ * some actual painted progress gets its own partial-progress preview
+ * instead (backlog item 071) — never the solved badge, never the
+ * accessible-name change, both reserved for a genuine solve.
  */
 export function hydrate(): void {
   // The embedded `#puzzles-data` script is this page type's own
@@ -420,26 +469,39 @@ export function hydrate(): void {
   const solvedById = new Map(
     puzzles.filter(isSolved).map((puzzle) => [puzzle.id, puzzle] as const),
   );
-  if (solvedById.size === 0) {
+  // Only puzzles left unsolved are worth checking for partial progress —
+  // a solved puzzle already gets the real, full thumbnail above.
+  const partialByPuzzle = new Map(
+    puzzles
+      .filter((puzzle) => !solvedById.has(puzzle.id))
+      .flatMap((puzzle) => {
+        const cells = partialProgressCells(puzzle);
+        return cells ? [[puzzle.id, { puzzle, cells }] as const] : [];
+      }),
+  );
+  if (solvedById.size === 0 && partialByPuzzle.size === 0) {
     return;
   }
 
   const rows = document.querySelectorAll<HTMLElement>("[data-puzzle-id]");
   for (const row of Array.from(rows)) {
     const id = row.getAttribute("data-puzzle-id");
-    const puzzle = id === null ? undefined : solvedById.get(id);
-    if (!puzzle) {
+    const solvedPuzzle = id === null ? undefined : solvedById.get(id);
+    if (solvedPuzzle) {
+      const badge = row.querySelector<HTMLElement>(".solved-badge");
+      if (badge) {
+        badge.hidden = false;
+      }
+
+      markLinkAsSolved(row, locale);
+      revealThumbnail(row, solvedPuzzle.cells, solvedPuzzle.palette);
       continue;
     }
 
-    const badge = row.querySelector<HTMLElement>(".solved-badge");
-    if (badge) {
-      badge.hidden = false;
+    const partial = id === null ? undefined : partialByPuzzle.get(id);
+    if (partial) {
+      revealThumbnail(row, partial.cells, partial.puzzle.palette);
     }
-
-    markLinkAsSolved(row, locale);
-
-    revealThumbnail(row, puzzle);
   }
 }
 

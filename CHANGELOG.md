@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - The library page can now sort puzzles by "Recently opened" — a new toggle button orders them by the last time each was played, with never-opened puzzles kept after, in their usual order. Combines with the color filter.
+- A puzzle with saved-but-unfinished progress now shows a small preview of the cells actually painted so far on the library page, instead of the generic "?" placeholder. Puzzles never opened, or with nothing actually painted yet, keep the placeholder; solved puzzles keep their existing full preview.
 
 ### Changed
 
