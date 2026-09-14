@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 # Compact And Persist Library Filters
 
