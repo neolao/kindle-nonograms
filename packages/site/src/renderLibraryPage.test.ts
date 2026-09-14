@@ -469,6 +469,31 @@ describe("renderLibraryPage", () => {
     ).toBeNull();
   });
 
+  it("lets a filter/sort button group wrap to a second line instead of overflowing, for a group with more buttons or longer labels", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/\.library-filters\s*>\s*div\{[^}]*flex-wrap:wrap/);
+  });
+
+  it("gives the pagination block more vertical separation from the filters above it than the gap between sibling filter groups in the same row, so it reads as its own distinct block", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    const rowGapMatch = css.match(
+      /\.library-filters\s*>\s*div\{[^}]*gap:(\d+)px/,
+    );
+    const paginationMarginMatch = css.match(
+      /\.library-pagination:not\(\[hidden\]\)\{[^}]*margin:(\d+)px/,
+    );
+    expect(rowGapMatch).not.toBeNull();
+    expect(paginationMarginMatch).not.toBeNull();
+
+    const rowGap = Number(rowGapMatch?.[1]);
+    const paginationTopMargin = Number(paginationMarginMatch?.[1]);
+    expect(paginationTopMargin).toBeGreaterThan(rowGap);
+  });
+
   it("bakes the color filter as two unpressed, compactly-labeled toggle buttons (mono/multi), 'all' being neither pressed, plus a hidden 'no results' message", () => {
     const doc = parse(renderLibraryPage(puzzles));
 
@@ -489,7 +514,17 @@ describe("renderLibraryPage", () => {
     expect(noResults?.hasAttribute("hidden")).toBe(true);
   });
 
-  it("gives the color filter buttons an accessible group name instead of a visible label, to stay compact", () => {
+  it("announces the 'no results' message to assistive tech when a filter reveals it, like the pagination status already does", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const noResults = doc.querySelector(
+      '[data-i18n="library.filterNoResults"]',
+    );
+    expect(noResults?.getAttribute("role")).toBe("status");
+    expect(noResults?.getAttribute("aria-live")).toBe("polite");
+  });
+
+  it("gives the color filter group both a small visible label and a matching accessible group name", () => {
     const doc = parse(renderLibraryPage(puzzles));
 
     const group = doc
@@ -499,7 +534,31 @@ describe("renderLibraryPage", () => {
     expect(group?.getAttribute("data-i18n-aria")).toBe(
       "library.filterColorLabel",
     );
-    expect(group?.querySelector("span")).toBeNull();
+
+    const visibleLabel = group?.querySelector("span");
+    expect(visibleLabel?.textContent).toBe("Color");
+    expect(visibleLabel?.getAttribute("data-i18n")).toBe(
+      "library.filterColorLabel",
+    );
+  });
+
+  it("composes the group's color context into each color filter button's own accessible name, not just the group's", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const monoButton = doc.querySelector(
+      '[data-role="library-filter-color-mono"]',
+    );
+    const multiButton = doc.querySelector(
+      '[data-role="library-filter-color-multi"]',
+    );
+    expect(monoButton?.getAttribute("aria-label")).toBe("Color: Mono");
+    expect(monoButton?.getAttribute("data-i18n-aria")).toBe(
+      "library.filterColorMonoAriaLabel",
+    );
+    expect(multiButton?.getAttribute("aria-label")).toBe("Color: Multi");
+    expect(multiButton?.getAttribute("data-i18n-aria")).toBe(
+      "library.filterColorMultiAriaLabel",
+    );
   });
 
   it("no longer bakes a color filter select", () => {
@@ -567,6 +626,25 @@ describe("renderLibraryPage", () => {
     expect(group?.getAttribute("data-i18n-aria")).toBe(
       "library.filterStatusLabel",
     );
+  });
+
+  it("positions the 'no results' message after the secondary filters row, so feedback from a status/sort tap never appears above the control just used", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const noResults = doc.querySelector(
+      '[data-i18n="library.filterNoResults"]',
+    );
+    const secondaryFilters = doc.querySelector(
+      '[data-role="library-secondary-filters"]',
+    );
+    if (!noResults || !secondaryFilters) {
+      throw new Error(
+        "fixture no-results message or secondary filters not found",
+      );
+    }
+
+    const position = secondaryFilters.compareDocumentPosition(noResults);
+    expect(Boolean(position & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
   });
 
   it("hides the pagination controls by default when every puzzle already fits on one page", () => {

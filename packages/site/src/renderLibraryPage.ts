@@ -21,19 +21,30 @@ import {
 /**
  * Renders the library's color filter — two unpressed toggle buttons,
  * "all" being the state where neither is pressed — wrapped in an ARIA
- * group whose accessible name ("Color") carries the context a visible
- * label used to give, without spending any horizontal space on it: the
- * buttons' own short labels ("Mono"/"Multi") stay self-explanatory on
- * their own, and the group name is only ever read by assistive tech (see
- * backlog item 072, `.vibe/decisions/045-secondary-filters-relocated-
- * below-list.md`). Plain tappable buttons, not a `<select>`, per backlog
- * item 067 — a dropdown is hard to operate in Kindle's browser.
+ * group whose accessible name ("Color") matches a small visible label kept
+ * ahead of the buttons (WCAG 2.5.3 Label in Name): on its own, "Mono"/
+ * "Multi" reads as an unexplained fragment to a sighted player and to a
+ * screen-reader user enumerating controls outside sequential group order
+ * (e.g. a rotor), so each button's own accessible name also composes that
+ * same context in ("Color: Mono") via a dedicated `aria-label`, rather
+ * than relying on the group's name alone (see backlog item 072,
+ * `.vibe/decisions/045-secondary-filters-relocated-below-list.md`). Plain
+ * tappable buttons, not a `<select>`, per backlog item 067 — a dropdown is
+ * hard to operate in Kindle's browser.
  */
 function renderColorFilterButtons(): string {
   const groupLabel = translate(DEFAULT_LOCALE, "library.filterColorLabel");
   const monoLabel = translate(DEFAULT_LOCALE, "library.filterColorMono");
   const multiLabel = translate(DEFAULT_LOCALE, "library.filterColorMulti");
-  return `<div role="group" data-i18n-aria="library.filterColorLabel" aria-label="${escapeHtml(groupLabel)}"><button type="button" data-role="library-filter-color-mono" data-i18n="library.filterColorMono" aria-pressed="false">${monoLabel}</button><button type="button" data-role="library-filter-color-multi" data-i18n="library.filterColorMulti" aria-pressed="false">${multiLabel}</button></div>`;
+  const monoAriaLabel = translate(
+    DEFAULT_LOCALE,
+    "library.filterColorMonoAriaLabel",
+  );
+  const multiAriaLabel = translate(
+    DEFAULT_LOCALE,
+    "library.filterColorMultiAriaLabel",
+  );
+  return `<div role="group" data-i18n-aria="library.filterColorLabel" aria-label="${escapeHtml(groupLabel)}"><span class="filter-group-label" data-i18n="library.filterColorLabel">${groupLabel}</span><button type="button" data-role="library-filter-color-mono" data-i18n="library.filterColorMono" data-i18n-aria="library.filterColorMonoAriaLabel" aria-label="${escapeHtml(monoAriaLabel)}" aria-pressed="false">${monoLabel}</button><button type="button" data-role="library-filter-color-multi" data-i18n="library.filterColorMulti" data-i18n-aria="library.filterColorMultiAriaLabel" aria-label="${escapeHtml(multiAriaLabel)}" aria-pressed="false">${multiLabel}</button></div>`;
 }
 
 // A separate `<div>` from the sort button's — the existing
@@ -89,7 +100,7 @@ function renderFiltersAndPagination(puzzleCount: number): {
   const filters = `<div class="library-filters">${renderColorFilterButtons()}</div>`;
   const secondaryFilters = renderSecondaryFilters();
 
-  const noResults = `<p class="filter-no-results" data-role="library-filter-no-results" data-i18n="library.filterNoResults" hidden>${translate(DEFAULT_LOCALE, "library.filterNoResults")}</p>`;
+  const noResults = `<p class="filter-no-results" data-role="library-filter-no-results" data-i18n="library.filterNoResults" role="status" aria-live="polite" hidden>${translate(DEFAULT_LOCALE, "library.filterNoResults")}</p>`;
 
   const totalPages = Math.max(1, Math.ceil(puzzleCount / LIBRARY_PAGE_SIZE));
   const showPagination = puzzleCount > LIBRARY_PAGE_SIZE;
@@ -184,7 +195,7 @@ export function renderLibraryPage(
     const { filters, secondaryFilters, noResults, pagination } =
       renderFiltersAndPagination(puzzles.length);
     const items = puzzles.map(renderLibraryItem).join("");
-    body = `${filters}<p class="section-label" data-i18n="library.sectionLabel">Choose a puzzle</p><ul>${items}</ul>${noResults}${secondaryFilters}${pagination}`;
+    body = `${filters}<p class="section-label" data-i18n="library.sectionLabel">Choose a puzzle</p><ul>${items}</ul>${secondaryFilters}${noResults}${pagination}`;
   }
   const stripeStyles = puzzles
     .map(
@@ -256,9 +267,10 @@ li a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 .thumb-row{display:flex;}
 .thumb-cell{flex-shrink:0;}
 .library-filters{display:flex;flex-wrap:wrap;gap:${SPACING_PX.md}px;margin:0 ${SPACING_PX.md}px ${SPACING_PX.sm}px;}
-.library-filters > div{display:flex;align-items:center;gap:${SPACING_PX.sm}px;}
+.library-filters > div{display:flex;flex-wrap:wrap;align-items:center;gap:${SPACING_PX.sm}px;}
+.filter-group-label{color:${COLORS.muted};font-size:0.85em;}
 .filter-no-results{margin:${SPACING_PX.md}px;color:${COLORS.muted};}
-.library-pagination:not([hidden]){display:flex;align-items:center;justify-content:center;gap:${SPACING_PX.md}px;margin:${SPACING_PX.sm}px ${SPACING_PX.md}px;}
+.library-pagination:not([hidden]){display:flex;align-items:center;justify-content:center;gap:${SPACING_PX.md}px;margin:${SPACING_PX.lg}px ${SPACING_PX.md}px;}
 .pagination-status{font-family:${LABEL_FONT_STACK};color:${COLORS.text};}
 .page-footer-links{display:flex;flex-wrap:wrap;align-items:center;gap:${SPACING_PX.md}px;margin-left:auto;}
 .page-footer-links a{display:inline-flex;align-items:center;min-height:${MIN_TAP_TARGET_PX}px;color:${COLORS.text};text-decoration:none;}

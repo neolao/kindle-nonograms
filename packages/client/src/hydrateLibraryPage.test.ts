@@ -805,6 +805,18 @@ describe("library filters", () => {
     expect(isRowVisible("medium-multi")).toBe(false);
     expect(monoFilterButton().textContent).toBe("Mono");
   });
+
+  it("retranslates each color filter button's own composed accessible name when the language is changed", () => {
+    switcherSelect().value = "fr";
+    switcherSelect().dispatchEvent(new Event("change"));
+
+    expect(monoFilterButton().getAttribute("aria-label")).toBe(
+      "Couleur : Mono",
+    );
+    expect(multiFilterButton().getAttribute("aria-label")).toBe(
+      "Couleur : Multi",
+    );
+  });
 });
 
 describe("library status filter", () => {
@@ -1075,6 +1087,56 @@ describe("library filters cookie persistence", () => {
     hydrate();
     expect(monoFilterButton().getAttribute("aria-pressed")).toBe("false");
     expect(isRowVisible("medium-multi")).toBe(true);
+  });
+});
+
+describe("library filter/sort per-control isolation", () => {
+  it("keeps the status filter, sort, and pagination working when a color filter button is missing from the DOM", () => {
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    monoFilterButton().remove();
+
+    expect(() => hydrate()).not.toThrow();
+    click(solvedFilterButton());
+    expect(solvedFilterButton().getAttribute("aria-pressed")).toBe("true");
+    click(solvedFilterButton());
+    click(sortRecentButton());
+    expect(sortRecentButton().getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("keeps the color filter, sort, and pagination working when a status filter button is missing from the DOM", () => {
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    solvedFilterButton().remove();
+
+    expect(() => hydrate()).not.toThrow();
+    click(monoFilterButton());
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("true");
+    expect(isRowVisible("medium-multi")).toBe(false);
+    click(monoFilterButton());
+    click(sortRecentButton());
+    expect(sortRecentButton().getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("keeps the color filter, status filter, and pagination working when the sort button is missing from the DOM", () => {
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    sortRecentButton().remove();
+
+    expect(() => hydrate()).not.toThrow();
+    click(monoFilterButton());
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("true");
+    click(monoFilterButton());
+    click(unsolvedFilterButton());
+    expect(unsolvedFilterButton().getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("still no-ops entirely when a core pagination element is missing, same as before", () => {
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    paginationNextButton().remove();
+
+    expect(() => hydrate()).not.toThrow();
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("false");
+    click(monoFilterButton());
+    // No wiring at all when a core element is missing — the click is inert.
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("false");
   });
 });
 

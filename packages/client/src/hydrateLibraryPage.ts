@@ -350,13 +350,13 @@ function setUpFiltersAndPagination(
   const statusPosition = document.querySelector<HTMLElement>(
     '[data-role="library-pagination-position"]',
   );
+  // Pagination and the "no results" message are this function's core
+  // responsibility — with any of them missing there is nothing sensible to
+  // attach at all. Each filter/sort group below is independently optional
+  // beyond this point: a missing control in one group (e.g. a status
+  // button) only disables that group, never its siblings (flow 001's
+  // per-control isolation rule — see backlog item 072's review).
   if (
-    !monoButton ||
-    !multiButton ||
-    !unsolvedButton ||
-    !inProgressButton ||
-    !solvedButton ||
-    !sortButton ||
     !noResultsMessage ||
     !paginationContainer ||
     !prevButton ||
@@ -366,6 +366,13 @@ function setUpFiltersAndPagination(
     return;
   }
 
+  const hasColorFilter = monoButton !== null && multiButton !== null;
+  const hasStatusFilter =
+    unsolvedButton !== null &&
+    inProgressButton !== null &&
+    solvedButton !== null;
+  const hasSort = sortButton !== null;
+
   let currentPage = 1;
   let totalPages = 1;
   let colorValue: ColorFilterValue = "all";
@@ -373,15 +380,30 @@ function setUpFiltersAndPagination(
   let sortByRecent = false;
 
   // A saved preference from a previous visit wins over the static
-  // "nothing filtered" default — restored below, before the first
-  // `render()`, so the very first paint already reflects it (see backlog
-  // item 072). No cookie (first visit, or one that fails to parse) leaves
-  // today's defaults untouched.
+  // "nothing filtered" default, but only for a group whose controls are
+  // actually present — restoring a value with no button to reflect it
+  // would filter the list invisibly, with no way for the player to tell
+  // why. This is applied inside the same synchronous hydration pass as the
+  // solved-badge/thumbnail reveal below — with no `await`/yield anywhere
+  // in between — so it completes before the browser's first paint of this
+  // page the same way that reveal already does, not via a blocking
+  // pre-parse script the way the locale cookie is (that technique only
+  // works for `document.lang`, set before any `<body>` content —
+  // including these very rows — exists at all; see
+  // `.vibe/decisions/046-filter-restore-stays-synchronous-not-head-script.md`).
+  // No cookie (first visit, or one that fails to parse) leaves today's
+  // defaults untouched.
   const savedFilters = readLibraryFiltersCookie();
   if (savedFilters) {
-    colorValue = savedFilters.color;
-    statusValue = savedFilters.status;
-    sortByRecent = savedFilters.sortByRecent;
+    if (hasColorFilter) {
+      colorValue = savedFilters.color;
+    }
+    if (hasStatusFilter) {
+      statusValue = savedFilters.status;
+    }
+    if (hasSort) {
+      sortByRecent = savedFilters.sortByRecent;
+    }
   }
 
   const list = document.querySelector("ul");
@@ -486,47 +508,53 @@ function setUpFiltersAndPagination(
     });
   }
 
-  const colorToggle = wireExclusiveToggle<Exclude<ColorFilterValue, "all">>(
-    [
-      { value: "mono", button: monoButton },
-      { value: "multi", button: multiButton },
-    ],
-    (value) => {
-      colorValue = value;
-      currentPage = 1;
-      persistFilters();
-      render();
-    },
-  );
-  colorToggle.setActive(colorValue);
-
-  const statusToggle = wireExclusiveToggle<Exclude<StatusFilterValue, "all">>(
-    [
-      { value: "unsolved", button: unsolvedButton },
-      { value: "in-progress", button: inProgressButton },
-      { value: "solved", button: solvedButton },
-    ],
-    (value) => {
-      statusValue = value;
-      currentPage = 1;
-      persistFilters();
-      render();
-    },
-  );
-  statusToggle.setActive(statusValue);
-
-  sortButton.setAttribute("aria-pressed", String(sortByRecent));
-  if (sortByRecent) {
-    reorderRows(computeRecencyOrder());
+  if (monoButton && multiButton) {
+    const colorToggle = wireExclusiveToggle<Exclude<ColorFilterValue, "all">>(
+      [
+        { value: "mono", button: monoButton },
+        { value: "multi", button: multiButton },
+      ],
+      (value) => {
+        colorValue = value;
+        currentPage = 1;
+        persistFilters();
+        render();
+      },
+    );
+    colorToggle.setActive(colorValue);
   }
-  sortButton.addEventListener("click", () => {
-    sortByRecent = !sortByRecent;
+
+  if (unsolvedButton && inProgressButton && solvedButton) {
+    const statusToggle = wireExclusiveToggle<Exclude<StatusFilterValue, "all">>(
+      [
+        { value: "unsolved", button: unsolvedButton },
+        { value: "in-progress", button: inProgressButton },
+        { value: "solved", button: solvedButton },
+      ],
+      (value) => {
+        statusValue = value;
+        currentPage = 1;
+        persistFilters();
+        render();
+      },
+    );
+    statusToggle.setActive(statusValue);
+  }
+
+  if (sortButton) {
     sortButton.setAttribute("aria-pressed", String(sortByRecent));
-    reorderRows(sortByRecent ? computeRecencyOrder() : defaultRowOrder);
-    currentPage = 1;
-    persistFilters();
-    render();
-  });
+    if (sortByRecent) {
+      reorderRows(computeRecencyOrder());
+    }
+    sortButton.addEventListener("click", () => {
+      sortByRecent = !sortByRecent;
+      sortButton.setAttribute("aria-pressed", String(sortByRecent));
+      reorderRows(sortByRecent ? computeRecencyOrder() : defaultRowOrder);
+      currentPage = 1;
+      persistFilters();
+      render();
+    });
+  }
 
   prevButton.addEventListener("click", () => {
     if (currentPage <= 1) {

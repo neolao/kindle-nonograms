@@ -59,6 +59,8 @@ export type TranslationKey =
   | "library.filterColorLabel"
   | "library.filterColorMono"
   | "library.filterColorMulti"
+  | "library.filterColorMonoAriaLabel"
+  | "library.filterColorMultiAriaLabel"
   | "library.filterStatusLabel"
   | "library.filterStatusUnsolved"
   | "library.filterStatusInProgress"
@@ -143,6 +145,8 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.filterColorLabel": "Color",
     "library.filterColorMono": "Mono",
     "library.filterColorMulti": "Multi",
+    "library.filterColorMonoAriaLabel": "Color: Mono",
+    "library.filterColorMultiAriaLabel": "Color: Multi",
     "library.filterStatusLabel": "Status",
     "library.filterStatusUnsolved": "Unsolved",
     "library.filterStatusInProgress": "In progress",
@@ -237,6 +241,8 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "library.filterColorLabel": "Couleur",
     "library.filterColorMono": "Mono",
     "library.filterColorMulti": "Multi",
+    "library.filterColorMonoAriaLabel": "Couleur : Mono",
+    "library.filterColorMultiAriaLabel": "Couleur : Multi",
     "library.filterStatusLabel": "Statut",
     "library.filterStatusUnsolved": "Non résolu",
     "library.filterStatusInProgress": "En cours",

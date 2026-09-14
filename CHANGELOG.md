@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The library's color filter buttons ("Mono"/"Multi") no longer read as unexplained words on their own — a small "Color" label is shown again, and screen readers now hear the full context too.
+- The "no puzzles match" message no longer appears above the filter/sort controls that can trigger it.
+- A filter change on the library page is now announced to screen readers, not just shown visually.
+- A missing library filter control no longer silently disables the other, unrelated filters.
+
 ## [3.2.0] - 2026-09-14
 
 ### Added

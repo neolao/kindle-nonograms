@@ -26,6 +26,8 @@ const ALL_KEYS: TranslationKey[] = [
   "library.filterColorLabel",
   "library.filterColorMono",
   "library.filterColorMulti",
+  "library.filterColorMonoAriaLabel",
+  "library.filterColorMultiAriaLabel",
   "library.filterStatusLabel",
   "library.filterStatusUnsolved",
   "library.filterStatusInProgress",
@@ -108,6 +110,12 @@ describe("translate", () => {
     expect(translate("en", "library.filterColorLabel")).toBe("Color");
     expect(translate("en", "library.filterColorMono")).toBe("Mono");
     expect(translate("en", "library.filterColorMulti")).toBe("Multi");
+    expect(translate("en", "library.filterColorMonoAriaLabel")).toBe(
+      "Color: Mono",
+    );
+    expect(translate("en", "library.filterColorMultiAriaLabel")).toBe(
+      "Color: Multi",
+    );
     expect(translate("en", "library.filterStatusLabel")).toBe("Status");
     expect(translate("en", "library.filterStatusUnsolved")).toBe("Unsolved");
     expect(translate("en", "library.filterStatusInProgress")).toBe(
@@ -235,6 +243,12 @@ describe("translate", () => {
     expect(translate("fr", "library.filterColorLabel")).toBe("Couleur");
     expect(translate("fr", "library.filterColorMono")).toBe("Mono");
     expect(translate("fr", "library.filterColorMulti")).toBe("Multi");
+    expect(translate("fr", "library.filterColorMonoAriaLabel")).toBe(
+      "Couleur : Mono",
+    );
+    expect(translate("fr", "library.filterColorMultiAriaLabel")).toBe(
+      "Couleur : Multi",
+    );
     expect(translate("fr", "library.filterStatusLabel")).toBe("Statut");
     expect(translate("fr", "library.filterStatusUnsolved")).toBe("Non résolu");
     expect(translate("fr", "library.filterStatusInProgress")).toBe("En cours");

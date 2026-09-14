@@ -6,6 +6,7 @@ import {
   isSupportedLocale,
   translate,
 } from "@kindle-nonograms/shared";
+import { readCookie, writeCookie } from "./cookieStorage.js";
 
 const COOKIE_NAME = LOCALE_COOKIE_NAME;
 
@@ -13,40 +14,24 @@ const COOKIE_NAME = LOCALE_COOKIE_NAME;
  * Reads the player's saved locale preference from `document.cookie`.
  * Returns `undefined` when no such cookie is set, or when reading cookies
  * throws (disabled/restricted mode) — degrades silently, same spirit as
- * `progressStorage.ts` for `localStorage`.
+ * `progressStorage.ts` for `localStorage`. Thin wrapper over
+ * `cookieStorage.ts`'s generic `readCookie`, shared with
+ * `libraryFiltersStorage.ts`.
  */
 export function readLocaleCookie(): string | undefined {
-  try {
-    const cookies = document.cookie.split(";");
-    for (const cookie of cookies) {
-      const separatorIndex = cookie.indexOf("=");
-      if (separatorIndex === -1) {
-        continue;
-      }
-
-      const name = cookie.slice(0, separatorIndex).trim();
-      if (name === COOKIE_NAME) {
-        return decodeURIComponent(cookie.slice(separatorIndex + 1));
-      }
-    }
-    return undefined;
-  } catch {
-    return undefined;
-  }
+  return readCookie(COOKIE_NAME);
 }
 
 /**
  * Persists the player's locale choice to a long-lived cookie. Degrades
  * silently (nothing saved, no error thrown) if writing cookies is
  * unavailable or throws — the caller still applies the locale in-memory for
- * the current page view regardless of whether persistence succeeded.
+ * the current page view regardless of whether persistence succeeded. Thin
+ * wrapper over `cookieStorage.ts`'s generic `writeCookie`, shared with
+ * `libraryFiltersStorage.ts`.
  */
 export function writeLocaleCookie(locale: Locale): void {
-  try {
-    document.cookie = `${COOKIE_NAME}=${encodeURIComponent(locale)}; path=/; max-age=31536000`;
-  } catch {
-    // Cookie write unavailable or throwing — nothing more we can do here.
-  }
+  writeCookie(COOKIE_NAME, locale);
 }
 
 /**
