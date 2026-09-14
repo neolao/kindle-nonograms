@@ -1,6 +1,6 @@
 ---
 date: 2026-09-14
-status: accepted
+status: superseded by 050
 ---
 # Library card's grid-size text is decorative, wrapped with the stars in one row
 

@@ -244,7 +244,7 @@ const THUMBNAIL_PLACEHOLDER = `<span class="thumb" aria-hidden="true"><span clas
 
 function renderLibraryItem(puzzle: Puzzle, index: number): string {
   const href = `puzzles/${encodeURIComponent(puzzle.id)}/`;
-  const label = `${escapeHtml(puzzle.name)} — ${puzzle.width} × ${puzzle.height}`;
+  const label = escapeHtml(puzzle.name);
   const colorType = isMultiColorPuzzle(puzzle) ? "multi" : "mono";
   // The default filter always matches every puzzle ("all"), so the first
   // page of that default result set is simply this list's own first
@@ -258,26 +258,29 @@ function renderLibraryItem(puzzle: Puzzle, index: number): string {
   // misleading "0/10" for content that simply has no meaningful rating.
   // The grid-size text shares that same guard: it only ever appears
   // alongside the stars, on their shared meta row, never on a line of its
-  // own (see .vibe/decisions/049-grid-size-decorative-next-to-stars.md).
+  // own (see .vibe/decisions/050-grid-size-moves-out-of-the-title.md). It's
+  // the sole copy of the puzzle's size now (the link's own text is just its
+  // name), so it's real, accessible text, not `aria-hidden`.
   const metaRow =
     difficulty === undefined
       ? ""
-      : `<span class="puzzle-meta-row"><span class="puzzle-size" aria-hidden="true">${puzzle.width} × ${puzzle.height}</span>${renderDifficultyBadge(difficulty)}</span>`;
+      : `<span class="puzzle-meta-row"><span class="puzzle-size">${puzzle.width} × ${puzzle.height}</span>${renderDifficultyBadge(difficulty)}</span>`;
 
-  return `<li class="stripe-${index}" data-puzzle-id="${escapeHtml(puzzle.id)}" data-color-type="${colorType}"${hidden}>${THUMBNAIL_PLACEHOLDER}<a href="${href}">${label}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span>${metaRow}</li>`;
+  return `<li class="stripe-${index}" data-puzzle-id="${escapeHtml(puzzle.id)}" data-color-type="${colorType}"${hidden}>${THUMBNAIL_PLACEHOLDER}<div class="puzzle-card-body"><a href="${href}">${label}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span>${metaRow}</div></li>`;
 }
 
 const STYLE = `
 ${sharedStyles()}
 [hidden]{display:none;}
 ul{list-style:none;padding:0;margin:${SPACING_PX.sm}px ${SPACING_PX.md}px ${SPACING_PX.md}px;display:flex;flex-direction:column;gap:${SPACING_PX.sm}px;}
-li{display:flex;flex-wrap:wrap;align-items:center;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-top-width:${STRIPE_HEIGHT_PX}px;border-top-color:transparent;border-radius:${BORDER_RADIUS_PX}px;box-shadow:4px 4px 0 ${COLORS.panelEdge};overflow:hidden;background-repeat:no-repeat;background-position:top;background-size:100% ${STRIPE_HEIGHT_PX}px;}
+li{display:flex;align-items:stretch;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-top-width:${STRIPE_HEIGHT_PX}px;border-top-color:transparent;border-radius:${BORDER_RADIUS_PX}px;box-shadow:4px 4px 0 ${COLORS.panelEdge};overflow:hidden;background-repeat:no-repeat;background-position:top;background-size:100% ${STRIPE_HEIGHT_PX}px;}
+.puzzle-card-body{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;}
 li a{flex:1;display:flex;align-items:center;min-width:0;padding:${SPACING_PX.sm}px ${SPACING_PX.md}px;min-height:${MIN_TAP_TARGET_PX}px;font-family:${LABEL_FONT_STACK};color:${COLORS.text};text-decoration:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
 li a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 .solved-badge{margin:0 ${SPACING_PX.md}px 0 auto;padding:2px ${SPACING_PX.sm}px;border:${BORDER_WIDTH.medium} solid ${COLORS.teal};border-radius:${BORDER_RADIUS_PX}px;color:${COLORS.teal};font-size:0.8em;text-transform:uppercase;letter-spacing:0.05em;transform:rotate(-5deg);}
-.puzzle-meta-row{flex-basis:100%;display:flex;align-items:center;justify-content:space-between;padding:0 ${SPACING_PX.md}px ${SPACING_PX.sm}px;}
+.puzzle-meta-row{flex-basis:100%;display:flex;align-items:center;gap:${SPACING_PX.xs}px;margin-left:auto;padding:0 ${SPACING_PX.md}px ${SPACING_PX.sm}px;}
 .puzzle-size{color:${COLORS.muted};font-size:0.8em;font-family:${LABEL_FONT_STACK};}
-.thumb{flex:0 0 auto;width:52px;height:52px;margin:${SPACING_PX.sm}px 0 ${SPACING_PX.sm}px ${SPACING_PX.sm}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.thumb{flex:0 0 auto;width:52px;margin:${SPACING_PX.sm}px 0 ${SPACING_PX.sm}px ${SPACING_PX.sm}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .thumb-lock{color:${COLORS.muted};font-weight:bold;font-size:22px;}
 .thumb-row{display:flex;}
 .thumb-cell{flex-shrink:0;}

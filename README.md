@@ -81,7 +81,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The puzzle editor's disabled "remove color" button now clearly looks non-interactive, and every disabled button across the app shares the same dimmed styling.
 - The library page's color filter is now more compact, and a new filter lets you show only unsolved, in-progress, or solved puzzles. Your color, status, and sort choices are now remembered across visits.
 - Every puzzle now shows a difficulty rating as a row of stars — in the library list, on its own play page, and in the puzzle editor once a draft passes the solvability check.
-- The library page's puzzle thumbnails are now bigger, and each puzzle's grid size is shown in small text next to its difficulty stars.
+- The library page's puzzle thumbnails now fill the full height of their card, and each puzzle's grid size is shown in small text right next to its difficulty stars instead of repeated in its title.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

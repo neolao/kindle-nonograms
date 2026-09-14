@@ -35,16 +35,15 @@ describe("renderLibraryPage", () => {
     expect(icon?.getAttribute("type")).toBe("image/svg+xml");
   });
 
-  it("lists every puzzle with a relative link and its size in the accessible link name", () => {
+  it("lists every puzzle with a relative link named after it, with no size suffix", () => {
     const doc = parse(renderLibraryPage(puzzles));
     const links = doc.querySelectorAll("li a");
 
     expect(links).toHaveLength(2);
     expect(links[0]?.getAttribute("href")).toBe("puzzles/sailboat/");
-    expect(links[0]?.textContent).toContain("Sailboat");
-    expect(links[0]?.textContent).toContain("20");
+    expect(links[0]?.textContent).toBe("Sailboat");
     expect(links[1]?.getAttribute("href")).toBe("puzzles/cat/");
-    expect(links[1]?.textContent).toContain("Cat");
+    expect(links[1]?.textContent).toBe("Cat");
   });
 
   it("tags every row with the puzzle id for later hydration to find it", () => {
@@ -93,7 +92,7 @@ describe("renderLibraryPage", () => {
     const item = doc.querySelector("li");
 
     const badge = item?.querySelector(
-      ":scope > .puzzle-meta-row > .difficulty-badge",
+      ":scope > .puzzle-card-body > .puzzle-meta-row > .difficulty-badge",
     );
     expect(badge).not.toBeNull();
     expect(badge?.querySelector('[aria-hidden="true"]')?.textContent).toBe(
@@ -105,7 +104,7 @@ describe("renderLibraryPage", () => {
     expect(item?.querySelector("a .difficulty-badge")).toBeNull();
   });
 
-  it("shows the puzzle's grid size as small decorative text to the left of the stars, for a puzzle whose difficulty can be computed", () => {
+  it("shows the puzzle's grid size as small text right next to the stars, for a puzzle whose difficulty can be computed", () => {
     const solvable: Puzzle = {
       id: "solvable",
       name: "Solvable",
@@ -123,16 +122,18 @@ describe("renderLibraryPage", () => {
 
     expect(size).not.toBeNull();
     expect(size?.textContent).toBe("2 × 2");
-    // Decorative: the link's own accessible name already spells out the
-    // puzzle's size in words, so this visible copy must not be announced a
-    // second time by assistive tech.
-    expect(size?.getAttribute("aria-hidden")).toBe("true");
-    // Sits before the stars in document order, matching "to the left of
-    // the stars" in a left-to-right reading flex row.
+    // Now the sole visible/accessible copy of the puzzle's size (the link
+    // itself no longer repeats it — see the "no size suffix" test above),
+    // so it must reach assistive tech, not be hidden from it.
+    expect(size?.hasAttribute("aria-hidden")).toBe(false);
+    // Sits immediately before the stars in document order — "right next
+    // to" them, not spread across the row.
     const children = Array.from(metaRow?.children ?? []);
-    expect(children.indexOf(size as Element)).toBeLessThan(
-      children.findIndex((el) => el.classList.contains("difficulty-badge")),
+    const sizeIndex = children.indexOf(size as Element);
+    const starsIndex = children.findIndex((el) =>
+      el.classList.contains("difficulty-badge"),
     );
+    expect(starsIndex).toBe(sizeIndex + 1);
   });
 
   it("renders no difficulty badge and no grid-size text for a puzzle with no computable difficulty (e.g. nothing drawn on it)", () => {
@@ -151,14 +152,32 @@ describe("renderLibraryPage", () => {
     }
   });
 
-  it("forces the grid-size + stars meta row onto its own line, spread apart, instead of sharing the top row", () => {
+  it("forces the grid-size + stars meta row onto its own line, grouped together, instead of sharing the top row", () => {
     const doc = parse(renderLibraryPage(puzzles));
     const css = doc.querySelector("style")?.textContent ?? "";
 
-    expect(css).toMatch(/\bli\{[^}]*flex-wrap:wrap/);
-    expect(css).toMatch(
-      /\.puzzle-meta-row\{[^}]*flex-basis:100%[^}]*justify-content:space-between/,
+    expect(css).toMatch(/\.puzzle-card-body\{[^}]*flex-wrap:wrap/);
+    expect(css).toMatch(/\.puzzle-meta-row\{[^}]*flex-basis:100%/);
+    // Grouped as one unit (a gap between the two, pushed together to one
+    // side via margin-left:auto), not spread to opposite ends of the row.
+    expect(css).toMatch(/\.puzzle-meta-row\{[^}]*gap:/);
+    expect(css).not.toMatch(
+      /\.puzzle-meta-row\{[^}]*justify-content:space-between/,
     );
+  });
+
+  it("stretches the thumbnail to fill the card's full height instead of a fixed short box", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    // `li` no longer forces its children to the center line — an
+    // unspecified cross-size on `.thumb` then stretches to match its
+    // sibling `.puzzle-card-body`'s full (now two-line) height.
+    expect(css).toMatch(/\bli\{[^}]*align-items:stretch/);
+    expect(css).not.toMatch(/\bli\{[^}]*align-items:center/);
+    const thumbRule = css.match(/\.thumb\{[^}]*\}/)?.[0] ?? "";
+    expect(thumbRule).toMatch(/width:\d+px/);
+    expect(thumbRule).not.toMatch(/height:\d+px/);
   });
 
   it("renders the grid-size text smaller and muted, distinct from the puzzle name", () => {
@@ -494,12 +513,11 @@ describe("renderLibraryPage", () => {
     expect(css).toMatch(/\.solved-badge\{[^}]*border-radius:\d+px/);
   });
 
-  it("sizes the thumbnail box bigger than the old 36px, to fill the now-taller card", () => {
+  it("sizes the thumbnail box wider than the old 36px, on top of now stretching to fill the card's height", () => {
     const doc = parse(renderLibraryPage(puzzles));
     const css = doc.querySelector("style")?.textContent ?? "";
 
     expect(css).toMatch(/\.thumb\{[^}]*width:52px/);
-    expect(css).toMatch(/\.thumb\{[^}]*height:52px/);
     // The "?" placeholder glyph grows along with its box, so it doesn't
     // read as a small icon lost in a much bigger frame.
     expect(css).toMatch(/\.thumb-lock\{[^}]*font-size:\d+px/);

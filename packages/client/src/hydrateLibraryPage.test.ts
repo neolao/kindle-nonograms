@@ -425,9 +425,10 @@ describe("solved-link accessible name", () => {
 
     hydrate();
 
-    expect(linkFor("cat").getAttribute("aria-label")).toBe(
-      "Cat — 2 × 1, Solved",
-    );
+    // The link's own visible text is just the puzzle's name — its size no
+    // longer repeats there (it's shown separately, next to the difficulty
+    // stars), so the composed aria-label doesn't carry it either.
+    expect(linkFor("cat").getAttribute("aria-label")).toBe("Cat, Solved");
   });
 
   it("leaves an unsolved puzzle's link with no aria-label at all", () => {
@@ -447,9 +448,7 @@ describe("solved-link accessible name", () => {
     switcherSelect().value = "fr";
     switcherSelect().dispatchEvent(new Event("change"));
 
-    expect(linkFor("cat").getAttribute("aria-label")).toBe(
-      "Cat — 2 × 1, Résolu",
-    );
+    expect(linkFor("cat").getAttribute("aria-label")).toBe("Cat, Résolu");
   });
 
   it("does not throw when a solved puzzle's row is missing its link element", () => {
