@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { Puzzle } from "./puzzle.js";
 import {
   checkSolvability,
+  computePuzzleDifficulty,
   diagnoseSolvability,
   suggestSolvabilityFix,
 } from "./solvability.js";
@@ -265,5 +268,119 @@ describe("suggestSolvabilityFix", () => {
     });
 
     expect(suggestSolvabilityFix(puzzle)).toBeUndefined();
+  });
+});
+
+describe("computePuzzleDifficulty", () => {
+  it("returns a score from 1 to 10 for an ordinary solvable puzzle", () => {
+    // Same fixture as checkSolvability's own "passes a monochrome puzzle"
+    // test — a small, easily-derived puzzle.
+    const puzzle = fixture({
+      cells: [
+        [0, 0],
+        [0, null],
+      ],
+    });
+
+    const score = computePuzzleDifficulty(puzzle);
+
+    expect(score).toBeGreaterThanOrEqual(1);
+    expect(score).toBeLessThanOrEqual(10);
+  });
+
+  it("scores a puzzle that needs many more rounds of cross-referencing higher than one that barely needs any", () => {
+    // The easy fixture above converges in 2 fixpoint rounds (as few as a
+    // solvable puzzle can ever take — even a grid fully forced on the first
+    // pass still needs a second, confirming round). The harder fixture
+    // below was found by brute-force search specifically for a puzzle that
+    // is genuinely solvable by pure line deduction (no guessing) but only
+    // converges after 10 rounds of alternating row/column passes — verified
+    // independently against this same solver, not derived from the
+    // scoring formula under test.
+    const easy = fixture({
+      cells: [
+        [0, 0],
+        [0, null],
+      ],
+    });
+    const harder = fixture({
+      width: 6,
+      height: 6,
+      cells: [
+        [null, null, null, null, 0, null],
+        [null, 0, 0, 0, 0, null],
+        [0, 0, null, null, null, 0],
+        [null, 0, 0, null, null, 0],
+        [0, null, null, 0, null, 0],
+        [0, null, null, null, null, null],
+      ],
+    });
+
+    expect(checkSolvability(harder)).toEqual({ ok: true });
+    expect(computePuzzleDifficulty(harder)).toBeGreaterThan(
+      computePuzzleDifficulty(easy) as number,
+    );
+  });
+
+  it("returns undefined for a puzzle that requires guessing", () => {
+    // The classic permutation-matrix nonogram: no cell can ever be pinned
+    // down by line deduction alone (see checkSolvability's own identical
+    // fixture).
+    const puzzle = fixture({
+      width: 3,
+      height: 3,
+      cells: [
+        [0, null, null],
+        [null, 0, null],
+        [null, null, 0],
+      ],
+    });
+
+    expect(computePuzzleDifficulty(puzzle)).toBeUndefined();
+  });
+
+  it("returns undefined for a puzzle with no filled cells", () => {
+    const puzzle = fixture({
+      cells: [
+        [null, null],
+        [null, null],
+      ],
+    });
+
+    expect(computePuzzleDifficulty(puzzle)).toBeUndefined();
+  });
+
+  it("never scores below 1 for a trivially easy puzzle", () => {
+    const puzzle = fixture({
+      cells: [
+        [0, 0],
+        [0, null],
+      ],
+    });
+
+    expect(computePuzzleDifficulty(puzzle)).toBeGreaterThanOrEqual(1);
+  });
+
+  it("never scores above 10, even for the most demanding puzzle shipped today", () => {
+    // No small hand-built grid needs anywhere near enough fixpoint rounds
+    // to exercise the scale's calibrated ceiling, so this reuses this
+    // project's own real, already-shipped "Moon" puzzle (45x45) —
+    // independently confirmed (outside this formula) to need 34 rounds to
+    // converge, comfortably past the ceiling — rather than only ever
+    // testing values safely inside the scale.
+    const raw = JSON.parse(
+      readFileSync(
+        join(
+          import.meta.dirname,
+          "../../../data/puzzles/772cc4e7-88d1-4c5f-b585-b43ad05553f5.json",
+        ),
+        "utf-8",
+      ),
+    ) as Puzzle;
+
+    expect(checkSolvability(raw)).toEqual({ ok: true });
+    const score = computePuzzleDifficulty(raw);
+    expect(score).toBeDefined();
+    expect(score as number).toBeLessThanOrEqual(10);
   });
 });

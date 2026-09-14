@@ -53,11 +53,20 @@ const SUGGESTION_MAX_ATTEMPTS = 40;
 /** A cell during solving: a forced value, or `undefined` while undetermined. */
 type CellState = number | null | undefined;
 
-/** The fixpoint's own working grid, plus every line the solver ever found infeasible along the way. */
+/**
+ * The fixpoint's own working grid, every line the solver ever found
+ * infeasible along the way, and the number of full row+column passes it
+ * took to converge — the least any solvable puzzle can ever take is 2 (a
+ * grid fully forced on the very first pass still needs a second, confirming
+ * pass to detect nothing new is left to deduce). Used by
+ * {@link computePuzzleDifficulty} as its measure of how much cross-line
+ * deduction a puzzle demands.
+ */
 interface FixpointOutcome {
   grid: CellState[][];
   infeasibleRows: Set<number>;
   infeasibleColumns: Set<number>;
+  rounds: number;
 }
 
 /**
@@ -87,8 +96,10 @@ function runFixpoint(
   const infeasibleColumns = new Set<number>();
 
   let changed = true;
+  let rounds = 0;
   while (changed) {
     changed = false;
+    rounds++;
 
     for (let y = 0; y < height; y++) {
       const line = grid[y];
@@ -116,7 +127,7 @@ function runFixpoint(
     }
   }
 
-  return { grid, infeasibleRows, infeasibleColumns };
+  return { grid, infeasibleRows, infeasibleColumns, rounds };
 }
 
 /**
@@ -174,6 +185,76 @@ export function checkSolvability(puzzle: Puzzle): SolvabilityResult {
   }
 
   return { ok: true };
+}
+
+// The fewest fixpoint rounds any solvable puzzle can ever take (see
+// FixpointOutcome's own doc comment) — the floor of the difficulty scale.
+const MIN_DIFFICULTY_ROUNDS = 2;
+
+// A calibrated ceiling: comfortably above the most demanding puzzle shipped
+// today (the largest puzzle in this project's own library converges in 34
+// rounds), so that one already reads as "as hard as it gets" (clamped to
+// the top score) without the scale needing to be re-tuned every time a
+// harder puzzle is added — see
+// .vibe/decisions/047-difficulty-score-from-fixpoint-rounds.md.
+const MAX_DIFFICULTY_ROUNDS = 32;
+
+/**
+ * Scores how hard a puzzle is to solve by pure logical deduction, on a 1-10
+ * scale, for display next to a puzzle (library listing, play page, the
+ * editor's solvability check). `undefined` for a puzzle that isn't
+ * solvable this way at all (see {@link checkSolvability}) — there is no
+ * meaningful difficulty to report for one that would require guessing, or
+ * that has nothing drawn on it yet.
+ *
+ * Driven by how many alternating row/column fixpoint passes are needed
+ * before nothing new is forced (see `runFixpoint`): a puzzle whose clues
+ * can be read off almost immediately (few rounds) is easy, one that only
+ * yields after many rounds of cross-referencing row and column deductions
+ * against each other is hard — independent of the puzzle's raw cell count,
+ * which the round count does not scale with in the same way. Computed
+ * fresh every time rather than stored, so it can never go stale and every
+ * puzzle gets a score, including ones published before this existed (see
+ * .vibe/decisions/047-difficulty-score-from-fixpoint-rounds.md).
+ *
+ * Runs the fixpoint engine itself exactly once (checking the same
+ * solvability condition {@link checkSolvability} does, inline, rather than
+ * calling it and re-running the whole engine a second time just to also
+ * get the round count) — the line solver is expensive enough on a large
+ * grid that doubling it noticeably slows down every puzzle page and every
+ * editor solvability check.
+ */
+export function computePuzzleDifficulty(puzzle: Puzzle): number | undefined {
+  const { width, height, cells: solution } = puzzle;
+
+  if (solution.every((row) => row.every((cell) => cell === null))) {
+    return undefined;
+  }
+
+  const clues = computePuzzleClues(puzzle);
+  const { grid, infeasibleRows, infeasibleColumns, rounds } = runFixpoint(
+    width,
+    height,
+    clues,
+    solution,
+  );
+
+  if (infeasibleRows.size > 0 || infeasibleColumns.size > 0) {
+    return undefined;
+  }
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (grid[y][x] === undefined || grid[y][x] !== solution[y][x]) {
+        return undefined;
+      }
+    }
+  }
+
+  const progress =
+    (rounds - MIN_DIFFICULTY_ROUNDS) /
+    (MAX_DIFFICULTY_ROUNDS - MIN_DIFFICULTY_ROUNDS);
+  const clamped = Math.min(1, Math.max(0, progress));
+  return Math.round(1 + clamped * 9);
 }
 
 /**

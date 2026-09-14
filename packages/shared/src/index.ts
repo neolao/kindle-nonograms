@@ -14,3 +14,4 @@ export * from "./puzzleSourceParsing.js";
 export * from "./duplicatePuzzles.js";
 export * from "./contrastColor.js";
 export * from "./uiDefaults.js";
+export * from "./renderDifficultyBadge.js";

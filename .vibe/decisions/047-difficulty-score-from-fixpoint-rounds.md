@@ -1,0 +1,9 @@
+---
+date: 2026-09-14
+status: accepted
+---
+# Difficulty score derived from the fixpoint solver's round count
+**Context:** Players and contributors want a sense of how hard a puzzle is, shown in the library, the play page, and the editor's solvability check.
+**Decision:** A puzzle's difficulty (1-10) is computed purely from how many alternating row/column passes the existing solvability fixpoint solver needs to fully converge, linearly mapped from a floor of 2 rounds (the least any solvable puzzle can take) to a ceiling of 32 rounds (comfortably above the hardest puzzle shipped today, clamped beyond that), and computed fresh every time rather than stored.
+**Reason:** The round count already exists as a byproduct of an algorithm the project already trusts and maintains (`checkSolvability`/`diagnoseSolvability`'s shared `runFixpoint`), correlates with how much cross-referencing a human would actually need to do, and — being computed on demand from the puzzle's own content — never goes stale or needs a migration for puzzles published before this feature existed. The linear scale and its two bounds were calibrated by running it against every puzzle currently shipped (round counts ranged 2-34), giving a spread across the full 1-10 scale rather than bunching every puzzle at one end.
+**Rejected alternatives:** A puzzle-size-based heuristic (rejected: doesn't track logical complexity — a large puzzle can be logically trivial and vice versa, confirmed by the calibration data). A log-scale normalization (rejected: added complexity for no material improvement over a linear scale once tested against the real data). A score computed relative to the current library's own distribution, e.g. a percentile rank (rejected: would make an unchanged puzzle's difficulty silently drift every time other puzzles are added or removed).

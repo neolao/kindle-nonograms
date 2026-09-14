@@ -2,7 +2,9 @@ import {
   DEFAULT_LOCALE,
   LIBRARY_PAGE_SIZE,
   type Puzzle,
+  computePuzzleDifficulty,
   isMultiColorPuzzle,
+  renderDifficultyBadge,
   translate,
 } from "@kindle-nonograms/shared";
 import { renderEarlyLangScript } from "./earlyLangScript.js";
@@ -250,18 +252,25 @@ function renderLibraryItem(puzzle: Puzzle, index: number): string {
   // on first paint (see `renderFiltersAndPagination`). Re-filtering or
   // paging afterward keeps toggling this same attribute, exactly as before.
   const hidden = index >= LIBRARY_PAGE_SIZE ? " hidden" : "";
+  const difficulty = computePuzzleDifficulty(puzzle);
+  // No badge at all for a puzzle whose difficulty can't be computed (no
+  // filled cells, or one that would require guessing) — never a
+  // misleading "0/10" for content that simply has no meaningful rating.
+  const difficultyBadge =
+    difficulty === undefined ? "" : renderDifficultyBadge(difficulty);
 
-  return `<li class="stripe-${index}" data-puzzle-id="${escapeHtml(puzzle.id)}" data-color-type="${colorType}"${hidden}>${THUMBNAIL_PLACEHOLDER}<a href="${href}">${label}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span></li>`;
+  return `<li class="stripe-${index}" data-puzzle-id="${escapeHtml(puzzle.id)}" data-color-type="${colorType}"${hidden}>${THUMBNAIL_PLACEHOLDER}<a href="${href}">${label}</a><span class="solved-badge" data-i18n="library.solvedBadge" hidden>Solved</span>${difficultyBadge}</li>`;
 }
 
 const STYLE = `
 ${sharedStyles()}
 [hidden]{display:none;}
 ul{list-style:none;padding:0;margin:${SPACING_PX.sm}px ${SPACING_PX.md}px ${SPACING_PX.md}px;display:flex;flex-direction:column;gap:${SPACING_PX.sm}px;}
-li{display:flex;align-items:center;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-top-width:${STRIPE_HEIGHT_PX}px;border-top-color:transparent;border-radius:${BORDER_RADIUS_PX}px;box-shadow:4px 4px 0 ${COLORS.panelEdge};overflow:hidden;background-repeat:no-repeat;background-position:top;background-size:100% ${STRIPE_HEIGHT_PX}px;}
+li{display:flex;flex-wrap:wrap;align-items:center;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-top-width:${STRIPE_HEIGHT_PX}px;border-top-color:transparent;border-radius:${BORDER_RADIUS_PX}px;box-shadow:4px 4px 0 ${COLORS.panelEdge};overflow:hidden;background-repeat:no-repeat;background-position:top;background-size:100% ${STRIPE_HEIGHT_PX}px;}
 li a{flex:1;display:flex;align-items:center;min-width:0;padding:${SPACING_PX.sm}px ${SPACING_PX.md}px;min-height:${MIN_TAP_TARGET_PX}px;font-family:${LABEL_FONT_STACK};color:${COLORS.text};text-decoration:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
 li a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 .solved-badge{margin:0 ${SPACING_PX.md}px 0 auto;padding:2px ${SPACING_PX.sm}px;border:${BORDER_WIDTH.medium} solid ${COLORS.teal};border-radius:${BORDER_RADIUS_PX}px;color:${COLORS.teal};font-size:0.8em;text-transform:uppercase;letter-spacing:0.05em;transform:rotate(-5deg);}
+li .difficulty-badge{flex-basis:100%;text-align:right;padding:0 ${SPACING_PX.md}px ${SPACING_PX.sm}px;}
 .thumb{flex:0 0 auto;width:36px;height:36px;margin:${SPACING_PX.sm}px 0 ${SPACING_PX.sm}px ${SPACING_PX.sm}px;border:${BORDER_WIDTH.thin} solid ${COLORS.border};border-radius:${BORDER_RADIUS_PX}px;background:${COLORS.panel};display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .thumb-lock{color:${COLORS.muted};font-weight:bold;}
 .thumb-row{display:flex;}

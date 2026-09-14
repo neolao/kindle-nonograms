@@ -23,6 +23,8 @@ Four root-level `*-workflow.test.ts` files (`deploy-workflow.test.ts`, `pr-check
 
 `demoContent.test.ts` loads and validates every puzzle file actually committed under `data/puzzles/` (not a fixture) through the same `loadPuzzleSources` the real build uses, and asserts the demo set includes at least one black-and-white puzzle, one multi-color puzzle, and one four-color puzzle — so the bundled examples stay representative as puzzles are added or removed.
 
+`solvability.test.ts`'s difficulty-scale ceiling test reads one specific real file directly off `data/puzzles/` too (rather than a hand-built fixture): no small hand-crafted grid needs anywhere near enough fixpoint rounds to exercise the scale's calibrated top end, so it reuses the project's own largest shipped puzzle, independently known (outside the formula under test) to need far more rounds than the ceiling.
+
 ## Real-browser verification beyond Vitest
 
 Vitest's jsdom environment cannot render actual pixels, so two pieces are verified against a real browser instead and kept isolated from the rest of the suite:

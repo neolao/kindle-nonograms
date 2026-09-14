@@ -35,6 +35,11 @@ Whether a puzzle's solution can be fully worked out from its row/column clues by
 **Do not confuse with:** Clue, the per-row/per-column data this check reasons over; Puzzle, the content being checked.
 _Sources: `packages/shared/src/solvability.ts`_
 
+## Difficulty
+A 1-10 rating of how hard a puzzle is to work out by pure logical deduction, shown to a player or contributor as a row of filled/empty stars — in the library list, on a puzzle's own play page, and in the puzzle editor once a drafted puzzle passes its Solvability check. Derived purely from the puzzle's own content (never stored) by how many rounds of cross-referencing its rows and columns the Solvability check itself needs before it converges, so it is undefined for any puzzle that fails that check.
+**Do not confuse with:** Solvability, the yes/no fairness gate a puzzle must already pass before a difficulty rating means anything.
+_Sources: `packages/shared/src/solvability.ts`, `packages/shared/src/renderDifficultyBadge.ts`_
+
 ## Puzzle editor
 A contributor-facing page, distinct from the library and play pages, where a puzzle is authored rather than played: set a grid size, build a color palette, paint the solution cell by cell, name the puzzle, and export it as a ready-to-submit `Puzzle` JSON file — or import an existing puzzle file to continue or fix it, and check its Solvability at any time while drafting. Runs entirely client-side in a normal desktop browser (not on Kindle) — there is no server to hand the exported file to, so the contributor still commits it manually.
 **Do not confuse with:** Library page, which lists already-authored puzzles to play, not create.

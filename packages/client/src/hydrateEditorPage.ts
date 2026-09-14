@@ -8,11 +8,13 @@ import {
   type Locale,
   type Puzzle,
   PuzzleValidationError,
+  computePuzzleDifficulty,
   contrastingTextColor,
   createPuzzle,
   diagnoseSolvability,
   isSupportedLocale,
   parsePuzzleSource,
+  renderDifficultyBadge,
   suggestSolvabilityFix,
   translate,
 } from "@kindle-nonograms/shared";
@@ -1319,7 +1321,22 @@ async function handleCheckSolvability(
   }
 
   if (result.ok) {
-    elements.solvabilityConfirmation.textContent = `✓ ${translate(state.locale, "editor.solvabilityOk")}`;
+    // diagnoseSolvability's success condition is identical to
+    // checkSolvability's (both share the same fixpoint engine), so
+    // computePuzzleDifficulty is guaranteed defined here — still guarded
+    // defensively rather than asserted, matching this function's own
+    // total, never-throws style.
+    const difficulty = computePuzzleDifficulty(puzzle);
+    const difficultyBadge =
+      difficulty === undefined
+        ? ""
+        : ` ${renderDifficultyBadge(difficulty, state.locale)}`;
+    // innerHTML (not textContent) is required here to actually render the
+    // difficulty badge's star markup rather than showing it as literal
+    // escaped text — safe since the interpolated content is only a fixed
+    // translated string and a clamped 1-10 integer, never anything
+    // player-supplied.
+    elements.solvabilityConfirmation.innerHTML = `✓ ${translate(state.locale, "editor.solvabilityOk")}${difficultyBadge}`;
     return;
   }
 

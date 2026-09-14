@@ -73,6 +73,56 @@ describe("renderLibraryPage", () => {
     expect(doc.body.textContent).toMatch(/no puzzles/i);
   });
 
+  it("shows a difficulty star badge, as its own row sibling after the link, for a puzzle whose difficulty can be computed", () => {
+    // A small, independently-verified solvable puzzle (see
+    // shared/solvability.test.ts's identical fixture): converges in 2
+    // fixpoint rounds, the least any solvable puzzle can take, so it
+    // scores 1/10 — exactly 1 filled star of 5.
+    const solvable: Puzzle = {
+      id: "solvable",
+      name: "Solvable",
+      width: 2,
+      height: 2,
+      palette: ["#000000"],
+      cells: [
+        [0, 0],
+        [0, null],
+      ],
+    };
+    const doc = parse(renderLibraryPage([solvable]));
+    const item = doc.querySelector("li");
+
+    const badge = item?.querySelector(":scope > .difficulty-badge");
+    expect(badge).not.toBeNull();
+    expect(badge?.querySelector('[aria-hidden="true"]')?.textContent).toBe(
+      "★☆☆☆☆",
+    );
+    // Sits alongside the link, not nested inside it — nesting it in the
+    // link's own truncating text would risk it being clipped off by a long
+    // puzzle name's ellipsis.
+    expect(item?.querySelector("a .difficulty-badge")).toBeNull();
+  });
+
+  it("renders no difficulty badge for a puzzle with no computable difficulty (e.g. nothing drawn on it)", () => {
+    // The default fixture puzzles used throughout this file have entirely
+    // empty grids — no filled cells, so there is no meaningful difficulty
+    // to show (see shared's computePuzzleDifficulty).
+    const doc = parse(renderLibraryPage(puzzles));
+    const items = doc.querySelectorAll("li");
+
+    for (const item of Array.from(items)) {
+      expect(item.querySelector(".difficulty-badge")).toBeNull();
+    }
+  });
+
+  it("forces the difficulty badge onto its own line, right-aligned, instead of sharing the top row", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/\bli\{[^}]*flex-wrap:wrap/);
+    expect(css).toMatch(/li \.difficulty-badge\{[^}]*flex-basis:100%/);
+  });
+
   it("exposes visually-hidden text stating the GitHub contribution link opens in a new tab", () => {
     const doc = parse(renderLibraryPage(puzzles));
     const link = doc.querySelector<HTMLAnchorElement>('a[target="_blank"]');

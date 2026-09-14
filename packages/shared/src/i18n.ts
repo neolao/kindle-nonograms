@@ -36,7 +36,9 @@ export const NATIVE_LOCALE_NAMES: Record<Locale, string> = {
 
 /**
  * Identifier for a single translatable UI string. Grouped by the page/area
- * it belongs to (`library.*`, `play.*`, `i18n.*`).
+ * it belongs to (`library.*`, `play.*`, `i18n.*`), or by `puzzle.*` for a
+ * string shown identically on more than one page (e.g. the difficulty
+ * badge, shown on both the library and the play page).
  */
 export type TranslationKey =
   | "library.title"
@@ -120,7 +122,9 @@ export type TranslationKey =
   | "editor.valueColorLabel"
   | "play.swatchColorAriaLabel"
   | "editor.cellColorAriaLabel"
-  | "editor.cellEmptyAriaLabel";
+  | "editor.cellEmptyAriaLabel"
+  | "puzzle.difficultyLabel"
+  | "editor.solvabilityDifficulty";
 
 const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
   en: {
@@ -216,6 +220,8 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.swatchColorAriaLabel": "Color {number}",
     "editor.cellColorAriaLabel": "Row {row}, column {column}, Color {number}",
     "editor.cellEmptyAriaLabel": "Row {row}, column {column}, Empty",
+    "puzzle.difficultyLabel": "Difficulty",
+    "editor.solvabilityDifficulty": "Difficulty: {score}/10.",
   },
   fr: {
     "library.title": "Kindle Nonograms",
@@ -315,6 +321,8 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.cellColorAriaLabel":
       "Ligne {row}, colonne {column}, Couleur {number}",
     "editor.cellEmptyAriaLabel": "Ligne {row}, colonne {column}, Vide",
+    "puzzle.difficultyLabel": "Difficulté",
+    "editor.solvabilityDifficulty": "Difficulté : {score}/10.",
   },
 };
 

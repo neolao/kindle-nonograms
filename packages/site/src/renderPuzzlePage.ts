@@ -5,7 +5,9 @@ import {
   PLAY_DEFAULT_MODE,
   type Puzzle,
   computePuzzleClues,
+  computePuzzleDifficulty,
   contrastingTextColor,
+  renderDifficultyBadge,
   translate,
 } from "@kindle-nonograms/shared";
 import { renderEarlyLangScript } from "./earlyLangScript.js";
@@ -135,6 +137,9 @@ export function renderPuzzlePage(
 ): string {
   const clues = computePuzzleClues(puzzle);
   const multiColor = puzzle.palette.length > 1;
+  const difficulty = computePuzzleDifficulty(puzzle);
+  const difficultyBadge =
+    difficulty === undefined ? "" : renderDifficultyBadge(difficulty);
 
   const columnHeaders = clues.columns
     .map((runs) => renderColumnClueCell(runs, puzzle, multiColor))
@@ -159,7 +164,7 @@ ${renderEarlyLangScript()}
 <div class="page-header">
 <a class="back-link" href="../../"><span aria-hidden="true">←</span><span class="sr-only" data-i18n="play.backToLibrary">Back to puzzle list</span></a>
 <h1>${escapeHtml(puzzle.name)}</h1>
-<div class="page-header-controls"></div>
+<div class="page-header-controls">${difficultyBadge}</div>
 </div>
 ${renderDefaultLoadError()}
 ${renderDefaultRestoreWarning()}

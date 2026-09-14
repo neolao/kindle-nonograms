@@ -402,6 +402,39 @@ describe("renderPuzzlePage", () => {
     ).toBeTruthy();
   });
 
+  it("shows a difficulty star badge in the reserved header-controls slot for a solvable puzzle", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+    const controls = doc.querySelector(".page-header-controls");
+
+    const badge = controls?.querySelector(".difficulty-badge");
+    expect(badge).not.toBeNull();
+    // Verified independently (shared/solvability.test.ts): this fixture
+    // converges in 2 fixpoint rounds, the least any solvable puzzle can
+    // take, so it scores 1/10 — exactly 1 filled star of 5.
+    expect(badge?.querySelector('[aria-hidden="true"]')?.textContent).toBe(
+      "★☆☆☆☆",
+    );
+  });
+
+  it("renders no difficulty badge for a puzzle with no computable difficulty", () => {
+    const blank: Puzzle = {
+      id: "blank",
+      name: "Blank",
+      width: 2,
+      height: 2,
+      palette: ["#000000"],
+      cells: [
+        [null, null],
+        [null, null],
+      ],
+    };
+    const doc = parse(renderPuzzlePage(blank));
+
+    expect(
+      doc.querySelector(".page-header-controls .difficulty-badge"),
+    ).toBeNull();
+  });
+
   it("uses the shared design tokens' font stack instead of a hardcoded font", () => {
     const doc = parse(renderPuzzlePage(multiColorPuzzle));
     const css = doc.querySelector("style")?.textContent ?? "";

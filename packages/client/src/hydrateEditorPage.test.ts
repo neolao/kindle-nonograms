@@ -1695,15 +1695,20 @@ describe("solvability check", () => {
       "⚠ This puzzle has no filled cells — nothing to check.",
     );
     expect(solvabilityConfirmationRegion().textContent).toBe("");
+    expect(
+      solvabilityConfirmationRegion().querySelector(".difficulty-badge"),
+    ).toBeNull();
   });
 
-  it("confirms a fully-determined puzzle is solvable", async () => {
+  it("confirms a fully-determined puzzle is solvable, together with its difficulty", async () => {
     buildFixture();
     hydrate();
     fireChange(widthInput(), "2");
     fireChange(heightInput(), "2");
     // A solid 2x2 square: zero slack, trivially solvable regardless of
-    // cross-referencing.
+    // cross-referencing — converges in 2 fixpoint rounds, the least any
+    // solvable puzzle can take, so it scores 1/10 (independently verified
+    // against the same fixture in shared/solvability.test.ts).
     fireClick(cell(0, 0));
     fireClick(cell(1, 0));
     fireClick(cell(0, 1));
@@ -1712,10 +1717,44 @@ describe("solvability check", () => {
     fireClick(checkSolvabilityButton());
     await flushAsync();
 
-    expect(solvabilityConfirmationRegion().textContent).toBe(
+    const region = solvabilityConfirmationRegion();
+    expect(region.textContent).toContain(
       "✓ This puzzle is fully solvable by logical deduction alone — no guessing required.",
     );
     expect(solvabilityErrorRegion().textContent).toBe("");
+
+    const badge = region.querySelector(".difficulty-badge");
+    expect(badge).not.toBeNull();
+    expect(badge?.querySelector('[aria-hidden="true"]')?.textContent).toBe(
+      "★☆☆☆☆",
+    );
+    expect(badge?.querySelector(".sr-only")?.textContent).toBe(
+      "Difficulty 1/10",
+    );
+  });
+
+  it("shows the difficulty badge's hidden label in the current language, not stranded in English", async () => {
+    // This confirmation is rebuilt on demand, well after hydration's
+    // one-time page-wide translation sweep already ran — the badge must
+    // already reflect the resolved language the instant it appears.
+    setNavigatorLanguage("fr-FR");
+    buildFixture();
+    hydrate();
+    fireChange(widthInput(), "2");
+    fireChange(heightInput(), "2");
+    fireClick(cell(0, 0));
+    fireClick(cell(1, 0));
+    fireClick(cell(0, 1));
+    fireClick(cell(1, 1));
+
+    fireClick(checkSolvabilityButton());
+    await flushAsync();
+
+    const badge =
+      solvabilityConfirmationRegion().querySelector(".difficulty-badge");
+    expect(badge?.querySelector(".sr-only")?.textContent).toBe(
+      "Difficulté 1/10",
+    );
   });
 
   it("reports every ambiguous row and column, 1-based, on a puzzle that requires guessing", async () => {
@@ -1737,6 +1776,9 @@ describe("solvability check", () => {
       "⚠ Not solvable without guessing. Problem rows: 1, 2, 3. Problem columns: 1, 2, 3.",
     );
     expect(solvabilityConfirmationRegion().textContent).toBe("");
+    expect(
+      solvabilityConfirmationRegion().querySelector(".difficulty-badge"),
+    ).toBeNull();
   });
 
   it("appends a concrete single-cell fix suggestion when the ambiguous area is small enough", async () => {
