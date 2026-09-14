@@ -19,44 +19,75 @@ import {
 } from "./theme.js";
 
 /**
- * Renders the library's default chrome — the color filter (as two
- * unpressed toggle buttons, "all" being the state where neither is
- * pressed), the "no results" message (hidden — the default filter always
- * matches at least one puzzle whenever the library itself isn't empty),
- * and Previous/Next pagination (hidden unless there are more puzzles than
- * fit on one page, its total-page count computed here from the fixed
- * puzzle count) — baked into the static HTML so the page already looks
- * complete on first paint instead of popping in once
- * `hydrateLibraryPage.ts` builds it. See
- * `.ux/decisions/001-frozen-chrome-blocking-reconciliation.md`; mirrors
- * exactly what that script's own `setUpFiltersAndPagination` produced
- * before this change. `hydrateLibraryPage.ts` now locates this same
- * markup by its `data-role` attributes and attaches behavior to it.
- * Plain tappable buttons, not a `<select>`, per backlog item 067 — a
- * dropdown is hard to operate in Kindle's browser.
+ * Renders the library's color filter — two unpressed toggle buttons,
+ * "all" being the state where neither is pressed — wrapped in an ARIA
+ * group whose accessible name ("Color") carries the context a visible
+ * label used to give, without spending any horizontal space on it: the
+ * buttons' own short labels ("Mono"/"Multi") stay self-explanatory on
+ * their own, and the group name is only ever read by assistive tech (see
+ * backlog item 072, `.vibe/decisions/045-secondary-filters-relocated-
+ * below-list.md`). Plain tappable buttons, not a `<select>`, per backlog
+ * item 067 — a dropdown is hard to operate in Kindle's browser.
  */
 function renderColorFilterButtons(): string {
   const groupLabel = translate(DEFAULT_LOCALE, "library.filterColorLabel");
   const monoLabel = translate(DEFAULT_LOCALE, "library.filterColorMono");
   const multiLabel = translate(DEFAULT_LOCALE, "library.filterColorMulti");
-  return `<div><span data-i18n="library.filterColorLabel">${groupLabel}</span><button type="button" data-role="library-filter-color-mono" data-i18n="library.filterColorMono" aria-pressed="false">${monoLabel}</button><button type="button" data-role="library-filter-color-multi" data-i18n="library.filterColorMulti" aria-pressed="false">${multiLabel}</button></div>`;
+  return `<div role="group" data-i18n-aria="library.filterColorLabel" aria-label="${escapeHtml(groupLabel)}"><button type="button" data-role="library-filter-color-mono" data-i18n="library.filterColorMono" aria-pressed="false">${monoLabel}</button><button type="button" data-role="library-filter-color-multi" data-i18n="library.filterColorMulti" aria-pressed="false">${multiLabel}</button></div>`;
 }
 
-// A separate `<div>` from the color filter's — the existing
+// A separate `<div>` from the sort button's — the existing
 // `.library-filters` flex-row gap already keeps the two visually apart,
-// so a player doesn't mistake this for a third color option (backlog
-// item 068, per the visual-design consultation on this batch).
+// so a player doesn't mistake this for a third status option.
 function renderSortButton(): string {
   const label = translate(DEFAULT_LOCALE, "library.sortRecentLabel");
   return `<div><button type="button" data-role="library-sort-recent" data-i18n="library.sortRecentLabel" aria-pressed="false">${label}</button></div>`;
 }
 
+/**
+ * Renders the puzzle solve-status filter — three unpressed toggle buttons
+ * (Unsolved / In progress / Solved), "all" being the state where none is
+ * pressed, exactly like the color filter's own two-button interaction (see
+ * `renderColorFilterButtons`). Whether a puzzle is solved or has partial
+ * progress can only be known client-side (it reads the player's saved
+ * progress), so every row starts untagged here and
+ * `hydrateLibraryPage.ts` tags it before the first filter pass runs — see
+ * `.vibe/decisions/044-status-filter-computed-client-side.md`.
+ */
+function renderStatusFilterButtons(): string {
+  const groupLabel = translate(DEFAULT_LOCALE, "library.filterStatusLabel");
+  const unsolvedLabel = translate(
+    DEFAULT_LOCALE,
+    "library.filterStatusUnsolved",
+  );
+  const inProgressLabel = translate(
+    DEFAULT_LOCALE,
+    "library.filterStatusInProgress",
+  );
+  const solvedLabel = translate(DEFAULT_LOCALE, "library.filterStatusSolved");
+  return `<div role="group" data-i18n-aria="library.filterStatusLabel" aria-label="${escapeHtml(groupLabel)}"><button type="button" data-role="library-filter-status-unsolved" data-i18n="library.filterStatusUnsolved" aria-pressed="false">${unsolvedLabel}</button><button type="button" data-role="library-filter-status-in-progress" data-i18n="library.filterStatusInProgress" aria-pressed="false">${inProgressLabel}</button><button type="button" data-role="library-filter-status-solved" data-i18n="library.filterStatusSolved" aria-pressed="false">${solvedLabel}</button></div>`;
+}
+
+/**
+ * Renders the secondary controls row — the status filter and the sort
+ * button — placed after the puzzle list rather than above it, to keep the
+ * color filter alone at the compact top of the page (see
+ * `.vibe/decisions/045-secondary-filters-relocated-below-list.md`).
+ * `data-role` lets `hydrateLibraryPage.ts` and tests locate this row
+ * without depending on its position in the document.
+ */
+function renderSecondaryFilters(): string {
+  return `<div class="library-filters" data-role="library-secondary-filters">${renderStatusFilterButtons()}${renderSortButton()}</div>`;
+}
+
 function renderFiltersAndPagination(puzzleCount: number): {
   filters: string;
+  secondaryFilters: string;
   noResults: string;
   pagination: string;
 } {
-  const filters = `<div class="library-filters">${renderColorFilterButtons()}${renderSortButton()}</div>`;
+  const filters = `<div class="library-filters">${renderColorFilterButtons()}</div>`;
+  const secondaryFilters = renderSecondaryFilters();
 
   const noResults = `<p class="filter-no-results" data-role="library-filter-no-results" data-i18n="library.filterNoResults" hidden>${translate(DEFAULT_LOCALE, "library.filterNoResults")}</p>`;
 
@@ -64,7 +95,7 @@ function renderFiltersAndPagination(puzzleCount: number): {
   const showPagination = puzzleCount > LIBRARY_PAGE_SIZE;
   const pagination = `<div class="library-pagination" data-role="library-pagination"${showPagination ? "" : " hidden"}><button type="button" data-role="library-pagination-prev" data-i18n="library.paginationPrev" disabled>${translate(DEFAULT_LOCALE, "library.paginationPrev")}</button><span class="pagination-status" data-role="library-pagination-status" role="status" aria-live="polite"><span class="sr-only" data-i18n="library.paginationStatusLabel">${translate(DEFAULT_LOCALE, "library.paginationStatusLabel")}</span> <span data-role="library-pagination-position">1 / ${totalPages}</span></span><button type="button" data-role="library-pagination-next" data-i18n="library.paginationNext"${totalPages <= 1 ? " disabled" : ""}>${translate(DEFAULT_LOCALE, "library.paginationNext")}</button></div>`;
 
-  return { filters, noResults, pagination };
+  return { filters, secondaryFilters, noResults, pagination };
 }
 
 // Purely decorative — see .vibe/decisions/013-three-accent-cabinet-reskin.md.
@@ -150,11 +181,10 @@ export function renderLibraryPage(
   if (puzzles.length === 0) {
     body = '<p data-i18n="library.empty">No puzzles are available yet.</p>';
   } else {
-    const { filters, noResults, pagination } = renderFiltersAndPagination(
-      puzzles.length,
-    );
+    const { filters, secondaryFilters, noResults, pagination } =
+      renderFiltersAndPagination(puzzles.length);
     const items = puzzles.map(renderLibraryItem).join("");
-    body = `${filters}<p class="section-label" data-i18n="library.sectionLabel">Choose a puzzle</p><ul>${items}</ul>${noResults}${pagination}`;
+    body = `${filters}<p class="section-label" data-i18n="library.sectionLabel">Choose a puzzle</p><ul>${items}</ul>${noResults}${secondaryFilters}${pagination}`;
   }
   const stripeStyles = puzzles
     .map(

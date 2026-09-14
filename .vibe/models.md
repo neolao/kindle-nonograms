@@ -45,6 +45,15 @@ Defined in: `packages/shared/src/progress.ts`
 Just enough of a `Puzzle` to list and link to it on the library page; deliberately excludes `palette`/`cells` so no solution data reaches that renderer.
 Defined in: `packages/site/src/renderLibraryPage.ts`
 
+## LibraryFiltersState
+| Field | Type | Notes |
+|---|---|---|
+| color | `"all" \| "mono" \| "multi"` | mirrors the color toggle buttons |
+| status | `"all" \| "unsolved" \| "in-progress" \| "solved"` | mirrors the status toggle buttons; solve status is only known client-side |
+| sortByRecent | boolean | whether the library is currently sorted by most-recently-opened |
+Persisted as a single `kindle-nonograms-library-filters` cookie, each field validated and defaulted independently on read.
+Defined in: `packages/client/src/libraryFiltersStorage.ts`
+
 ## BooleanGridExport
 | Field | Type | Notes |
 |---|---|---|

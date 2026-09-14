@@ -4,6 +4,7 @@ import { renderLibraryPage } from "@kindle-nonograms/site";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { extractBodyHtml } from "./htmlFixture.js";
 import { hydrate } from "./hydrateLibraryPage.js";
+import { writeLibraryFiltersCookie } from "./libraryFiltersStorage.js";
 import { recordPuzzleOpened } from "./openedStorage.js";
 import { saveProgress } from "./progressStorage.js";
 
@@ -251,6 +252,36 @@ function isRowVisible(puzzleId: string): boolean {
   return !row.hidden;
 }
 
+function unsolvedFilterButton(): HTMLButtonElement {
+  const found = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-filter-status-unsolved"]',
+  );
+  if (!found) {
+    throw new Error("fixture unsolved status filter button not found");
+  }
+  return found;
+}
+
+function inProgressFilterButton(): HTMLButtonElement {
+  const found = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-filter-status-in-progress"]',
+  );
+  if (!found) {
+    throw new Error("fixture in-progress status filter button not found");
+  }
+  return found;
+}
+
+function solvedFilterButton(): HTMLButtonElement {
+  const found = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-filter-status-solved"]',
+  );
+  if (!found) {
+    throw new Error("fixture solved status filter button not found");
+  }
+  return found;
+}
+
 function sortRecentButton(): HTMLButtonElement {
   const found = document.querySelector<HTMLButtonElement>(
     '[data-role="library-sort-recent"]',
@@ -275,6 +306,7 @@ beforeEach(() => {
 afterEach(() => {
   document.body.innerHTML = "";
   document.cookie = "kindle-nonograms-locale=; path=/; max-age=0";
+  document.cookie = "kindle-nonograms-library-filters=; path=/; max-age=0";
   document.documentElement.lang = "";
   setNavigatorLanguage(originalNavigatorLanguage);
 });
@@ -771,7 +803,116 @@ describe("library filters", () => {
     expect(monoFilterButton().getAttribute("aria-pressed")).toBe("true");
     expect(isRowVisible("small-mono")).toBe(true);
     expect(isRowVisible("medium-multi")).toBe(false);
-    expect(monoFilterButton().textContent).toBe("Monochrome uniquement");
+    expect(monoFilterButton().textContent).toBe("Mono");
+  });
+});
+
+describe("library status filter", () => {
+  beforeEach(() => {
+    saveProgress("small-mono", { cells: [[0, null]] }); // solved
+    saveProgress("medium-multi", {
+      cells: Array.from({ length: 15 }, (_, row) =>
+        Array.from({ length: 15 }, (_, col) =>
+          row === 0 && col === 0 ? 0 : null,
+        ),
+      ),
+    }); // partial (some paint, not solved)
+    // large-mono: no saved progress at all — unsolved.
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    hydrate();
+  });
+
+  it("shows every puzzle by default, with no status filter button pressed ('all')", () => {
+    expect(unsolvedFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(inProgressFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(solvedFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(isRowVisible("small-mono")).toBe(true);
+    expect(isRowVisible("medium-multi")).toBe(true);
+    expect(isRowVisible("large-mono")).toBe(true);
+  });
+
+  it("keeps only solved puzzles visible, and presses only the solved button", () => {
+    click(solvedFilterButton());
+
+    expect(solvedFilterButton().getAttribute("aria-pressed")).toBe("true");
+    expect(unsolvedFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(isRowVisible("small-mono")).toBe(true);
+    expect(isRowVisible("medium-multi")).toBe(false);
+    expect(isRowVisible("large-mono")).toBe(false);
+  });
+
+  it("keeps only puzzles with partial saved progress visible when 'In progress' is selected", () => {
+    click(inProgressFilterButton());
+
+    expect(isRowVisible("small-mono")).toBe(false);
+    expect(isRowVisible("medium-multi")).toBe(true);
+    expect(isRowVisible("large-mono")).toBe(false);
+  });
+
+  it("keeps only puzzles with no saved progress at all visible when 'Unsolved' is selected", () => {
+    click(unsolvedFilterButton());
+
+    expect(isRowVisible("small-mono")).toBe(false);
+    expect(isRowVisible("medium-multi")).toBe(false);
+    expect(isRowVisible("large-mono")).toBe(true);
+  });
+
+  it("restores every puzzle, and un-presses the button, when the active status filter is tapped again", () => {
+    click(solvedFilterButton());
+    click(solvedFilterButton());
+
+    expect(solvedFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(isRowVisible("small-mono")).toBe(true);
+    expect(isRowVisible("medium-multi")).toBe(true);
+    expect(isRowVisible("large-mono")).toBe(true);
+  });
+
+  it("switches directly from one status filter to another, keeping only one button pressed", () => {
+    click(solvedFilterButton());
+    click(unsolvedFilterButton());
+
+    expect(solvedFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(unsolvedFilterButton().getAttribute("aria-pressed")).toBe("true");
+    expect(isRowVisible("small-mono")).toBe(false);
+    expect(isRowVisible("large-mono")).toBe(true);
+  });
+
+  it("combines the status filter with the existing color filter (AND, not OR)", () => {
+    click(solvedFilterButton());
+    click(monoFilterButton());
+
+    // Only small-mono is both solved AND mono — proves the two filters
+    // narrow the result set together rather than either alone being enough.
+    expect(isRowVisible("small-mono")).toBe(true);
+    expect(isRowVisible("medium-multi")).toBe(false);
+    expect(isRowVisible("large-mono")).toBe(false);
+  });
+
+  it("shows the 'no puzzles match' message when the status and color filters combine to match nothing", () => {
+    // small-mono is solved but mono; medium-multi is multi but not solved;
+    // large-mono is mono and unsolved — solved+multi together match none.
+    click(solvedFilterButton());
+    click(multiFilterButton());
+
+    expect(isRowVisible("small-mono")).toBe(false);
+    expect(isRowVisible("medium-multi")).toBe(false);
+    expect(isRowVisible("large-mono")).toBe(false);
+    const message = document.querySelector<HTMLElement>(
+      "[data-i18n='library.filterNoResults']",
+    );
+    expect(message?.hidden).toBe(false);
+  });
+
+  it("treats a puzzle with corrupted-shape stored progress as unsolved for the status filter instead of throwing", () => {
+    saveProgress("large-mono", {
+      cells: [[0, null, 0]],
+    });
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+
+    expect(() => hydrate()).not.toThrow();
+
+    click(unsolvedFilterButton());
+    expect(isRowVisible("large-mono")).toBe(true);
   });
 });
 
@@ -836,6 +977,104 @@ describe("library sort by recently opened", () => {
     expect(isRowVisible("medium-multi")).toBe(false);
     expect(isRowVisible("small-mono")).toBe(true);
     expect(isRowVisible("large-mono")).toBe(true);
+  });
+});
+
+describe("library filters cookie persistence", () => {
+  it("restores a saved color/status/sort selection from a cookie, before the first paint", () => {
+    writeLibraryFiltersCookie({
+      color: "mono",
+      status: "all",
+      sortByRecent: true,
+    });
+    recordPuzzleOpened("large-mono", 1000);
+    recordPuzzleOpened("small-mono", 2000);
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+
+    hydrate();
+
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("true");
+    expect(sortRecentButton().getAttribute("aria-pressed")).toBe("true");
+    expect(isRowVisible("small-mono")).toBe(true);
+    expect(isRowVisible("medium-multi")).toBe(false);
+    expect(isRowVisible("large-mono")).toBe(true);
+    // Recency sort applied immediately too: small-mono (opened later) before
+    // large-mono (opened earlier) in the current DOM order.
+    expect(rowOrder().indexOf("small-mono")).toBeLessThan(
+      rowOrder().indexOf("large-mono"),
+    );
+  });
+
+  it("falls back to today's defaults (nothing filtered, default order) when no filters cookie is present", () => {
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+
+    hydrate();
+
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(multiFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(unsolvedFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(sortRecentButton().getAttribute("aria-pressed")).toBe("false");
+    expect(isRowVisible("small-mono")).toBe(true);
+    expect(isRowVisible("medium-multi")).toBe(true);
+    expect(isRowVisible("large-mono")).toBe(true);
+  });
+
+  it("falls back to today's defaults when the filters cookie is corrupted, instead of throwing", () => {
+    document.cookie =
+      "kindle-nonograms-library-filters=not-a-valid-querystring%00; path=/";
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+
+    expect(() => hydrate()).not.toThrow();
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(isRowVisible("small-mono")).toBe(true);
+    expect(isRowVisible("medium-multi")).toBe(true);
+    expect(isRowVisible("large-mono")).toBe(true);
+  });
+
+  it("saves the color filter selection to a cookie when it is changed", () => {
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    hydrate();
+
+    click(multiFilterButton());
+
+    expect(document.cookie).toContain("kindle-nonograms-library-filters=");
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    hydrate();
+    expect(multiFilterButton().getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("saves the status filter selection to a cookie when it is changed", () => {
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    hydrate();
+
+    click(solvedFilterButton());
+
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    hydrate();
+    expect(solvedFilterButton().getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("saves the sort toggle to a cookie when it is changed", () => {
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    hydrate();
+
+    click(sortRecentButton());
+
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    hydrate();
+    expect(sortRecentButton().getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("updates the saved cookie back to 'all' when an active filter is cleared by tapping it again", () => {
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    hydrate();
+    click(monoFilterButton());
+    click(monoFilterButton());
+
+    buildFixture([smallMonoPuzzle, mediumMultiPuzzle, largeMonoPuzzle]);
+    hydrate();
+    expect(monoFilterButton().getAttribute("aria-pressed")).toBe("false");
+    expect(isRowVisible("medium-multi")).toBe(true);
   });
 });
 

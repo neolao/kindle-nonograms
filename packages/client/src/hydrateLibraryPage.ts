@@ -12,6 +12,14 @@ import {
   resolveLocale,
   writeLocaleCookie,
 } from "./i18n.js";
+import type {
+  ColorFilterValue,
+  StatusFilterValue,
+} from "./libraryFiltersStorage.js";
+import {
+  readLibraryFiltersCookie,
+  writeLibraryFiltersCookie,
+} from "./libraryFiltersStorage.js";
 import { loadPuzzleOpenedAt } from "./openedStorage.js";
 import { loadProgress } from "./progressStorage.js";
 
@@ -244,31 +252,85 @@ function setUpLanguageSwitcher(): Locale {
   return locale;
 }
 
-type ColorFilterValue = "all" | "mono" | "multi";
+/**
+ * Wires a set of mutually-exclusive toggle buttons: tapping one presses it
+ * and un-presses every other button in the set; tapping the already-active
+ * button returns the whole group to `"all"` (none pressed) — the one state
+ * a `<select>`'s N options can represent that plain toggle buttons can't
+ * without this rule. Shared by the color filter (2 buttons) and the status
+ * filter (3 buttons) so both groups keep exactly the same interaction
+ * instead of two near-duplicate implementations (see backlog item 072).
+ */
+function wireExclusiveToggle<T extends string>(
+  entries: readonly { value: T; button: HTMLButtonElement }[],
+  onChange: (value: T | "all") => void,
+): { setActive: (value: T | "all") => void } {
+  let active: T | "all" = "all";
+
+  function refresh(): void {
+    for (const entry of entries) {
+      entry.button.setAttribute("aria-pressed", String(entry.value === active));
+    }
+  }
+
+  for (const entry of entries) {
+    entry.button.addEventListener("click", () => {
+      active = active === entry.value ? "all" : entry.value;
+      refresh();
+      onChange(active);
+    });
+  }
+
+  return {
+    setActive(value: T | "all"): void {
+      active = value;
+      refresh();
+    },
+  };
+}
 
 /**
- * Locates the library page's already-baked color filter toggle buttons,
- * "no results" message, and pagination controls (see
+ * Locates the library page's already-baked color and status filter toggle
+ * buttons, "no results" message, and pagination controls (see
  * `renderLibraryPage.ts`'s `renderFiltersAndPagination` and
  * .ux/decisions/001-frozen-chrome-blocking-reconciliation.md), and wires
  * them into one shared `render()` pass: a row is visible only if it
- * matches the filter AND falls inside the current page's slice of the
+ * matches every filter AND falls inside the current page's slice of the
  * *filtered* result set. Rows are only ever toggled via `hidden`, never
  * removed or reordered, so the solved-badge/thumbnail hydration in
  * `hydrate` keeps finding every row regardless of its current filter/page
  * state. `render()` still runs once at setup even though the static
- * defaults (page 1, filter at "all") already match its result — a safe,
- * invisible no-op that also initializes this closure's own
+ * defaults (page 1, both filters at "all") already match its result — a
+ * safe, invisible no-op that also initializes this closure's own
  * `currentPage`/`totalPages` state. A missing control (unexpected page
  * shape) leaves this a no-op, same defensive spirit as `findElements` in
  * `hydrateEditorPage.ts`.
+ *
+ * `solvedById`/`partialByPuzzle` (already computed by `hydrate` for the
+ * solved-badge/thumbnail reveal) are reused here, before the first
+ * `render()`, to tag each row's resolved status — status can only be known
+ * client-side (it reads the player's saved progress), unlike color, which
+ * is baked server-side (see
+ * `.vibe/decisions/044-status-filter-computed-client-side.md`).
  */
-function setUpFiltersAndPagination(): void {
+function setUpFiltersAndPagination(
+  solvedById: Map<string, Puzzle>,
+  partialByPuzzle: Map<string, { puzzle: Puzzle; cells: (number | null)[][] }>,
+): void {
   const monoButton = document.querySelector<HTMLButtonElement>(
     '[data-role="library-filter-color-mono"]',
   );
   const multiButton = document.querySelector<HTMLButtonElement>(
     '[data-role="library-filter-color-multi"]',
+  );
+  const unsolvedButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-filter-status-unsolved"]',
+  );
+  const inProgressButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-filter-status-in-progress"]',
+  );
+  const solvedButton = document.querySelector<HTMLButtonElement>(
+    '[data-role="library-filter-status-solved"]',
   );
   const sortButton = document.querySelector<HTMLButtonElement>(
     '[data-role="library-sort-recent"]',
@@ -291,6 +353,9 @@ function setUpFiltersAndPagination(): void {
   if (
     !monoButton ||
     !multiButton ||
+    !unsolvedButton ||
+    !inProgressButton ||
+    !solvedButton ||
     !sortButton ||
     !noResultsMessage ||
     !paginationContainer ||
@@ -303,11 +368,21 @@ function setUpFiltersAndPagination(): void {
 
   let currentPage = 1;
   let totalPages = 1;
-  // "all" ⇔ neither button pressed — the only state a `<select>`'s three
-  // options ("all"/"mono"/"multi") can't represent directly with two plain
-  // toggle buttons. Tapping the already-active button returns here.
   let colorValue: ColorFilterValue = "all";
+  let statusValue: StatusFilterValue = "all";
   let sortByRecent = false;
+
+  // A saved preference from a previous visit wins over the static
+  // "nothing filtered" default — restored below, before the first
+  // `render()`, so the very first paint already reflects it (see backlog
+  // item 072). No cookie (first visit, or one that fails to parse) leaves
+  // today's defaults untouched.
+  const savedFilters = readLibraryFiltersCookie();
+  if (savedFilters) {
+    colorValue = savedFilters.color;
+    statusValue = savedFilters.status;
+    sortByRecent = savedFilters.sortByRecent;
+  }
 
   const list = document.querySelector("ul");
   // Captured once, before any reordering, so toggling the sort back off can
@@ -316,9 +391,19 @@ function setUpFiltersAndPagination(): void {
     document.querySelectorAll<HTMLElement>("[data-puzzle-id]"),
   );
 
-  function refreshFilterButtons(): void {
-    monoButton?.setAttribute("aria-pressed", String(colorValue === "mono"));
-    multiButton?.setAttribute("aria-pressed", String(colorValue === "multi"));
+  // "unsolved" is never written explicitly — `render()` below treats a row
+  // with neither attribute as unsolved, the same implicit-default spirit
+  // as the solved badge (absent unless revealed).
+  for (const row of defaultRowOrder) {
+    const puzzleId = row.dataset.puzzleId;
+    if (!puzzleId) {
+      continue;
+    }
+    if (solvedById.has(puzzleId)) {
+      row.dataset.status = "solved";
+    } else if (partialByPuzzle.has(puzzleId)) {
+      row.dataset.status = "in-progress";
+    }
   }
 
   /**
@@ -362,7 +447,10 @@ function setUpFiltersAndPagination(): void {
       document.querySelectorAll<HTMLElement>("[data-puzzle-id]"),
     );
     const matched = allRows.filter(
-      (row) => colorValue === "all" || row.dataset.colorType === colorValue,
+      (row) =>
+        (colorValue === "all" || row.dataset.colorType === colorValue) &&
+        (statusValue === "all" ||
+          (row.dataset.status ?? "unsolved") === statusValue),
     );
 
     totalPages = Math.max(1, Math.ceil(matched.length / LIBRARY_PAGE_SIZE));
@@ -387,20 +475,56 @@ function setUpFiltersAndPagination(): void {
     }
   }
 
-  const selectColorFilter = (value: ColorFilterValue): void => {
-    colorValue = colorValue === value ? "all" : value;
-    refreshFilterButtons();
-    currentPage = 1;
-    render();
-  };
-  monoButton.addEventListener("click", () => selectColorFilter("mono"));
-  multiButton.addEventListener("click", () => selectColorFilter("multi"));
+  // Persists the current selection on every change (including a change
+  // back to "all") so the saved cookie never lags behind what's on screen
+  // — see `.vibe/decisions` on backlog item 072.
+  function persistFilters(): void {
+    writeLibraryFiltersCookie({
+      color: colorValue,
+      status: statusValue,
+      sortByRecent,
+    });
+  }
 
+  const colorToggle = wireExclusiveToggle<Exclude<ColorFilterValue, "all">>(
+    [
+      { value: "mono", button: monoButton },
+      { value: "multi", button: multiButton },
+    ],
+    (value) => {
+      colorValue = value;
+      currentPage = 1;
+      persistFilters();
+      render();
+    },
+  );
+  colorToggle.setActive(colorValue);
+
+  const statusToggle = wireExclusiveToggle<Exclude<StatusFilterValue, "all">>(
+    [
+      { value: "unsolved", button: unsolvedButton },
+      { value: "in-progress", button: inProgressButton },
+      { value: "solved", button: solvedButton },
+    ],
+    (value) => {
+      statusValue = value;
+      currentPage = 1;
+      persistFilters();
+      render();
+    },
+  );
+  statusToggle.setActive(statusValue);
+
+  sortButton.setAttribute("aria-pressed", String(sortByRecent));
+  if (sortByRecent) {
+    reorderRows(computeRecencyOrder());
+  }
   sortButton.addEventListener("click", () => {
     sortByRecent = !sortByRecent;
     sortButton.setAttribute("aria-pressed", String(sortByRecent));
     reorderRows(sortByRecent ? computeRecencyOrder() : defaultRowOrder);
     currentPage = 1;
+    persistFilters();
     render();
   });
 
@@ -477,8 +601,6 @@ export function hydrate(): void {
     return;
   }
 
-  setUpFiltersAndPagination();
-
   const solvedById = new Map(
     puzzles.filter(isSolved).map((puzzle) => [puzzle.id, puzzle] as const),
   );
@@ -492,6 +614,12 @@ export function hydrate(): void {
         return cells ? [[puzzle.id, { puzzle, cells }] as const] : [];
       }),
   );
+
+  // Computed above (not inside `setUpFiltersAndPagination`) so this same
+  // pass also feeds the status filter's per-row tagging before its first
+  // render — see that function's own doc comment.
+  setUpFiltersAndPagination(solvedById, partialByPuzzle);
+
   if (solvedById.size === 0 && partialByPuzzle.size === 0) {
     return;
   }

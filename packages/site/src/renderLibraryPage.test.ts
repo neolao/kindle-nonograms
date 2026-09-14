@@ -469,7 +469,7 @@ describe("renderLibraryPage", () => {
     ).toBeNull();
   });
 
-  it("bakes the color filter as two unpressed toggle buttons (mono/multi), 'all' being neither pressed, plus a hidden 'no results' message", () => {
+  it("bakes the color filter as two unpressed, compactly-labeled toggle buttons (mono/multi), 'all' being neither pressed, plus a hidden 'no results' message", () => {
     const doc = parse(renderLibraryPage(puzzles));
 
     const monoButton = doc.querySelector(
@@ -480,13 +480,26 @@ describe("renderLibraryPage", () => {
     );
     expect(monoButton?.getAttribute("aria-pressed")).toBe("false");
     expect(multiButton?.getAttribute("aria-pressed")).toBe("false");
-    expect(monoButton?.textContent).toBe("Monochrome only");
-    expect(multiButton?.textContent).toBe("Multi-color only");
+    expect(monoButton?.textContent).toBe("Mono");
+    expect(multiButton?.textContent).toBe("Multi");
 
     const noResults = doc.querySelector(
       '[data-i18n="library.filterNoResults"]',
     );
     expect(noResults?.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("gives the color filter buttons an accessible group name instead of a visible label, to stay compact", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const group = doc
+      .querySelector('[data-role="library-filter-color-mono"]')
+      ?.closest('[role="group"]');
+    expect(group?.getAttribute("aria-label")).toBe("Color");
+    expect(group?.getAttribute("data-i18n-aria")).toBe(
+      "library.filterColorLabel",
+    );
+    expect(group?.querySelector("span")).toBeNull();
   });
 
   it("no longer bakes a color filter select", () => {
@@ -497,13 +510,63 @@ describe("renderLibraryPage", () => {
     ).toBeNull();
   });
 
-  it("bakes an unpressed 'recently opened' sort toggle button", () => {
+  it("bakes an unpressed 'recently opened' sort toggle button, in the secondary controls after the puzzle list", () => {
     const doc = parse(renderLibraryPage(puzzles));
 
     const sortButton = doc.querySelector('[data-role="library-sort-recent"]');
     expect(sortButton?.tagName).toBe("BUTTON");
     expect(sortButton?.getAttribute("aria-pressed")).toBe("false");
     expect(sortButton?.textContent).toBe("Recently opened");
+    expect(
+      sortButton?.closest('[data-role="library-secondary-filters"]'),
+    ).not.toBeNull();
+  });
+
+  it("keeps the color filter out of the secondary controls, above the puzzle list", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const monoButton = doc.querySelector(
+      '[data-role="library-filter-color-mono"]',
+    );
+    expect(
+      monoButton?.closest('[data-role="library-secondary-filters"]'),
+    ).toBeNull();
+  });
+
+  it("bakes the status filter as three unpressed toggle buttons, in the secondary controls after the puzzle list", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const unsolvedButton = doc.querySelector(
+      '[data-role="library-filter-status-unsolved"]',
+    );
+    const inProgressButton = doc.querySelector(
+      '[data-role="library-filter-status-in-progress"]',
+    );
+    const solvedButton = doc.querySelector(
+      '[data-role="library-filter-status-solved"]',
+    );
+
+    expect(unsolvedButton?.getAttribute("aria-pressed")).toBe("false");
+    expect(inProgressButton?.getAttribute("aria-pressed")).toBe("false");
+    expect(solvedButton?.getAttribute("aria-pressed")).toBe("false");
+    expect(unsolvedButton?.textContent).toBe("Unsolved");
+    expect(inProgressButton?.textContent).toBe("In progress");
+    expect(solvedButton?.textContent).toBe("Solved");
+    expect(
+      unsolvedButton?.closest('[data-role="library-secondary-filters"]'),
+    ).not.toBeNull();
+  });
+
+  it("gives the status filter buttons an accessible group name", () => {
+    const doc = parse(renderLibraryPage(puzzles));
+
+    const group = doc
+      .querySelector('[data-role="library-filter-status-unsolved"]')
+      ?.closest('[role="group"]');
+    expect(group?.getAttribute("aria-label")).toBe("Status");
+    expect(group?.getAttribute("data-i18n-aria")).toBe(
+      "library.filterStatusLabel",
+    );
   });
 
   it("hides the pagination controls by default when every puzzle already fits on one page", () => {

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The library page's color filter is now more compact (shorter "Mono"/"Multi" labels), and a new status filter lets players show only unsolved, in-progress, or solved puzzles. Both filters, plus the "Recently opened" sort, are now remembered across visits.
+
 ## [3.1.0] - 2026-09-14
 
 ### Added

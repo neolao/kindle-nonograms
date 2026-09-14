@@ -26,6 +26,10 @@ const ALL_KEYS: TranslationKey[] = [
   "library.filterColorLabel",
   "library.filterColorMono",
   "library.filterColorMulti",
+  "library.filterStatusLabel",
+  "library.filterStatusUnsolved",
+  "library.filterStatusInProgress",
+  "library.filterStatusSolved",
   "library.sortRecentLabel",
   "library.filterNoResults",
   "library.paginationPrev",
@@ -102,10 +106,14 @@ describe("translate", () => {
     expect(translate("en", "play.backToLibrary")).toBe("Back to puzzle list");
     expect(translate("en", "library.sectionLabel")).toBe("Choose a puzzle");
     expect(translate("en", "library.filterColorLabel")).toBe("Color");
-    expect(translate("en", "library.filterColorMono")).toBe("Monochrome only");
-    expect(translate("en", "library.filterColorMulti")).toBe(
-      "Multi-color only",
+    expect(translate("en", "library.filterColorMono")).toBe("Mono");
+    expect(translate("en", "library.filterColorMulti")).toBe("Multi");
+    expect(translate("en", "library.filterStatusLabel")).toBe("Status");
+    expect(translate("en", "library.filterStatusUnsolved")).toBe("Unsolved");
+    expect(translate("en", "library.filterStatusInProgress")).toBe(
+      "In progress",
     );
+    expect(translate("en", "library.filterStatusSolved")).toBe("Solved");
     expect(translate("en", "library.sortRecentLabel")).toBe("Recently opened");
     expect(translate("en", "library.filterNoResults")).toBe(
       "No puzzles match these filters.",
@@ -225,12 +233,12 @@ describe("translate", () => {
     );
     expect(translate("fr", "library.sectionLabel")).toBe("Choisir un puzzle");
     expect(translate("fr", "library.filterColorLabel")).toBe("Couleur");
-    expect(translate("fr", "library.filterColorMono")).toBe(
-      "Monochrome uniquement",
-    );
-    expect(translate("fr", "library.filterColorMulti")).toBe(
-      "Multicolore uniquement",
-    );
+    expect(translate("fr", "library.filterColorMono")).toBe("Mono");
+    expect(translate("fr", "library.filterColorMulti")).toBe("Multi");
+    expect(translate("fr", "library.filterStatusLabel")).toBe("Statut");
+    expect(translate("fr", "library.filterStatusUnsolved")).toBe("Non résolu");
+    expect(translate("fr", "library.filterStatusInProgress")).toBe("En cours");
+    expect(translate("fr", "library.filterStatusSolved")).toBe("Résolu");
     expect(translate("fr", "library.sortRecentLabel")).toBe(
       "Récemment ouverts",
     );

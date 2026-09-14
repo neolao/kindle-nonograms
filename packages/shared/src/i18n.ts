@@ -59,6 +59,10 @@ export type TranslationKey =
   | "library.filterColorLabel"
   | "library.filterColorMono"
   | "library.filterColorMulti"
+  | "library.filterStatusLabel"
+  | "library.filterStatusUnsolved"
+  | "library.filterStatusInProgress"
+  | "library.filterStatusSolved"
   | "library.sortRecentLabel"
   | "library.filterNoResults"
   | "library.paginationPrev"
@@ -137,8 +141,12 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.backToLibrary": "Back to puzzle list",
     "library.sectionLabel": "Choose a puzzle",
     "library.filterColorLabel": "Color",
-    "library.filterColorMono": "Monochrome only",
-    "library.filterColorMulti": "Multi-color only",
+    "library.filterColorMono": "Mono",
+    "library.filterColorMulti": "Multi",
+    "library.filterStatusLabel": "Status",
+    "library.filterStatusUnsolved": "Unsolved",
+    "library.filterStatusInProgress": "In progress",
+    "library.filterStatusSolved": "Solved",
     "library.sortRecentLabel": "Recently opened",
     "library.filterNoResults": "No puzzles match these filters.",
     "library.paginationPrev": "Previous",
@@ -227,8 +235,12 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "play.backToLibrary": "Retour à la liste des puzzles",
     "library.sectionLabel": "Choisir un puzzle",
     "library.filterColorLabel": "Couleur",
-    "library.filterColorMono": "Monochrome uniquement",
-    "library.filterColorMulti": "Multicolore uniquement",
+    "library.filterColorMono": "Mono",
+    "library.filterColorMulti": "Multi",
+    "library.filterStatusLabel": "Statut",
+    "library.filterStatusUnsolved": "Non résolu",
+    "library.filterStatusInProgress": "En cours",
+    "library.filterStatusSolved": "Résolu",
     "library.sortRecentLabel": "Récemment ouverts",
     "library.filterNoResults": "Aucun puzzle ne correspond à ces filtres.",
     "library.paginationPrev": "Précédent",
