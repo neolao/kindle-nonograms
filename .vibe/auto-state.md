@@ -1,9 +1,7 @@
 ---
-status: running
+status: idle
 started: 2026-09-14T01:00
 limit: 1
-current: 063
-attempt: 2
 ---
 # Auto run journal
 
@@ -32,4 +30,4 @@ attempt: 2
 - 062 — feature — done (4978bd0)
 
 ## 2026-09-14T01:00 — run started (limit: 1)
-- 063 — feature — in progress
+- 063 — feature — done (ea82d85), after one interruption (account session limit mid-implementation, resumed cleanly — see wip commit e9981dc)
