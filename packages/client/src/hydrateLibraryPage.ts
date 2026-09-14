@@ -24,7 +24,7 @@ import { loadPuzzleOpenedAt } from "./openedStorage.js";
 import { loadProgress } from "./progressStorage.js";
 
 // The fixed pixel budget every revealed thumbnail's cells are scaled to fit
-// inside, on the puzzle's longer axis — kept in sync with the fixed 36px
+// inside, on the puzzle's longer axis — kept in sync with the fixed 52px
 // `.thumb` box in renderLibraryPage.ts's stylesheet, with room to center a
 // non-square result. Every real puzzle cell is rendered (see
 // .vibe/decisions/038-thumbnail-drops-downsampling-renders-every-cell.md —
@@ -33,7 +33,7 @@ import { loadProgress } from "./progressStorage.js";
 // the puzzle's longer dimension. See
 // .vibe/decisions/012-solved-thumbnail-built-client-side-only.md for why
 // this is built here rather than embedded server-side.
-const THUMBNAIL_BOX_PX = 32;
+const THUMBNAIL_BOX_PX = 48;
 
 /**
  * A missing script element (no puzzles-data at all) or empty text content is

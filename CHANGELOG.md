@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Every puzzle now shows a difficulty rating as a row of stars — in the library list, on its own play page, and in the editor's "Check solvability" confirmation once a draft passes the check.
+- The library list's puzzle thumbnails are bigger, and each puzzle's grid size (e.g. "16 × 16") now appears in small text to the left of its difficulty stars.
 
 ## [3.2.1] - 2026-09-14
 

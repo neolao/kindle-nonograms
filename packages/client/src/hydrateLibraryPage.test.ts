@@ -513,10 +513,27 @@ describe("solved-puzzle thumbnail", () => {
 
     hydrate();
 
+    // wide-detail is 16 wide × 8 tall — the longer dimension (16) divides
+    // the enlarged thumbnail's pixel budget evenly.
     const cells = thumbFor("wide-detail").querySelectorAll(".thumb-cell");
     for (const cell of cells) {
-      expect((cell as HTMLElement).style.width).toBe("2px");
-      expect((cell as HTMLElement).style.height).toBe("2px");
+      expect((cell as HTMLElement).style.width).toBe("3px");
+      expect((cell as HTMLElement).style.height).toBe("3px");
+    }
+  });
+
+  it("keeps scaling correctly for a puzzle whose longer dimension doesn't divide the pixel budget evenly", () => {
+    saveProgress("large-mono", { cells: largeMonoPuzzle.cells });
+    buildFixture([largeMonoPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    // large-mono is 25×25 — the enlarged pixel budget (48) divided by 25 is
+    // a fractional-but-exact value, still applied uniformly to every cell.
+    const cells = thumbFor("large-mono").querySelectorAll(".thumb-cell");
+    for (const cell of cells) {
+      expect((cell as HTMLElement).style.width).toBe("1.92px");
+      expect((cell as HTMLElement).style.height).toBe("1.92px");
     }
   });
 
