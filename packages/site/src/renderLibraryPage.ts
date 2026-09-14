@@ -229,7 +229,6 @@ li a:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 .library-filters > div{display:flex;align-items:center;gap:${SPACING_PX.sm}px;}
 .filter-no-results{margin:${SPACING_PX.md}px;color:${COLORS.muted};}
 .library-pagination:not([hidden]){display:flex;align-items:center;justify-content:center;gap:${SPACING_PX.md}px;margin:${SPACING_PX.sm}px ${SPACING_PX.md}px;}
-.library-pagination button:disabled{color:${COLORS.muted};border-color:${COLORS.muted};box-shadow:none;}
 .pagination-status{font-family:${LABEL_FONT_STACK};color:${COLORS.text};}
 .page-footer-links{display:flex;flex-wrap:wrap;align-items:center;gap:${SPACING_PX.md}px;margin-left:auto;}
 .page-footer-links a{display:inline-flex;align-items:center;min-height:${MIN_TAP_TARGET_PX}px;color:${COLORS.text};text-decoration:none;}

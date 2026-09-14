@@ -50,6 +50,22 @@ describe("sharedStyles", () => {
     expect(css).toMatch(/\.language-switcher select:focus\{outline:3px solid/);
   });
 
+  it("dims a disabled button and drops its 3D shadow, so it visibly reads as non-interactive", () => {
+    const css = sharedStyles();
+
+    expect(css).toMatch(/button:disabled\{opacity:0\.5;box-shadow:none;\}/);
+  });
+
+  it("declares the disabled-button rule after the base button rule, so box-shadow:none actually wins the cascade instead of being overridden back to the 3D shadow", () => {
+    const css = sharedStyles();
+
+    const baseRuleIndex = css.indexOf("button,.back-link{");
+    const disabledRuleIndex = css.indexOf("button:disabled{");
+
+    expect(baseRuleIndex).toBeGreaterThan(-1);
+    expect(disabledRuleIndex).toBeGreaterThan(baseRuleIndex);
+  });
+
   it("never uses CSS custom properties, since var() support on Kindle's WebKit is uncertain", () => {
     expect(sharedStyles()).not.toContain("var(");
   });

@@ -78,6 +78,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - When only a small area is ambiguous, the solvability check now suggests a concrete single-cell change that would make the puzzle solvable.
 - The puzzle editor's import hint paragraphs no longer stretch into one very long line on a wide browser window — they now wrap at a comfortable reading width.
 - The "Renard" puzzle is back in the library, redrawn so its solution is fully solvable without guessing.
+- The puzzle editor's disabled "remove color" button now clearly looks non-interactive, and every disabled button across the app shares the same dimmed styling.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

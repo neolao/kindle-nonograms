@@ -49,6 +49,19 @@ import {
  * padding by exactly the border-width increase on every edge instead, so
  * the border grows entirely into the padding and the outer box — and every
  * sibling's alignment — never moves either way. See backlog item 052.
+ *
+ * `button:disabled` is declared after the base `button,.back-link` rule
+ * (and after `button[aria-pressed="true"]`) purely for cascade order: same
+ * selector specificity, so a later declaration is what actually wins and
+ * clears the base rule's 3D `box-shadow` back to none instead of being
+ * silently overridden by it. Dimming via `opacity` rather than a fixed
+ * muted color/border (the app's only prior art, previously scoped to
+ * `.library-pagination button:disabled` only) is accent-agnostic — it reads
+ * correctly against any of the three accent colors or a color swatch's own
+ * background, not just a plain panel — so this one rule now covers every
+ * disabled button on every page instead of needing a per-page variant. See
+ * .vibe/decisions/043-generic-disabled-button-rule-replaces-pagination-specific-one.md
+ * and backlog item 063.
  */
 export function sharedStyles(): string {
   const pressedBorderGrowthPx =
@@ -64,6 +77,7 @@ button,.back-link{box-sizing:border-box;border:${BORDER_WIDTH.thin} solid ${COLO
 button:focus,.back-link:focus{outline:${BORDER_WIDTH.thick} solid ${COLORS.focusOutline};}
 button:active,.back-link:active{transform:translateY(2px);box-shadow:0 1px 0 ${COLORS.border};}
 button[aria-pressed="true"]{border-width:${BORDER_WIDTH.thick};border-color:${COLORS.amber};background:${COLORS.amberSoft};padding:${SPACING_PX.xs - pressedBorderGrowthPx}px ${SPACING_PX.md - pressedBorderGrowthPx}px;transform:translateY(2px);box-shadow:0 1px 0 ${COLORS.border};}
+button:disabled{opacity:0.5;box-shadow:none;}
 .back-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border-color:${COLORS.amber};background:${COLORS.amberSoft};}
 .page-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:${SPACING_PX.sm}px;margin:${SPACING_PX.sm}px ${SPACING_PX.md}px;}
 .page-header h1{flex:1;min-width:0;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}

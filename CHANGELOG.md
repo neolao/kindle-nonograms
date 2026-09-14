@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The disabled "remove color" button in the puzzle editor's palette now visibly reads as non-interactive (dimmed, no drop shadow) instead of looking identical to a clickable button. The same dimmed styling now applies to every disabled button across the app, including the library's page-navigation buttons.
+
 ## [3.0.0] - 2026-09-14
 
 ### Added
