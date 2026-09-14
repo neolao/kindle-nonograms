@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-09-14
+
 ### Fixed
 
 - The library's color filter buttons ("Mono"/"Multi") no longer read as unexplained words on their own — a small "Color" label is shown again, and screen readers now hear the full context too.
@@ -481,7 +483,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puzzle clues (the numbers shown per row and column) can now be computed automatically from a puzzle's solution, correctly accounting for multi-color puzzles.
 - A player's progress on a puzzle (which cells are filled, marked, or untouched) can now be tracked and checked for a correct, complete solve.
 
-[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/neolao/kindle-nonograms/compare/v3.2.1...HEAD
+[3.2.1]: https://github.com/neolao/kindle-nonograms/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/neolao/kindle-nonograms/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/neolao/kindle-nonograms/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/neolao/kindle-nonograms/compare/v2.35.0...v3.0.0
