@@ -687,8 +687,7 @@ function applyGridFit(wrapper: HTMLElement, table: HTMLElement): void {
 
   const naturalWidth = table.scrollWidth;
   const naturalHeight = table.scrollHeight;
-  const availableWidth =
-    document.documentElement.clientWidth - VIEWPORT_GUTTER_PX;
+  const availableWidth = getGridAvailableWidth(wrapper);
 
   const fontSizePx = computeFitFontSizePx({
     naturalWidth,
@@ -701,6 +700,25 @@ function applyGridFit(wrapper: HTMLElement, table: HTMLElement): void {
 
   wrapper.style.fontSize = `${fontSizePx}px`;
   wrapper.style.maxWidth = `${Math.max(availableWidth, 0)}px`;
+}
+
+/**
+ * The width actually available to the grid wrapper: unlike hydratePlayPage's
+ * near-full-bleed anchor, the editor grid sits inside the editor panel's own
+ * margin/padding/border chrome, so the full viewport width overstates what
+ * the grid can grow into and lets it scale past its own panel (see the
+ * "trop grande" bug report). Reads the *layout parent's* rendered width —
+ * the panel chrome shrinks that, whatever its current CSS values are — and
+ * only falls back to the viewport-minus-gutter approximation when the
+ * parent isn't laid out yet (e.g. a detached wrapper, or this file's own
+ * jsdom-based tests, which don't run real layout).
+ */
+function getGridAvailableWidth(wrapper: HTMLElement): number {
+  const containerWidth = wrapper.parentElement?.clientWidth;
+  if (containerWidth) {
+    return containerWidth;
+  }
+  return document.documentElement.clientWidth - VIEWPORT_GUTTER_PX;
 }
 
 /**

@@ -997,6 +997,60 @@ describe("hydrate", () => {
     // narrow-screen test above.
     expect(wrapper?.style.fontSize).toBe("32px");
   });
+
+  it("fits the grid to its own panel's available width, not the full viewport, so it never overflows the panel's frame", () => {
+    buildFixture();
+
+    // Reproduces the reported bug: a small natural grid (a 5×5 canvas at
+    // base font-size) on a phone-width viewport. The full viewport is wide
+    // enough to invite scaling up toward the 2x max — but the grid's actual
+    // container (the editor panel's `.grid-center` box, narrowed by the
+    // panel's own margin/padding/border chrome) has meaningfully less room
+    // than the bare viewport width. Sizing off the viewport instead of the
+    // real container scales the grid past its own frame and overflows the
+    // page horizontally.
+    const table = document.querySelector("table");
+    if (!table) {
+      throw new Error("fixture table not found");
+    }
+    const wrapper = document.querySelector<HTMLElement>(
+      '[data-role="editor-grid-wrapper"]',
+    );
+    const container = wrapper?.parentElement;
+    if (!container) {
+      throw new Error("fixture grid container not found");
+    }
+    Object.defineProperty(table, "scrollWidth", {
+      value: 250,
+      configurable: true,
+    });
+    Object.defineProperty(table, "scrollHeight", {
+      value: 250,
+      configurable: true,
+    });
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      value: 400,
+      configurable: true,
+    });
+    Object.defineProperty(document.documentElement, "clientHeight", {
+      value: 1000,
+      configurable: true,
+    });
+    // The panel's real inner width: narrower than the bare viewport because
+    // of the editor panel's own margin, padding and border around the grid.
+    Object.defineProperty(container, "clientWidth", {
+      value: 300,
+      configurable: true,
+    });
+
+    hydrate();
+
+    // 300px available ÷ 250px natural × the 0.98 safety margin = 1.176x →
+    // 18px. The old viewport-only measurement would instead use
+    // 400-8=392px, giving 24px — wide enough for the scaled grid to spill
+    // out of the 300px panel it actually sits in.
+    expect(wrapper?.style.fontSize).toBe("18px");
+  });
 });
 
 function fireKeydown(el: Element, key: string): KeyboardEvent {

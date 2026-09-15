@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The puzzle grid in the editor no longer overflows the screen on a narrow device — it now scales to fit the space actually available in its panel instead of the full screen width.
+
 ### Added
 
 - Every puzzle now shows a difficulty rating as a row of stars — in the library list, on its own play page, and in the editor's "Check solvability" confirmation once a draft passes the check.
