@@ -488,7 +488,7 @@ describe("renderPuzzlePage", () => {
     const css = doc.querySelector("style")?.textContent ?? "";
 
     expect(css).toMatch(
-      /table\{background-image:repeating-linear-gradient\(45deg,#9483ad/,
+      /table\{background-image:repeating-linear-gradient\(45deg,#ac9abd/,
     );
   });
 
