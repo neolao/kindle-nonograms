@@ -104,6 +104,7 @@ export type TranslationKey =
   | "editor.removeColorAriaLabel"
   | "editor.error.emptyName"
   | "editor.error.emptyFilename"
+  | "editor.error.invalidFilenameFormat"
   | "editor.error.imageUnsupported"
   | "editor.error.imageUnreadable"
   | "editor.error.imageTimeout"
@@ -194,6 +195,8 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.removeColorAriaLabel": "Remove color {number}",
     "editor.error.emptyName": "Puzzle name is required.",
     "editor.error.emptyFilename": "Filename is required.",
+    "editor.error.invalidFilenameFormat":
+      "Filename can only contain lowercase letters, digits, hyphens and underscores.",
     "editor.error.imageUnsupported": "This browser can't import images.",
     "editor.error.imageUnreadable":
       "Couldn't read this image file. Try a different one.",
@@ -292,6 +295,8 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.removeColorAriaLabel": "Retirer la couleur {number}",
     "editor.error.emptyName": "Le nom du puzzle est requis.",
     "editor.error.emptyFilename": "Le nom de fichier est requis.",
+    "editor.error.invalidFilenameFormat":
+      "Le nom de fichier ne peut contenir que des lettres minuscules, des chiffres, des tirets et des underscores.",
     "editor.error.imageUnsupported":
       "Ce navigateur ne peut pas importer d'images.",
     "editor.error.imageUnreadable":

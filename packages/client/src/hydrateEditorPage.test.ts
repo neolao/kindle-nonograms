@@ -879,6 +879,51 @@ describe("hydrate", () => {
     expect(confirmationRegion().textContent).toBe("");
   });
 
+  it("shows a fixed, translated error and downloads nothing when the filename contains an uppercase letter", () => {
+    buildFixture();
+    hydrate();
+    const { createObjectURL } = stubDownload();
+
+    fireChange(nameInput(), "Small Heart");
+    fireChange(filenameInput(), "Small-Heart");
+    fireClick(exportButton());
+
+    expect(createObjectURL).not.toHaveBeenCalled();
+    expect(errorRegion().textContent).toBe(
+      "⚠ Filename can only contain lowercase letters, digits, hyphens and underscores.",
+    );
+    expect(confirmationRegion().textContent).toBe("");
+  });
+
+  it("shows a fixed, translated error and downloads nothing when the filename contains a space", () => {
+    buildFixture();
+    hydrate();
+    const { createObjectURL } = stubDownload();
+
+    fireChange(nameInput(), "Small Heart");
+    fireChange(filenameInput(), "small heart");
+    fireClick(exportButton());
+
+    expect(createObjectURL).not.toHaveBeenCalled();
+    expect(errorRegion().textContent).toBe(
+      "⚠ Filename can only contain lowercase letters, digits, hyphens and underscores.",
+    );
+    expect(confirmationRegion().textContent).toBe("");
+  });
+
+  it("exports successfully when the puzzle name is identical to its filename", () => {
+    buildFixture();
+    hydrate();
+    const { createObjectURL } = stubDownload();
+
+    fireChange(nameInput(), "small-heart");
+    fireChange(filenameInput(), "small-heart");
+    fireClick(exportButton());
+
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
+    expect(errorRegion().textContent).toBe("");
+  });
+
   it("clears a leftover confirmation once a later export attempt fails", () => {
     buildFixture();
     hydrate();

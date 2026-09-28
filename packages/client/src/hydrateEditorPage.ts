@@ -1068,18 +1068,20 @@ function describeImportError(error: unknown, locale: Locale): string {
  * Maps a `createPuzzle` rejection to a fixed, contributor-facing translated
  * message — never the error's own `message`, which is a plain-English,
  * developer-facing description reused verbatim by `discoverPuzzles.ts`'s
- * build-time diagnostics. Only the two failures the editor's own fields can
- * actually trigger (an empty name or filename) get a specific message;
- * every other `PuzzleValidationError` reason (an internal invariant the
- * editor's own state management already prevents from happening) falls
- * back to the same generic message as a wholly unexpected error. See
- * `.vibe/decisions/021-editor-errors-discriminated-by-reason.md`.
+ * build-time diagnostics. Only the failures the editor's own fields can
+ * actually trigger (an empty or malformed filename, an empty name) get a
+ * specific message; every other `PuzzleValidationError` reason (an internal
+ * invariant the editor's own state management already prevents from
+ * happening) falls back to the same generic message as a wholly unexpected
+ * error. See `.vibe/decisions/021-editor-errors-discriminated-by-reason.md`.
  */
 function describeExportError(error: unknown, locale: Locale): string {
   if (error instanceof PuzzleValidationError) {
     switch (error.reason) {
       case "emptyId":
         return translate(locale, "editor.error.emptyFilename");
+      case "invalidIdFormat":
+        return translate(locale, "editor.error.invalidFilenameFormat");
       case "emptyName":
         return translate(locale, "editor.error.emptyName");
       default:

@@ -82,6 +82,10 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The library page's color filter is now more compact, and a new filter lets you show only unsolved, in-progress, or solved puzzles. Your color, status, and sort choices are now remembered across visits.
 - Every puzzle now shows a difficulty rating as a row of stars — in the library list, on its own play page, and in the puzzle editor once a draft passes the solvability check.
 - The library page's puzzle thumbnails now fill the full height of their card, and each puzzle's grid size is shown in small text right next to its difficulty stars instead of repeated in its title.
+- The puzzle editor's grid no longer overflows a narrow screen — it now scales to fit the panel's actual available width instead of the full screen width.
+- The puzzle editor's "Export" now checks that the filename only uses lowercase letters, numbers, hyphens, and underscores, rejecting anything else with a clear message — the puzzle's own name has no such restriction.
+- A new puzzle, "Heart" (15×15, four colors), is included in the puzzle library.
+- Two new puzzles, "Perroquet" and "Étoile" (both 15×15, multi-color), are included in the puzzle library.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->

@@ -23,12 +23,23 @@ export interface Puzzle {
  */
 export type PuzzleValidationReason =
   | "emptyId"
+  | "invalidIdFormat"
   | "emptyName"
   | "invalidDimensions"
   | "emptyPalette"
   | "rowCountMismatch"
   | "columnCountMismatch"
   | "colorIndexOutOfRange";
+
+/**
+ * An id becomes the shipped puzzle file's own name and the resulting
+ * `Puzzle`'s `id` field, so it is restricted to a plain slug regardless of
+ * which source format produced it — unlike `name` (see
+ * `.vibe/decisions/052-export-restricts-filename-not-puzzle-name.md`), which
+ * stays free-form editorial content with no technically "correct" shape to
+ * enforce here.
+ */
+const ID_FORMAT_PATTERN = /^[a-z0-9_-]+$/;
 
 /** Thrown by `createPuzzle` for any structurally invalid input. */
 export class PuzzleValidationError extends Error {
@@ -57,6 +68,13 @@ export function createPuzzle(input: Puzzle): Puzzle {
     throw new PuzzleValidationError(
       "emptyId",
       "Filename (id) must not be empty",
+    );
+  }
+
+  if (!ID_FORMAT_PATTERN.test(id.trim())) {
+    throw new PuzzleValidationError(
+      "invalidIdFormat",
+      "Filename (id) may only contain lowercase letters, digits, hyphens and underscores",
     );
   }
 

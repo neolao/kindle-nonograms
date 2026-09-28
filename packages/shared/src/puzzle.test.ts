@@ -89,6 +89,27 @@ describe("createPuzzle", () => {
     expect(() => createPuzzle({ ...validInput(), name: "" })).toThrow();
   });
 
+  it("throws when id contains an uppercase letter", () => {
+    expect(() => createPuzzle({ ...validInput(), id: "Cat" })).toThrow();
+  });
+
+  it("throws when id contains a space", () => {
+    expect(() => createPuzzle({ ...validInput(), id: "my cat" })).toThrow();
+  });
+
+  it("throws when id contains an accented character", () => {
+    expect(() => createPuzzle({ ...validInput(), id: "chat-été" })).toThrow();
+  });
+
+  it("accepts an id made of lowercase letters, digits, hyphens and underscores", () => {
+    const puzzle = createPuzzle({
+      ...validInput(),
+      id: "my_cat-puzzle_42",
+    });
+
+    expect(puzzle.id).toBe("my_cat-puzzle_42");
+  });
+
   it("accepts a multi-color palette with valid color indexes", () => {
     const puzzle = createPuzzle({
       id: "flag",
@@ -104,6 +125,9 @@ describe("createPuzzle", () => {
 
   it.each([
     [{ id: "" }, "emptyId"],
+    [{ id: "My-Cat" }, "invalidIdFormat"],
+    [{ id: "my cat" }, "invalidIdFormat"],
+    [{ id: "chat-été" }, "invalidIdFormat"],
     [{ name: "" }, "emptyName"],
     [{ width: 0 }, "invalidDimensions"],
     [{ height: -1 }, "invalidDimensions"],
