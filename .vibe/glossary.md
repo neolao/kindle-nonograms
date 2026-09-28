@@ -54,3 +54,8 @@ _Sources: `packages/site/src/renderPuzzlePreview.ts`, `.github/workflows/pr-chec
 The plain puzzle format produced by the sibling `remarkable-nonogram-generator` project: dimensions plus a boolean solution grid, with no palette and no id. It is converted into this project's Puzzle before use, with `true` cells becoming the single palette color and `false` cells becoming empty.
 **Do not confuse with:** Puzzle, the format it is converted into.
 _Sources: `packages/shared/src/adapters.ts`_
+
+## Pixel-art serialization
+The puzzle format produced by the sibling `pixel-art-serializer` project: a grid size plus a flat, indexed pixel array and a palette where one entry is explicitly marked "reserved" (fully transparent). It is converted into this project's Puzzle before use: a pixel referencing the reserved entry becomes an empty cell, every other pixel becomes a puzzle palette color.
+**Do not confuse with:** Puzzle, the format it is converted into; Boolean grid export, the other external format this project also converts.
+_Sources: `packages/shared/src/adapters.ts`, `packages/shared/src/puzzleSourceParsing.ts`_

@@ -70,6 +70,7 @@ Screenshots land in `./screenshots/` relative to wherever `driver.mjs` was invok
 | `wait-for text=<substring>` | wait for an element containing that text |
 | `wait-for <css-selector>` | wait for a selector to appear |
 | `click <css-selector>` | click an element |
+| `set-files <css-selector> <path>` | set a file input's selected file(s) (comma-separate for multiple) |
 | `screenshot [path]` | full-page screenshot |
 | `screenshot-element <selector> [path]` | screenshot of one element only |
 | `eval <js-expression>` | run JS in the page, print the result as JSON |

@@ -174,7 +174,7 @@ describe("translate", () => {
     expect(translate("en", "editor.importJsonFileLabel")).toBe("Puzzle file");
     expect(translate("en", "editor.importJsonButton")).toBe("Import");
     expect(translate("en", "editor.importJsonHint")).toBe(
-      "Loads an existing puzzle file (this project's own format, or a reMarkable export) — replaces the current grid, palette, name, and filename.",
+      "Loads an existing puzzle file (this project's own format, a reMarkable export, or a pixel-art-serializer export) — replaces the current grid, palette, name, and filename.",
     );
     expect(translate("en", "editor.solvabilityLabel")).toBe(
       "Solvability check",
@@ -315,7 +315,7 @@ describe("translate", () => {
     );
     expect(translate("fr", "editor.importJsonButton")).toBe("Importer");
     expect(translate("fr", "editor.importJsonHint")).toBe(
-      "Charge un fichier puzzle existant (le format natif du projet, ou un export reMarkable) — remplace la grille, la palette, le nom et le nom de fichier actuels.",
+      "Charge un fichier puzzle existant (le format natif du projet, un export reMarkable, ou un export pixel-art-serializer) — remplace la grille, la palette, le nom et le nom de fichier actuels.",
     );
     expect(translate("fr", "editor.solvabilityLabel")).toBe(
       "Vérification de solvabilité",

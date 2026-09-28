@@ -176,7 +176,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.importJsonFileLabel": "Puzzle file",
     "editor.importJsonButton": "Import",
     "editor.importJsonHint":
-      "Loads an existing puzzle file (this project's own format, or a reMarkable export) — replaces the current grid, palette, name, and filename.",
+      "Loads an existing puzzle file (this project's own format, a reMarkable export, or a pixel-art-serializer export) — replaces the current grid, palette, name, and filename.",
     "editor.solvabilityLabel": "Solvability check",
     "editor.checkSolvabilityButton": "Check solvability",
     "editor.importHint":
@@ -274,7 +274,7 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.importJsonFileLabel": "Fichier puzzle",
     "editor.importJsonButton": "Importer",
     "editor.importJsonHint":
-      "Charge un fichier puzzle existant (le format natif du projet, ou un export reMarkable) — remplace la grille, la palette, le nom et le nom de fichier actuels.",
+      "Charge un fichier puzzle existant (le format natif du projet, un export reMarkable, ou un export pixel-art-serializer) — remplace la grille, la palette, le nom et le nom de fichier actuels.",
     "editor.solvabilityLabel": "Vérification de solvabilité",
     "editor.checkSolvabilityButton": "Vérifier la solvabilité",
     "editor.importHint":

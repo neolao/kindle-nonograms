@@ -62,3 +62,21 @@ Defined in: `packages/client/src/libraryFiltersStorage.ts`
 | height | number | |
 | cells | boolean[][] | `true` maps to color index `0`, `false` maps to `null` |
 Defined in: `packages/shared/src/adapters.ts`
+
+## PixelArtSerialization
+| Field | Type | Notes |
+|---|---|---|
+| formatVersion | number | unused by the conversion itself |
+| gridWidth | number | becomes the puzzle's `width` |
+| gridHeight | number | becomes the puzzle's `height` |
+| palette | SerializedPaletteColor[] | see below; a pixel maps by `index`, not array position |
+| pixels | number[] | flat, row-major; must have exactly `gridWidth * gridHeight` entries, each an `index` from `palette` |
+Defined in: `packages/shared/src/adapters.ts` — the sibling `pixel-art-serializer` project's export shape.
+
+## SerializedPaletteColor
+| Field | Type | Notes |
+|---|---|---|
+| index | number | referenced by `PixelArtSerialization.pixels`; need not be contiguous or array-ordered |
+| color | string | 8-digit `#rrggbbaa` hex; normalized to 6-digit `#rrggbb` (alpha dropped) when not `reserved` |
+| reserved | boolean | `true` marks the fully-transparent entry — becomes an empty cell (`null`), never a puzzle palette slot |
+Defined in: `packages/shared/src/adapters.ts`

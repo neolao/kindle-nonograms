@@ -200,7 +200,7 @@ ${renderEarlyLangScript()}
 </div>
 <p class="editor-error" data-role="editor-import-json-error" aria-live="polite"></p>
 <p class="editor-confirmation" data-role="editor-import-json-confirmation" aria-live="polite"></p>
-<p class="editor-import-hint" data-i18n="editor.importJsonHint">Loads an existing puzzle file (this project's own format, or a reMarkable export) — replaces the current grid, palette, name, and filename.</p>
+<p class="editor-import-hint" data-i18n="editor.importJsonHint">Loads an existing puzzle file (this project's own format, a reMarkable export, or a pixel-art-serializer export) — replaces the current grid, palette, name, and filename.</p>
 </div>
 <div class="panel editor-panel">
 <p class="section-label" data-i18n="editor.paletteLabel">Palette</p>

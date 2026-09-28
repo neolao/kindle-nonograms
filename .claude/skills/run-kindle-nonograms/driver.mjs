@@ -9,6 +9,7 @@
 //   wait-for text=<substring>          (waits for an element containing it)
 //   wait-for <css-selector>
 //   click <css-selector>
+//   set-files <css-selector> <path>    (sets a file input's selected file(s); comma-separate for multiple)
 //   screenshot [path]                  (default: screenshots/<n>.png)
 //   screenshot-element <selector> [path]
 //   eval <js-expression>               (runs in page context, result printed as JSON)
@@ -67,6 +68,13 @@ async function main() {
   page.on("pageerror", (err) =>
     consoleEntries.push(`[pageerror] ${String(err)}`),
   );
+  // The editor's own `confirm()` gate (overwrite a painted grid?) would
+  // otherwise hang forever: Playwright auto-*dismisses* an unhandled
+  // dialog, which this app reads as "Cancel" and returns early — silently
+  // skipping whatever the dialog was guarding. Auto-accept instead, so a
+  // scripted "import over an already-painted grid" reaches the code path
+  // it's meant to reach.
+  page.on("dialog", (dialog) => dialog.accept());
 
   const rl = readline.createInterface({
     input: process.stdin,
@@ -98,6 +106,11 @@ async function main() {
       } else if (cmd === "click") {
         await page.click(arg);
         console.log(`OK click ${arg}`);
+      } else if (cmd === "set-files") {
+        const [selector, filesArg] = rest;
+        const files = filesArg.split(",");
+        await page.setInputFiles(selector, files);
+        console.log(`OK set-files ${selector} ${filesArg}`);
       } else if (cmd === "screenshot") {
         const path =
           arg ||

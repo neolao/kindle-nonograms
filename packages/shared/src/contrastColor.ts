@@ -6,16 +6,17 @@ const HEX_SHORTHAND_PATTERN = /^#[0-9a-fA-F]{3}$/;
 const HEX_ALPHA_PATTERN = /^#[0-9a-fA-F]{8}$/;
 
 /**
- * Normalizes a background color to strict `#rrggbb` for
- * `contrastingTextColor`: expands 3-digit shorthand (`#rgb`), drops the
- * trailing alpha byte of 8-digit hex (`#rrggbbaa` — the fill always renders
- * opaque as a puzzle swatch, so alpha plays no part in the contrast
- * decision), and passes strict 6-digit hex through unchanged. Anything else
- * (wrong length, non-hex characters, the 4-digit `#rgba` shorthand) is not
- * a format this fix adds support for and returns `null`, same as any other
- * malformed input.
+ * Normalizes a color to strict `#rrggbb`: expands 3-digit shorthand
+ * (`#rgb`), drops the trailing alpha byte of 8-digit hex (`#rrggbbaa` — a
+ * puzzle swatch always renders opaque, so alpha plays no part once a color
+ * reaches this project's palette), and passes strict 6-digit hex through
+ * unchanged. Anything else (wrong length, non-hex characters, the 4-digit
+ * `#rgba` shorthand) is not a format this function supports and returns
+ * `null`, same as any other malformed input. Named for its original caller,
+ * `contrastingTextColor` (a background color); also reused by `adapters.ts`
+ * to normalize a `pixel-art-serializer` import's 8-digit palette hex.
  */
-function normalizeBackgroundHex(color: string): string | null {
+export function normalizeBackgroundHex(color: string): string | null {
   if (HEX_COLOR_PATTERN.test(color)) {
     return color;
   }
