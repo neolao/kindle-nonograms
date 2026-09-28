@@ -254,6 +254,21 @@ function renderStackedClue(runs: ClueRun[], multiColor: boolean): string {
     .join("");
 }
 
+// A multi-color puzzle's empty grid cells get a diagonal hatch pattern so
+// they read differently from a cell actually painted white — the ambiguity
+// a single-color puzzle's one fixed palette color never has. The pattern is
+// painted once, as the whole `<table>`'s own background, rather than
+// per-cell: `border-collapse` table background layering already lets a
+// cell's own (opaque, JS-set) `background-color` mask the table's
+// background locally within just its own box, so a filled cell hides the
+// pattern for free, with no client-side bookkeeping — and, since it is one
+// continuous gradient, the diagonal lines run unbroken across every cell
+// boundary instead of restarting inside each cell. A single direction only
+// (never a cross-hatch) so it can't be visually confused with the "✖" glyph
+// a crossed cell already uses. Header cells (`<th>`, clue numbers) get an
+// explicit opaque background of their own so the table's pattern never
+// bleeds under them. See
+// .vibe/decisions/053-empty-cell-pattern-color-puzzles-only.md.
 function renderStyle(puzzle: Puzzle, multiColor: boolean): string {
   const colorClasses = multiColor
     ? puzzle.palette
@@ -262,6 +277,9 @@ function renderStyle(puzzle: Puzzle, multiColor: boolean): string {
           return `.run-c${index}{background-color:${hex};color:${textColor};border:${BORDER_WIDTH.thin} ${BORDER_STYLES[index % BORDER_STYLES.length]} ${textColor};padding:0 0.15em;}`;
         })
         .join("")
+    : "";
+  const emptyCellPattern = multiColor
+    ? `table{background-image:repeating-linear-gradient(45deg,${COLORS.patternInk} 0,${COLORS.patternInk} 1px,transparent 1px,transparent 6px);}th{background-color:${COLORS.panel};}`
     : "";
 
   return `
@@ -278,5 +296,6 @@ tbody td:nth-child(5n+2){border-left-width:${BORDER_WIDTH.medium};}
 tbody tr:nth-child(5n+1) td,tbody tr:nth-child(5n+1) th{border-top-width:${BORDER_WIDTH.medium};}
 .run{display:inline-block;}
 .run-row+.run-row{margin-top:0.2em;}
+${emptyCellPattern}
 ${colorClasses}`;
 }

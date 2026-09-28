@@ -47,6 +47,13 @@ export const COLORS = {
   magentaSoft: "#f6d8e6",
   teal: "#0b7a68",
   tealSoft: "#d3ede7",
+  // Deliberately darker than `line`/`panelEdge` (only ~1.3–1.4:1 contrast
+  // against `panel`): a multi-color puzzle's empty-cell background pattern
+  // needs to survive e-ink grayscale conversion at a small cell size, which
+  // those two pale tokens can't reliably do. ~3.4:1 against `panel`, still
+  // well clear of `border`'s black so it never reads as a grid line — see
+  // .vibe/decisions/053-empty-cell-pattern-color-puzzles-only.md.
+  patternInk: "#9483ad",
 } as const;
 
 /**

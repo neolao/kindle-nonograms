@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- On a multi-color puzzle's play page, an untouched grid cell now shows a subtle diagonal pattern instead of plain white, so it no longer looks identical to a cell you've deliberately painted white — the pattern disappears as soon as a cell is filled with any color.
 - The editor's "Export" now rejects a filename containing anything other than lowercase letters, digits, hyphens or underscores, with a clear inline message — the puzzle name itself stays free-form.
 - The editor's "Import puzzle" now also accepts a `pixel-art-serializer` export: its reserved (transparent) color becomes empty cells, and every other color becomes a puzzle color, automatically detected alongside the two formats already supported.
 - Every puzzle now shows a difficulty rating as a row of stars — in the library list, on its own play page, and in the editor's "Check solvability" confirmation once a draft passes the check.

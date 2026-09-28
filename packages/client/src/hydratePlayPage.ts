@@ -111,6 +111,11 @@ function paintCell(
     // A filled cell is a plain solid-color square, matching the classic
     // nonogram look — no glyph on top. See
     // .vibe/decisions/009-filled-cells-drop-the-disambiguation-glyph.md.
+    // On a multi-color puzzle, this opaque `background-color` also masks
+    // the table-wide empty-cell hatch pattern within just this cell's own
+    // box, for free, via ordinary CSS background layering — no separate
+    // bookkeeping needed here. See
+    // .vibe/decisions/053-empty-cell-pattern-color-puzzles-only.md.
     cell.textContent = "";
     cell.style.backgroundColor = puzzle.palette[mark] ?? "";
     cell.style.color = "";

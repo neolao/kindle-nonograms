@@ -482,4 +482,36 @@ describe("renderPuzzlePage", () => {
     expect(scriptIndex).toBeLessThan(styleIndex);
     expect(scriptIndex).toBeLessThan(moduleScriptIndex);
   });
+
+  it("paints a diagonal background pattern on the whole grid table for a multi-color puzzle, so an untouched cell reads differently from one painted white and the diagonal lines run unbroken across cell borders", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(
+      /table\{background-image:repeating-linear-gradient\(45deg,#9483ad/,
+    );
+  });
+
+  it("gives header (clue) cells their own opaque background for a multi-color puzzle, so the grid's empty-cell pattern never bleeds under the clue numbers", () => {
+    const doc = parse(renderPuzzlePage(multiColorPuzzle));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).toMatch(/th\{background-color:#ffffff;\}/);
+  });
+
+  it("renders no background pattern at all for a single-color puzzle, since it has no white-vs-empty ambiguity to solve", () => {
+    const singleColorPuzzle: Puzzle = {
+      id: "mono",
+      name: "Mono",
+      width: 2,
+      height: 1,
+      palette: ["#000000"],
+      cells: [[0, 0]],
+    };
+
+    const doc = parse(renderPuzzlePage(singleColorPuzzle));
+    const css = doc.querySelector("style")?.textContent ?? "";
+
+    expect(css).not.toContain("background-image");
+  });
 });

@@ -86,6 +86,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - The puzzle editor's "Export" now checks that the filename only uses lowercase letters, numbers, hyphens, and underscores, rejecting anything else with a clear message — the puzzle's own name has no such restriction.
 - A new puzzle, "Heart" (15×15, four colors), is included in the puzzle library.
 - Two new puzzles, "Perroquet" and "Étoile" (both 15×15, multi-color), are included in the puzzle library.
+- On a multi-color puzzle's play page, an untouched cell now shows a subtle diagonal pattern instead of plain white, so it no longer looks the same as a cell you've deliberately painted white — the pattern disappears the moment you fill a cell with any color.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->
