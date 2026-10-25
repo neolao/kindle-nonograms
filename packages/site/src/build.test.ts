@@ -41,6 +41,17 @@ describe("buildSite", () => {
       await rm(outDir, { recursive: true, force: true });
     });
 
+    it("writes the sync page at sync/index.html with the bundle's version query", async () => {
+      const sync = await readFile(join(outDir, "sync", "index.html"), "utf-8");
+      const home = await readFile(join(outDir, "index.html"), "utf-8");
+
+      expect(sync).toContain('data-role="sync-page"');
+      expect(sync).toContain('href="../favicon.svg"');
+      const homeVersion = home.match(/assets\/main\.js\?v=([a-f0-9]+)"/)?.[1];
+      expect(homeVersion).toBeTruthy();
+      expect(sync).toContain(`../assets/main.js?v=${homeVersion}`);
+    });
+
     it("writes the home page and one page per discovered puzzle", async () => {
       const home = await readFile(join(outDir, "index.html"), "utf-8");
       expect(home).toContain('data-puzzle-id="cat"');

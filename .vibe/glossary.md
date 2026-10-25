@@ -59,3 +59,8 @@ _Sources: `packages/shared/src/adapters.ts`_
 The puzzle format produced by the sibling `pixel-art-serializer` project: a grid size plus a flat, indexed pixel array and a palette where one entry is explicitly marked "reserved" (fully transparent). It is converted into this project's Puzzle before use: a pixel referencing the reserved entry becomes an empty cell, every other pixel becomes a puzzle palette color.
 **Do not confuse with:** Puzzle, the format it is converted into; Boolean grid export, the other external format this project also converts.
 _Sources: `packages/shared/src/adapters.ts`, `packages/shared/src/puzzleSourceParsing.ts`_
+
+## Progress sync
+An optional backup of a player's progress on a server they host themselves: after the player saves the server's address and a secret key, each puzzle's progress is sent in the background after every move and fetched when a page opens, so a Kindle that wipes its browser data can restore it. The game never depends on it. Conflicts are settled by a per-puzzle revision counter kept by the server, never by clocks: a device that has no known revision takes the server's copy, and unsent local changes win over a newer server copy.
+**Do not confuse with:** PuzzleProgress, the grid of cell marks being synced; Library page, which only shows the result.
+_Sources: `packages/client/src/sync.ts`, `packages/client/src/syncPlan.ts`, `packages/server/src/app.ts`_

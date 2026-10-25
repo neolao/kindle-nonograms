@@ -16,7 +16,8 @@ Four root-level `*-workflow.test.ts` files (`deploy-workflow.test.ts`, `pr-check
 
 ## Repository convention tests
 
-- `repo-structure.test.ts` guards a past architectural decision (no `packages/server`, no `dev:server` script) so the pivot to a static site doesn't silently regress.
+- `repo-structure.test.ts` guards the architectural boundary around the optional sync server: `packages/server` exists, its `express` dependency lives only in its own manifest (never the root), and the Pages deploy workflow never references it, so the published static site can't silently start depending on it.
+- `sync-contract.test.ts` (repo root) runs the real client sync modules against the real `createApp` server over HTTP on an ephemeral port, with a temp data directory and a small `fetch`-backed `XMLHttpRequest` adapter. Each side's own unit tests only see a hand-written copy of the other side, so this is the test that catches a protocol drift between them (stale-revision handling, a wiped device restoring, a refilled server, pagination, error kinds).
 - `contributing-guide.test.ts` asserts `CONTRIBUTING.md` exists and documents every `Puzzle` field, so a new contributor's puzzle-authoring guide can't drift out of sync with the actual data shape.
 
 ## Content tests

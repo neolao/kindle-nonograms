@@ -2,11 +2,13 @@
 import type { Puzzle } from "@kindle-nonograms/shared";
 import { renderLibraryPage } from "@kindle-nonograms/site";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { FakeXhr } from "./fakeXhr.js";
 import { extractBodyHtml } from "./htmlFixture.js";
 import { hydrate } from "./hydrateLibraryPage.js";
 import { writeLibraryFiltersCookie } from "./libraryFiltersStorage.js";
 import { recordPuzzleOpened } from "./openedStorage.js";
 import { saveProgress } from "./progressStorage.js";
+import { saveSyncConfig } from "./syncConfig.js";
 
 const catPuzzle: Puzzle = {
   id: "cat",
@@ -1295,5 +1297,91 @@ describe("library pagination", () => {
     click(paginationNextButton());
 
     expect(badgeFor("p25").hidden).toBe(false);
+  });
+});
+
+describe("background sync", () => {
+  const reload = vi.fn();
+  const originalLocation = window.location;
+
+  beforeEach(() => {
+    FakeXhr.install();
+    reload.mockClear();
+    Object.defineProperty(window, "location", {
+      value: { ...originalLocation, reload },
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    FakeXhr.uninstall();
+    Object.defineProperty(window, "location", {
+      value: originalLocation,
+      configurable: true,
+    });
+  });
+
+  it("makes no network call when sync is not configured", () => {
+    buildFixture([catPuzzle, dogPuzzle]);
+
+    hydrate();
+
+    expect(FakeXhr.instances).toHaveLength(0);
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it("reloads the page once when the open-time pull replaced some progress", () => {
+    saveSyncConfig({ baseUrl: "https://nonograms.lan", key: "secret" });
+    buildFixture([catPuzzle, dogPuzzle]);
+    hydrate();
+
+    FakeXhr.instances[0].respond(200, {
+      items: [
+        { puzzleId: "cat", cells: [[0, null]], rev: 1 },
+        { puzzleId: "dog", cells: [[null, 0]], rev: 1 },
+      ],
+      nextCursor: null,
+    });
+
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it("reloads only once when the pull and a later stale push both replaced progress", () => {
+    saveSyncConfig({ baseUrl: "https://nonograms.lan", key: "secret" });
+    saveProgress("dog", { cells: [[null, 0]] });
+    buildFixture([catPuzzle, dogPuzzle]);
+    hydrate();
+
+    FakeXhr.instances[0].respond(200, {
+      items: [{ puzzleId: "cat", cells: [[0, null]], rev: 1 }],
+      nextCursor: null,
+    });
+    expect(reload).toHaveBeenCalledTimes(1);
+    FakeXhr.instances[1].respond(409, {
+      error: { code: "progress_stale" },
+      current: { puzzleId: "dog", cells: [[0, null]], rev: 3 },
+    });
+
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not reload when nothing was pulled", () => {
+    saveSyncConfig({ baseUrl: "https://nonograms.lan", key: "secret" });
+    buildFixture([catPuzzle, dogPuzzle]);
+    hydrate();
+
+    FakeXhr.instances[0].respond(200, { items: [], nextCursor: null });
+
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it("does not reload when the server is unreachable", () => {
+    saveSyncConfig({ baseUrl: "https://nonograms.lan", key: "secret" });
+    buildFixture([catPuzzle, dogPuzzle]);
+    hydrate();
+
+    FakeXhr.instances[0].fail();
+
+    expect(reload).not.toHaveBeenCalled();
   });
 });

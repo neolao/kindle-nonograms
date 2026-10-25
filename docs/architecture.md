@@ -2,17 +2,20 @@
 
 # Architecture
 
-Kindle Nonograms is an npm workspaces monorepo. It pivoted from a full-stack (Express) architecture to a static-site generator — no runtime server is needed. It has three packages, plus a set of GitHub Actions workflows that build, deploy, and maintain the site.
+Kindle Nonograms is an npm workspaces monorepo. The game itself is a static site — no runtime server is needed to play. It has four packages, plus a set of GitHub Actions workflows that build, deploy, and maintain the site. The fourth, `server`, is an optional progress-backup service that its owner runs on their own network; it is never built into or deployed with the site.
 
 ```mermaid
 graph LR
-    shared["shared\n(domain types, pure helpers)"]
+    shared["shared\n(domain types, pure helpers, sync wire contract)"]
     client["client\n(Vite frontend bundle)"]
     site["site\n(static-site generator)"]
+    server["server\n(optional LAN sync API)"]
 
     client --> shared
     site --> shared
+    server --> shared
     client -. "renderer fns, for test fixtures" .-> site
+    client -. "HTTPS, XMLHttpRequest" .-> server
 ```
 
 `site` builds the pages that `client`'s bundle hydrates; `client` also imports `site`'s page-rendering functions (never the other way around for production code) purely to build accurate DOM fixtures in its own tests, so a test fixture can never silently drift out of sync with what the renderer actually produces.
@@ -93,6 +96,27 @@ sequenceDiagram
 - `previewPublishDecisions.ts` decides artifact mode (render vs. cleanup), finds the existing comment to edit, and skips a publish for an already-closed PR (guarding against a late run resurrecting a just-cleaned-up preview).
 - `previewBranchGit.ts` does the actual git work against the orphan `puzzle-previews` branch.
 - A daily scheduled sweep (`sweep-previews-cli.ts`, `previewSweepDecisions.ts`) is an independent backstop: it lists every open PR *before* checking out the branch (so a preview created in the gap between the two reads is only ever read as still-open), diffs that against every preview directory, and removes anything orphaned in one combined commit — a no-op when nothing is orphaned.
+
+## `packages/server`
+
+An optional Express service that keeps a copy of each player's progress so a Kindle that wipes its browser data can get it back. It is started by hand (`npm run start --workspace packages/server`), configured only by environment variables (see [docs/configuration.md](configuration.md)), and never built into or deployed with the static site. It depends only on `shared`.
+
+- `app.ts` — `createApp({ keys, dataDir, allowedOrigin })` builds the app. Every `/api` call needs `Authorization: Bearer <key>` (compared in constant time against the configured keys; one identical 401 for a missing or unknown key). `GET /api/progress` lists the key's entries page by page (`limit`, `cursor`, optional `updatedSince`); `PUT /api/progress/:puzzleId` stores one puzzle's grid.
+- Conflicts use a per-puzzle revision counter, not clocks ([decision 054](../.vibe/decisions/054-sync-uses-server-revisions-not-clocks.md)): a write carries the `baseRev` it last saw and is accepted only if it equals the stored revision (a missing entry accepts any `baseRev` and assigns `baseRev + 1`, so a refilled server stays ahead of every device); otherwise the server answers 409 with its own entry. Resending identical cells is a no-op.
+- CORS allows exactly one origin (`ALLOWED_ORIGIN`), on every status code, and answers the preflight (including `Access-Control-Allow-Private-Network`) without authentication. Every response is `Cache-Control: no-store`, and every error uses one `{ error: { code, message } }` envelope.
+- `storage.ts` — one JSON file per key, named after the key's SHA-256; writes go to a temp file that is flushed and renamed over the real one, serialized per key so a compare-and-write is atomic. A file that cannot be parsed is never overwritten: reads and writes fail with `storage_corrupt` (logged to stderr, never with the key).
+- `config.ts` / `index.ts` — read and validate the environment (refusing to start with a clear message), listen, and shut down cleanly on `SIGTERM`/`SIGINT`.
+
+The wire contract both sides rely on (`PROGRESS_ROUTE`, the entry shape and its validator, the revision rule, the `storage_corrupt` code) lives in `shared/src/syncWire.ts`; `shared/src/progress.ts` adds the structural grid check (`isProgressShape`) and the puzzle-id pattern (`isValidPuzzleId`) the server can apply without knowing the puzzle.
+
+### How the client uses it
+
+`client` never talks to the server unless the player saved an address and key on the "Sync progress" page (`packages/site/src/renderSyncPage.ts`, hydrated by `hydrateSyncPage.ts`); without them no request is made and no sync key is written.
+
+- `syncConfig.ts` / `syncMeta.ts` / `storageKeys.ts` — the saved address and key, each puzzle's `{ baseRev, dirty }` record (absent means "never synced here"), and the last-sync status, all in `localStorage`. Saving a different address or key clears every record, since revisions only mean something to the server that issued them.
+- `syncPlan.ts` — the pure decision for one puzzle: pull the server's copy, push the local one (with the revision to send), or do nothing. A device with no known revision takes the server copy; unsent local changes win over a newer server copy; a clean device pulls when its cells differ from the server's at the same revision.
+- `syncClient.ts` — `XMLHttpRequest` with callbacks (no `fetch`, for the old Kindle browser) and a hard timeout; maps every outcome to a small result kind (`ok`, `stale`, `unauthorized`, `network`, `server-error`, `not-a-sync-server`, `mixed-content`).
+- `sync.ts` — the orchestrator: `syncAllOnOpen` pulls and pushes when a page opens; `syncPuzzleAfterSave` marks a puzzle dirty and pushes it after each save, one request in flight per puzzle with the latest cells sent as soon as it returns. Pulled puzzles are reported to the page immediately, before any other request, so the play page repaints before the player can act on stale cells. `cancelRunningSyncs` drops everything an old configuration still had in flight. Every failure is silent to the player and only recorded for the settings page.
 
 ## Deployment
 

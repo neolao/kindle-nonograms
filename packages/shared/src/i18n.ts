@@ -125,7 +125,33 @@ export type TranslationKey =
   | "editor.cellColorAriaLabel"
   | "editor.cellEmptyAriaLabel"
   | "puzzle.difficultyLabel"
-  | "editor.solvabilityDifficulty";
+  | "editor.solvabilityDifficulty"
+  | "library.syncLink"
+  | "sync.title"
+  | "sync.optionalNote"
+  | "sync.urlLabel"
+  | "sync.urlHint"
+  | "sync.keyLabel"
+  | "sync.showKey"
+  | "sync.hideKey"
+  | "sync.saveButton"
+  | "sync.testing"
+  | "sync.forgetButton"
+  | "sync.status.notConfigured"
+  | "sync.status.saved"
+  | "sync.status.connected"
+  | "sync.error.invalidUrl"
+  | "sync.error.emptyKey"
+  | "sync.error.unauthorized"
+  | "sync.error.unreachable"
+  | "sync.error.notSyncServer"
+  | "sync.error.mixedContent"
+  | "sync.error.serverError"
+  | "sync.error.storage"
+  | "sync.confirmForget"
+  | "sync.lastSync"
+  | "sync.lastFailed"
+  | "sync.neverSynced";
 
 const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
   en: {
@@ -225,6 +251,40 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.cellEmptyAriaLabel": "Row {row}, column {column}, Empty",
     "puzzle.difficultyLabel": "Difficulty",
     "editor.solvabilityDifficulty": "Difficulty: {score}/10.",
+    "library.syncLink": "Sync progress",
+    "sync.title": "Sync",
+    "sync.optionalNote":
+      "Sync is optional. The game works fully without it. Use it to keep your progress on a server you run yourself.",
+    "sync.urlLabel": "Server address (required)",
+    "sync.urlHint": "Example: http://192.168.1.20:3000",
+    "sync.keyLabel": "Key (required)",
+    "sync.showKey": "Show",
+    "sync.hideKey": "Hide",
+    "sync.saveButton": "Save and test",
+    "sync.testing": "Testing…",
+    "sync.forgetButton": "Forget this server",
+    "sync.status.notConfigured": "Not configured",
+    "sync.status.saved": "Server saved. Sync is active.",
+    "sync.status.connected": "Connected",
+    "sync.error.invalidUrl":
+      "Failed: invalid address – enter an address starting with http:// or https://",
+    "sync.error.emptyKey": "Failed: no key – enter the key set on the server",
+    "sync.error.unauthorized":
+      "Failed: wrong key – check the key set on the server",
+    "sync.error.unreachable":
+      "Failed: server not reachable – check the address and that the server is running",
+    "sync.error.notSyncServer": "Failed: not a sync server – check the address",
+    "sync.error.mixedContent":
+      "Failed: an http address cannot be used from this https page – use an https address",
+    "sync.error.serverError":
+      "Failed: the server reports an internal error – check the server log",
+    "sync.error.storage":
+      "Failed: could not save – check that the browser allows local storage",
+    "sync.confirmForget":
+      "Forget this server? Your progress on this device is kept.",
+    "sync.lastSync": "Last sync: {time}",
+    "sync.lastFailed": "Last attempt failed",
+    "sync.neverSynced": "No sync yet",
   },
   fr: {
     "library.title": "Kindle Nonograms",
@@ -328,6 +388,42 @@ const TRANSLATIONS: Record<Locale, Record<TranslationKey, string>> = {
     "editor.cellEmptyAriaLabel": "Ligne {row}, colonne {column}, Vide",
     "puzzle.difficultyLabel": "Difficulté",
     "editor.solvabilityDifficulty": "Difficulté : {score}/10.",
+    "library.syncLink": "Synchroniser la progression",
+    "sync.title": "Synchronisation",
+    "sync.optionalNote":
+      "La synchronisation est facultative. Le jeu fonctionne très bien sans elle. Elle sert à conserver votre progression sur un serveur que vous hébergez vous-même.",
+    "sync.urlLabel": "Adresse du serveur (obligatoire)",
+    "sync.urlHint": "Exemple : http://192.168.1.20:3000",
+    "sync.keyLabel": "Clé (obligatoire)",
+    "sync.showKey": "Afficher",
+    "sync.hideKey": "Masquer",
+    "sync.saveButton": "Enregistrer et tester",
+    "sync.testing": "Test en cours…",
+    "sync.forgetButton": "Oublier ce serveur",
+    "sync.status.notConfigured": "Non configuré",
+    "sync.status.saved": "Serveur enregistré. La synchronisation est active.",
+    "sync.status.connected": "Connecté",
+    "sync.error.invalidUrl":
+      "Échec : adresse invalide – saisissez une adresse commençant par http:// ou https://",
+    "sync.error.emptyKey":
+      "Échec : clé manquante – saisissez la clé définie sur le serveur",
+    "sync.error.unauthorized":
+      "Échec : mauvaise clé – vérifiez la clé définie sur le serveur",
+    "sync.error.unreachable":
+      "Échec : serveur injoignable – vérifiez l'adresse et que le serveur est démarré",
+    "sync.error.notSyncServer":
+      "Échec : ce n'est pas un serveur de synchronisation – vérifiez l'adresse",
+    "sync.error.mixedContent":
+      "Échec : une adresse http ne peut pas être utilisée depuis cette page https – utilisez une adresse https",
+    "sync.error.serverError":
+      "Échec : le serveur signale une erreur interne – consultez le journal du serveur",
+    "sync.error.storage":
+      "Échec : enregistrement impossible – vérifiez que le navigateur autorise le stockage local",
+    "sync.confirmForget":
+      "Oublier ce serveur ? Votre progression sur cet appareil est conservée.",
+    "sync.lastSync": "Dernière synchro : {time}",
+    "sync.lastFailed": "Dernier essai échoué",
+    "sync.neverSynced": "Aucune synchro pour l'instant",
   },
 };
 

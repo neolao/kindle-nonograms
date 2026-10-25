@@ -128,6 +128,7 @@ describe("createPuzzle", () => {
     [{ id: "My-Cat" }, "invalidIdFormat"],
     [{ id: "my cat" }, "invalidIdFormat"],
     [{ id: "chat-été" }, "invalidIdFormat"],
+    [{ id: "a".repeat(101) }, "invalidIdFormat"],
     [{ name: "" }, "emptyName"],
     [{ width: 0 }, "invalidDimensions"],
     [{ height: -1 }, "invalidDimensions"],

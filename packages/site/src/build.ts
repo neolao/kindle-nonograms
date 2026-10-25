@@ -7,6 +7,7 @@ import { loadPuzzleSources } from "./discoverPuzzles.js";
 import { renderEditorPage } from "./renderEditorPage.js";
 import { renderLibraryPage } from "./renderLibraryPage.js";
 import { renderPuzzlePage } from "./renderPuzzlePage.js";
+import { renderSyncPage } from "./renderSyncPage.js";
 
 const CLIENT_ROOT = join(
   dirname(fileURLToPath(import.meta.url)),
@@ -82,6 +83,10 @@ export async function buildSite({
     join(editorDir, "index.html"),
     renderEditorPage(assetVersion),
   );
+
+  const syncDir = join(absOutDir, "sync");
+  await mkdir(syncDir, { recursive: true });
+  await writeFile(join(syncDir, "index.html"), renderSyncPage(assetVersion));
 
   for (const puzzle of puzzles) {
     const puzzleDir = join(absOutDir, "puzzles", puzzle.id);

@@ -80,3 +80,26 @@ Defined in: `packages/shared/src/adapters.ts` — the sibling `pixel-art-seriali
 | color | string | 8-digit `#rrggbbaa` hex; normalized to 6-digit `#rrggbb` (alpha dropped) when not `reserved` |
 | reserved | boolean | `true` marks the fully-transparent entry — becomes an empty cell (`null`), never a puzzle palette slot |
 Defined in: `packages/shared/src/adapters.ts`
+
+## WireEntry
+| Field | Type | Notes |
+|---|---|---|
+| puzzleId | string | slug, `/^[a-z0-9_-]{1,100}$/` |
+| cells | PlayerCellMark[][] | rectangular, ≤ 100×100 |
+| rev | number | server-assigned revision, integer ≥ 1 |
+| openedAt | number? | optional, kept by the server, not yet used by the client |
+Defined in: `packages/shared/src/syncWire.ts` — one puzzle's progress as stored and served by the optional sync server.
+
+## SyncMeta (client)
+| Field | Type | Notes |
+|---|---|---|
+| baseRev | number | last server revision this device saw for the puzzle, ≥ 1 |
+| dirty | boolean | local changes not yet accepted by the server |
+Defined in: `packages/client/src/syncMeta.ts` — stored per puzzle under `kindle-nonograms:sync-meta:<id>`; absent means "never synced on this device".
+
+## SyncConfig (client)
+| Field | Type | Notes |
+|---|---|---|
+| baseUrl | string | http(s) address of the sync server, trailing slash stripped |
+| key | string | the player's secret key |
+Defined in: `packages/client/src/syncConfig.ts` — stored under `kindle-nonograms:sync-config`.

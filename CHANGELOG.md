@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Players can now keep a backup of their progress on a small server they host on their own network, so a Kindle that wipes its browser data no longer loses everything. A new "Sync progress" page, linked from the library footer, takes the server address and a secret key, tests the connection and restores the saved progress; afterwards progress is sent in the background after each move and fetched when a page opens, and the game keeps working normally if the server is unreachable. The site still works exactly as before when no server is configured.
 - On a multi-color puzzle's play page, an untouched grid cell now shows a subtle diagonal pattern instead of plain white, so it no longer looks identical to a cell you've deliberately painted white — the pattern disappears as soon as a cell is filled with any color.
 - The editor's "Export" now rejects a filename containing anything other than lowercase letters, digits, hyphens or underscores, with a clear inline message — the puzzle name itself stays free-form.
 - The editor's "Import puzzle" now also accepts a `pixel-art-serializer` export: its reserved (transparent) color becomes empty cells, and every other color becomes a puzzle color, automatically detected alongside the two formats already supported.

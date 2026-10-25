@@ -22,6 +22,7 @@ import {
 } from "./libraryFiltersStorage.js";
 import { loadPuzzleOpenedAt } from "./openedStorage.js";
 import { loadProgress } from "./progressStorage.js";
+import { syncAllOnOpen } from "./sync.js";
 
 // The fixed pixel budget every revealed thumbnail's cells are scaled to fit
 // inside, on the puzzle's longer axis — kept in sync with the fixed 52px
@@ -627,6 +628,23 @@ export function hydrate(): void {
   const puzzles = readPuzzles();
   if (puzzles.length === 0) {
     return;
+  }
+
+  // Optional server sync, started before the early returns below so it also
+  // runs when nothing is solved yet (a wiped Kindle gets restored here).
+  // `syncAllOnOpen` may report several times, so a flag keeps this to one
+  // reload per page view; re-rendering the list in place would be a big
+  // change, and the reloaded page finds nothing left to pull.
+  try {
+    let reloading = false;
+    syncAllOnOpen(() => {
+      if (!reloading) {
+        reloading = true;
+        location.reload();
+      }
+    });
+  } catch {
+    // Degrades silently — the library works without sync.
   }
 
   const solvedById = new Map(

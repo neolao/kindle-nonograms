@@ -1,9 +1,14 @@
 // @vitest-environment jsdom
 import type { Puzzle } from "@kindle-nonograms/shared";
-import { renderEditorPage, renderPuzzlePage } from "@kindle-nonograms/site";
+import {
+  renderEditorPage,
+  renderPuzzlePage,
+  renderSyncPage,
+} from "@kindle-nonograms/site";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { extractBodyHtml } from "./htmlFixture.js";
 import { saveProgress } from "./progressStorage.js";
+import { saveSyncConfig } from "./syncConfig.js";
 
 const puzzle: Puzzle = {
   id: "solo",
@@ -42,6 +47,19 @@ describe("main", () => {
       '[data-puzzle-id="solo"] .solved-badge',
     );
     expect(badge?.hidden).toBe(false);
+  });
+
+  it("hydrates the sync page when loaded on one, and only that page", async () => {
+    saveSyncConfig({ baseUrl: "http://192.168.1.20:3000", key: "k" });
+    document.body.innerHTML = extractBodyHtml(renderSyncPage());
+
+    await import("./main.js");
+
+    const url = document.querySelector<HTMLInputElement>(
+      '[data-role="sync-url"]',
+    );
+    expect(url?.value).toBe("http://192.168.1.20:3000");
+    expect(document.querySelector('[data-role="mode-fill"]')).toBeNull();
   });
 
   it("does not throw when loaded on a page that matches neither shape", async () => {

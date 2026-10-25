@@ -1,4 +1,5 @@
 import type { PuzzleProgress } from "@kindle-nonograms/shared";
+import { keysWithPrefix } from "./storageKeys.js";
 
 const STORAGE_KEY_PREFIX = "kindle-nonograms:progress:";
 
@@ -48,5 +49,19 @@ export function loadProgress(puzzleId: string): PuzzleProgress | undefined {
     return JSON.parse(raw) as PuzzleProgress;
   } catch {
     return undefined;
+  }
+}
+
+/**
+ * The ids of every puzzle with a stored progress entry, scanned from the
+ * `localStorage` keys. Empty when storage is unavailable/throws.
+ */
+export function listProgressPuzzleIds(): string[] {
+  try {
+    return keysWithPrefix(STORAGE_KEY_PREFIX).map((key) =>
+      key.slice(STORAGE_KEY_PREFIX.length),
+    );
+  } catch {
+    return [];
   }
 }

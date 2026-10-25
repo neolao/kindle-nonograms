@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   correctWrongCells,
   createEmptyProgressGrid,
+  isProgressShape,
   isPuzzleSolved,
+  isValidPuzzleId,
 } from "./progress.js";
 import type { Puzzle } from "./puzzle.js";
 
@@ -234,5 +236,80 @@ describe("correctWrongCells", () => {
     const progress = { cells: [[0, null]] };
 
     expect(() => correctWrongCells(fixturePuzzle(), progress)).toThrow();
+  });
+});
+
+describe("isProgressShape", () => {
+  it("accepts a rectangular grid of colors, marks and untouched cells", () => {
+    expect(
+      isProgressShape([
+        [0, "marked", null],
+        [12, null, "marked"],
+      ]),
+    ).toBe(true);
+  });
+
+  it("accepts the largest allowed grid of 100 x 100", () => {
+    expect(isProgressShape(createEmptyProgressGrid(100, 100))).toBe(true);
+  });
+
+  it("rejects a grid wider or taller than 100", () => {
+    expect(isProgressShape(createEmptyProgressGrid(101, 1))).toBe(false);
+    expect(isProgressShape(createEmptyProgressGrid(1, 101))).toBe(false);
+  });
+
+  it("rejects non-arrays and empty grids", () => {
+    expect(isProgressShape(null)).toBe(false);
+    expect(isProgressShape("grid")).toBe(false);
+    expect(isProgressShape([])).toBe(false);
+    expect(isProgressShape([[]])).toBe(false);
+  });
+
+  it("rejects a ragged grid", () => {
+    expect(isProgressShape([[null, null], [null]])).toBe(false);
+  });
+
+  it("rejects a row that is not an array", () => {
+    expect(isProgressShape(["ab"])).toBe(false);
+    expect(isProgressShape([[null, null], "ab"])).toBe(false);
+  });
+
+  it.each([
+    -1,
+    1.5,
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    "x",
+    true,
+    {},
+    undefined,
+  ])("rejects the invalid cell %s", (cell) => {
+    expect(isProgressShape([[cell]])).toBe(false);
+  });
+});
+
+describe("isValidPuzzleId", () => {
+  it.each([
+    "flag",
+    "my_puzzle-2",
+    "12f34657-8f86-4d59-a30b-ea11099dbe95",
+    "a".repeat(100),
+  ])("accepts %s", (id) => {
+    expect(isValidPuzzleId(id)).toBe(true);
+  });
+
+  it.each([
+    "",
+    "a".repeat(101),
+    "../x",
+    "a/b",
+    "A",
+    "a b",
+    "a.json",
+    "é",
+    42,
+    null,
+  ])("rejects %s", (id) => {
+    expect(isValidPuzzleId(id)).toBe(false);
   });
 });

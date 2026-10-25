@@ -16,14 +16,15 @@ English — all documentation, backlog items, code comments, and other generated
 
 ## Architecture
 
-npm workspaces monorepo with three packages: `shared` holds domain types and pure logic used by both sides, `server` is the Express API (and will serve the built client in production), `client` is the vanilla TypeScript frontend built with Vite, targeting `es2015` for compatibility with Kindle's browser.
+npm workspaces monorepo with four packages: `shared` holds domain types and pure logic used by every other package, `site` generates the static pages, `client` is the vanilla TypeScript frontend built with Vite (targeting `es2015` for compatibility with Kindle's browser), and `server` is an optional Express service for backing up player progress on the owner's own network — it is never part of the published static site.
 
 ```
 kindle-nonograms/
 ├── packages/
-│   ├── shared/   # domain types and pure helpers shared by server and client
-│   ├── server/   # Express API (src/app.ts builds the app, src/index.ts starts it)
-│   └── client/   # vanilla TS frontend, built with Vite (es2015 target for Kindle's browser)
+│   ├── shared/   # domain types, pure helpers and the sync wire contract shared by the other packages
+│   ├── site/     # static-site generator (renders every page, builds the client bundle)
+│   ├── client/   # vanilla TS frontend, built with Vite (es2015 target for Kindle's browser)
+│   └── server/   # optional LAN progress-sync API (src/app.ts builds the app, src/index.ts starts it)
 ├── package.json  # workspace root — test/lint/build scripts
 ├── biome.json    # lint + format configuration
 └── vitest.config.ts
@@ -110,6 +111,11 @@ Agents active for `/vibe:review` on this project:
 | `vibe:review-antipatterns` | ✅ | always active |
 | `vibe:review-simplicity` | ✅ | always active |
 | `vibe:review-overengineering` | ✅ | always active |
+| `vibe:review-correctness` | ✅ | always active |
+| `vibe:review-comments` | ✅ | always active |
+| `vibe:review-signatures` | ✅ | always active |
+| `vibe:review-coordination` | ✅ | always active |
+| `vibe:review-docs` | ✅ | active: `.vibe/` and `docs/` hold Markdown documentation |
 | `vibe:review-solid` | ❌ | inactive: no OO or modular class-based architecture yet — reconsider once the game engine grows |
 | `vibe:review-ddd` | ❌ | inactive: no explicit domain layer (`domain/`, `entities/`, etc.) |
 | `vibe:review-architecture` | ✅ | active once `.vibe/` exists (created by `/vibe:sync`) |

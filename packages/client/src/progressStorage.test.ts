@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { loadProgress, saveProgress } from "./progressStorage.js";
+import {
+  listProgressPuzzleIds,
+  loadProgress,
+  saveProgress,
+} from "./progressStorage.js";
 
 afterEach(() => {
   localStorage.clear();
@@ -60,5 +64,29 @@ describe("saveProgress / loadProgress", () => {
 
     expect(() => loadProgress("flag")).not.toThrow();
     expect(loadProgress("flag")).toBeUndefined();
+  });
+});
+
+describe("listProgressPuzzleIds", () => {
+  it("lists the ids that have stored progress, ignoring other keys", () => {
+    saveProgress("cat", { cells: [[0]] });
+    saveProgress("dog", { cells: [[1]] });
+    localStorage.setItem("kindle-nonograms:sync-meta:bird", "{}");
+    localStorage.setItem("other", "x");
+
+    expect(listProgressPuzzleIds().sort()).toEqual(["cat", "dog"]);
+  });
+
+  it("returns an empty list when nothing is stored", () => {
+    expect(listProgressPuzzleIds()).toEqual([]);
+  });
+
+  it("returns an empty list instead of throwing when storage is unavailable", () => {
+    saveProgress("cat", { cells: [[0]] });
+    vi.spyOn(Storage.prototype, "key").mockImplementation(() => {
+      throw new Error("denied");
+    });
+
+    expect(listProgressPuzzleIds()).toEqual([]);
   });
 });

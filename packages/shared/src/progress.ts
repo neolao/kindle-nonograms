@@ -15,6 +15,52 @@ export interface PuzzleProgress {
   cells: PlayerCellMark[][];
 }
 
+/** Largest width or height a stored progress grid may have. */
+const MAX_PROGRESS_DIMENSION = 100;
+
+const PUZZLE_ID_PATTERN = /^[a-z0-9_-]{1,100}$/;
+
+function isPlayerCellMark(value: unknown): value is PlayerCellMark {
+  return (
+    value === null ||
+    value === "marked" ||
+    (typeof value === "number" && Number.isInteger(value) && value >= 0)
+  );
+}
+
+/**
+ * Structural check of a progress grid received from outside (no puzzle
+ * needed): non-empty, rectangular, at most 100 x 100, every cell a
+ * non-negative integer color, "marked" or `null`.
+ */
+export function isProgressShape(value: unknown): value is PlayerCellMark[][] {
+  if (
+    !Array.isArray(value) ||
+    value.length === 0 ||
+    value.length > MAX_PROGRESS_DIMENSION
+  ) {
+    return false;
+  }
+
+  const width = Array.isArray(value[0]) ? value[0].length : 0;
+  if (width === 0 || width > MAX_PROGRESS_DIMENSION) {
+    return false;
+  }
+
+  return value.every(
+    (row) =>
+      Array.isArray(row) && row.length === width && row.every(isPlayerCellMark),
+  );
+}
+
+/**
+ * Whether a string is a plain puzzle slug (lowercase letters, digits, hyphen,
+ * underscore; 1 to 100 characters) — safe to use as a storage key.
+ */
+export function isValidPuzzleId(value: unknown): value is string {
+  return typeof value === "string" && PUZZLE_ID_PATTERN.test(value);
+}
+
 function isPositiveInteger(value: number): boolean {
   return Number.isInteger(value) && value > 0;
 }

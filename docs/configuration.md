@@ -6,6 +6,20 @@
 
 Not an environment variable, but a build-time setting worth knowing about: `packages/client/vite.config.ts` sets `build.target` to `es2015` to match the JS baseline supported by Kindle's built-in browser. Change it only after confirming compatibility with the target Kindle models. The same config also sets `base: "./"` so the built assets resolve correctly regardless of the subpath they're served from (e.g. a GitHub Pages project page).
 
+## Sync server (`packages/server`)
+
+The optional progress-sync server (`npm run start --workspace packages/server`) is configured only through environment variables. It is run by whoever hosts it and is never part of the GitHub Pages deployment.
+
+| Variable | Purpose | Required | Default |
+|---|---|---|---|
+| `KINDLE_SYNC_KEYS` | Comma-separated secret keys; each key is one player's backup space. Every key must be at least 16 characters | Yes | — |
+| `ALLOWED_ORIGIN` | The one browser origin allowed to call the API (CORS), as a bare origin such as `https://your-name.github.io` — no trailing slash, no path | Yes | — |
+| `DATA_DIR` | Directory holding one JSON file per key (named after the key's SHA-256) | No | `sync-data` (git-ignored) |
+| `PORT` | TCP port to listen on (1–65535) | No | `3000` |
+| `HOST` | Interface to bind | No | `0.0.0.0` |
+
+The server refuses to start, naming the problem, when a required variable is missing or invalid. It speaks plain HTTP: put it behind a TLS reverse proxy, because the page that talks to it is served over HTTPS and a browser blocks calls to a plain `http://` address from an HTTPS page (mixed content).
+
 ## CI environment variables
 
 These are only used by scripts run from GitHub Actions workflows, never needed for local development. Every one of them is supplied automatically by the workflow that runs the script (`${{ secrets.GITHUB_TOKEN }}`, `${{ github.repository }}`, …) — there is nothing to set up manually, and no `.env` file exists or is needed.

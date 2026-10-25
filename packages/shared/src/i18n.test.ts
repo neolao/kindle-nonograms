@@ -68,6 +68,32 @@ const ALL_KEYS: TranslationKey[] = [
   "editor.solvabilitySuggestion",
   "editor.valueEmptyLabel",
   "editor.valueColorLabel",
+  "library.syncLink",
+  "sync.title",
+  "sync.optionalNote",
+  "sync.urlLabel",
+  "sync.urlHint",
+  "sync.keyLabel",
+  "sync.showKey",
+  "sync.hideKey",
+  "sync.saveButton",
+  "sync.testing",
+  "sync.forgetButton",
+  "sync.status.notConfigured",
+  "sync.status.saved",
+  "sync.status.connected",
+  "sync.error.invalidUrl",
+  "sync.error.emptyKey",
+  "sync.error.unauthorized",
+  "sync.error.unreachable",
+  "sync.error.notSyncServer",
+  "sync.error.mixedContent",
+  "sync.error.serverError",
+  "sync.error.storage",
+  "sync.confirmForget",
+  "sync.lastSync",
+  "sync.lastFailed",
+  "sync.neverSynced",
 ];
 
 describe("SUPPORTED_LOCALES and DEFAULT_LOCALE", () => {
@@ -395,5 +421,48 @@ describe("isSupportedLocale", () => {
     expect(isSupportedLocale(undefined)).toBe(false);
     expect(isSupportedLocale(null)).toBe(false);
     expect(isSupportedLocale(42)).toBe(false);
+  });
+});
+
+describe("sync page strings", () => {
+  it("words the connection failures as a cause followed by what to do, in English", () => {
+    expect(translate("en", "sync.error.unauthorized")).toBe(
+      "Failed: wrong key – check the key set on the server",
+    );
+    expect(translate("en", "sync.error.unreachable")).toBe(
+      "Failed: server not reachable – check the address and that the server is running",
+    );
+    expect(translate("en", "sync.error.notSyncServer")).toBe(
+      "Failed: not a sync server – check the address",
+    );
+    expect(translate("en", "sync.error.mixedContent")).toBe(
+      "Failed: an http address cannot be used from this https page – use an https address",
+    );
+    expect(translate("en", "sync.error.serverError")).toBe(
+      "Failed: the server reports an internal error – check the server log",
+    );
+    expect(translate("en", "sync.lastSync")).toBe("Last sync: {time}");
+    expect(translate("en", "sync.saveButton")).toBe("Save and test");
+    expect(translate("en", "sync.testing")).toBe("Testing…");
+  });
+
+  it("words the same strings in French with their accents", () => {
+    expect(translate("fr", "sync.error.unauthorized")).toBe(
+      "Échec : mauvaise clé – vérifiez la clé définie sur le serveur",
+    );
+    expect(translate("fr", "sync.error.unreachable")).toBe(
+      "Échec : serveur injoignable – vérifiez l'adresse et que le serveur est démarré",
+    );
+    expect(translate("fr", "sync.error.notSyncServer")).toBe(
+      "Échec : ce n'est pas un serveur de synchronisation – vérifiez l'adresse",
+    );
+    expect(translate("fr", "sync.error.serverError")).toBe(
+      "Échec : le serveur signale une erreur interne – consultez le journal du serveur",
+    );
+    expect(translate("fr", "sync.lastSync")).toBe("Dernière synchro : {time}");
+    expect(translate("fr", "sync.lastFailed")).toBe("Dernier essai échoué");
+    expect(translate("fr", "sync.saveButton")).toBe("Enregistrer et tester");
+    expect(translate("fr", "sync.testing")).toBe("Test en cours…");
+    expect(translate("fr", "sync.forgetButton")).toBe("Oublier ce serveur");
   });
 });

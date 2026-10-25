@@ -2,10 +2,12 @@
 import type { Puzzle, PuzzleProgress } from "@kindle-nonograms/shared";
 import { renderPuzzlePage } from "@kindle-nonograms/site";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { FakeXhr } from "./fakeXhr.js";
 import { extractBodyHtml } from "./htmlFixture.js";
 import { hydrate } from "./hydratePlayPage.js";
 import { loadPuzzleOpenedAt } from "./openedStorage.js";
 import { loadProgress, saveProgress } from "./progressStorage.js";
+import { saveSyncConfig } from "./syncConfig.js";
 
 const soloPuzzle: Puzzle = {
   id: "solo",
@@ -1177,5 +1179,134 @@ describe("opened timestamp", () => {
     hydrate();
 
     expect(loadPuzzleOpenedAt("solo")).toBeUndefined();
+  });
+});
+
+describe("background sync", () => {
+  beforeEach(() => {
+    FakeXhr.install();
+  });
+
+  afterEach(() => {
+    // Settle what a test left on the wire, so no puzzle stays "in flight".
+    for (const request of FakeXhr.instances) {
+      if (request.readyState !== 4) {
+        request.fail();
+      }
+    }
+    FakeXhr.uninstall();
+  });
+
+  function emptyServerPage(): void {
+    FakeXhr.instances[0].respond(200, { items: [], nextCursor: null });
+  }
+
+  it("makes no network call at all when sync is not configured", () => {
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    cell(0, 0).click();
+    checkButton()?.click();
+
+    expect(FakeXhr.instances).toHaveLength(0);
+  });
+
+  it("pushes the saved progress after a tap when sync is configured", () => {
+    saveSyncConfig({ baseUrl: "https://nonograms.lan", key: "secret" });
+    buildFixture(soloPuzzle);
+    hydrate();
+    emptyServerPage();
+
+    cell(0, 0).click();
+
+    expect(FakeXhr.instances).toHaveLength(2);
+    const put = FakeXhr.instances[1];
+    expect(put.method).toBe("PUT");
+    expect(put.url).toBe("https://nonograms.lan/api/progress/solo");
+    expect(JSON.parse(put.body ?? "")).toEqual({
+      cells: [[0, null]],
+      baseRev: 0,
+    });
+  });
+
+  it("repaints the grid with the server's copy when the server refuses the tap's push of a puzzle this device never synced", () => {
+    saveSyncConfig({ baseUrl: "https://nonograms.lan", key: "secret" });
+    buildFixture(soloPuzzle);
+    hydrate();
+    emptyServerPage();
+
+    cell(0, 0).click();
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
+    FakeXhr.instances[1].respond(409, {
+      error: { code: "progress_stale" },
+      current: { puzzleId: "solo", cells: [[null, "marked"]], rev: 4 },
+    });
+
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+    expect(loadProgress("solo")).toEqual({ cells: [[null, "marked"]] });
+  });
+
+  it("does not push when the local save fails", () => {
+    saveSyncConfig({ baseUrl: "https://nonograms.lan", key: "secret" });
+    buildFixture(soloPuzzle);
+    hydrate();
+    emptyServerPage();
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("quota");
+    });
+
+    cell(0, 0).click();
+
+    expect(FakeXhr.instances).toHaveLength(1);
+    expect(storageWarning()?.hidden).toBe(false);
+  });
+
+  it("repaints the grid and saves when the open-time pull replaces this puzzle's progress", () => {
+    saveSyncConfig({ baseUrl: "https://nonograms.lan", key: "secret" });
+    buildFixture(soloPuzzle);
+    hydrate();
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+
+    FakeXhr.instances[0].respond(200, {
+      items: [{ puzzleId: "solo", cells: [[0, null]], rev: 3 }],
+      nextCursor: null,
+    });
+
+    expect(cell(0, 0).style.backgroundColor).toBe("rgb(0, 0, 0)");
+    expect(loadProgress("solo")).toEqual({ cells: [[0, null]] });
+    expect(banner()?.hidden).toBe(false);
+  });
+
+  it("repaints the pulled grid before another puzzle's push is answered, so a tap builds on the server's cells", () => {
+    saveSyncConfig({ baseUrl: "https://nonograms.lan", key: "secret" });
+    saveProgress("other", { cells: [[0, 0]] });
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    FakeXhr.instances[0].respond(200, {
+      items: [{ puzzleId: "solo", cells: [[null, "marked"]], rev: 5 }],
+      nextCursor: null,
+    });
+    expect(FakeXhr.instances[1].url).toBe(
+      "https://nonograms.lan/api/progress/other",
+    );
+    expect(FakeXhr.instances[1].readyState).not.toBe(4);
+    cell(0, 0).click();
+
+    expect(loadProgress("solo")).toEqual({ cells: [[0, "marked"]] });
+  });
+
+  it("leaves the grid alone when only another puzzle was pulled", () => {
+    saveSyncConfig({ baseUrl: "https://nonograms.lan", key: "secret" });
+    buildFixture(soloPuzzle);
+    hydrate();
+
+    FakeXhr.instances[0].respond(200, {
+      items: [{ puzzleId: "other", cells: [[0, 0]], rev: 1 }],
+      nextCursor: null,
+    });
+
+    expect(cell(0, 0).style.backgroundColor).toBe("");
+    expect(loadProgress("other")).toEqual({ cells: [[0, 0]] });
   });
 });

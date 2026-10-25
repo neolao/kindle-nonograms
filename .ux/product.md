@@ -5,11 +5,11 @@
 
 ## What it is
 
-Kindle Nonograms is a nonogram (picross) puzzle game meant to be played directly in the built-in browser of a Kindle e-reader. A static site lists a library of puzzles; each puzzle has its own page with a color-coded clue grid the player fills in by tapping cells, with progress saved locally. A separate in-browser editor lets a contributor build a new puzzle and export it for submission via a GitHub pull request.
+Kindle Nonograms is a nonogram (picross) puzzle game meant to be played directly in the built-in browser of a Kindle e-reader. A static site lists a library of puzzles; each puzzle has its own page with a color-coded clue grid the player fills in by tapping cells, with progress saved locally (and, if the player sets it up, copied to a sync server they run themselves). A separate in-browser editor lets a contributor build a new puzzle and export it for submission via a GitHub pull request.
 
 ## Platform & surface
 
-- **Platform:** web — a statically generated site (`packages/site`) with a small client-side hydration bundle (`packages/client`, Vite, `es2015` target); no backend/server.
+- **Platform:** web — a statically generated site (`packages/site`) with a small client-side hydration bundle (`packages/client`, Vite, `es2015` target); no backend needed to play. An optional LAN sync server (`packages/server`) can store progress so a wiped device gets it back; the static site works fully alone, and sync is set up from the `/sync/` page.
 - **Devices & input:** primarily a Kindle e-reader's touchscreen, e-ink display (slow refresh, no animations/transitions). Desktop/mobile browsers with mouse and keyboard are a secondary, best-effort concern only — the UI is not judged against desktop/keyboard expectations.
 - **Runs with:** `npm run build` then `npm run preview` (static site, no dev server needed for the built output); `npm run dev:client` for the client bundle in isolation.
 

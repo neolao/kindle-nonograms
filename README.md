@@ -87,6 +87,7 @@ A nonogram (picross) puzzle game designed to be played directly in the built-in 
 - A new puzzle, "Heart" (15×15, four colors), is included in the puzzle library.
 - Two new puzzles, "Perroquet" and "Étoile" (both 15×15, multi-color), are included in the puzzle library.
 - On a multi-color puzzle's play page, an untouched cell now shows a subtle diagonal pattern instead of plain white, so it no longer looks the same as a cell you've deliberately painted white — the pattern disappears the moment you fill a cell with any color.
+- You can keep a backup of your progress on a small server you host on your own network, so a Kindle that wipes its browser data no longer loses everything: a "Sync progress" page takes the server's address and your secret key, restores what was saved, and from then on your progress is sent in the background after each move. The game works exactly as before when no server is set up.
 <!-- vibe:end:features -->
 
 <!-- vibe:begin:install -->
@@ -120,6 +121,12 @@ Preview the built site locally over HTTP:
 
 ```bash
 npm run preview
+```
+
+Run the optional progress-sync server (for backing up progress on your own network; it is never part of the published site). It needs at least one secret key of 16 characters or more, and the address of the site that will talk to it. Put it behind an HTTPS reverse proxy so the key is not sent in clear text:
+
+```bash
+KINDLE_SYNC_KEYS=a-long-secret-key ALLOWED_ORIGIN=https://your-name.github.io npm run start --workspace packages/server
 ```
 
 Run the test suite:

@@ -231,6 +231,24 @@ describe("renderLibraryPage", () => {
     }
   });
 
+  it("links to the optional sync page from the footer, next to the editor link, even when the library is empty", () => {
+    const withPuzzles = parse(renderLibraryPage(puzzles));
+    const empty = parse(renderLibraryPage([]));
+
+    for (const doc of [withPuzzles, empty]) {
+      const link = doc.querySelector('a[href="sync/"]');
+      expect(link).not.toBeNull();
+      expect(link?.getAttribute("data-i18n")).toBe("library.syncLink");
+      expect(link?.textContent).toBe("Sync progress");
+      expect(link?.getAttribute("target")).toBeNull();
+      expect(link?.textContent).not.toContain("↗");
+      expect(link?.parentElement?.className).toBe("page-footer-links");
+      expect(link?.parentElement).toBe(
+        doc.querySelector('a[href="editor/"]')?.parentElement,
+      );
+    }
+  });
+
   it("escapes special characters in a puzzle's name instead of injecting markup", () => {
     const doc = parse(
       renderLibraryPage([

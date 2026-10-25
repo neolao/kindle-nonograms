@@ -9,3 +9,4 @@
 export { renderLibraryPage } from "./renderLibraryPage.js";
 export { renderPuzzlePage } from "./renderPuzzlePage.js";
 export { renderEditorPage } from "./renderEditorPage.js";
+export { renderSyncPage } from "./renderSyncPage.js";

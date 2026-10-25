@@ -21,6 +21,7 @@ import {
   progressStorageKey,
   saveProgress,
 } from "./progressStorage.js";
+import { syncAllOnOpen, syncPuzzleAfterSave } from "./sync.js";
 
 type Mode = "fill" | "cross";
 
@@ -527,21 +528,17 @@ function handleCheck(
 }
 
 /**
- * Runs on the browser's native `storage` event — fired automatically in
- * every other same-origin tab when `localStorage` changes, and never in the
- * tab that made the write, so a tab can never react to its own action. Only
- * a change to this exact puzzle's progress key resyncs the page; `key ===
- * null` (a whole-area `localStorage.clear()`) also resyncs, since that
- * clears this puzzle's progress too even though no single key changed. Any
- * other key (a different puzzle's progress, the "recently opened"
- * timestamp, anything else) is left alone. Deliberately touches only the
- * grid and win banner — the one-time storage/restore-warning notes keep
- * their own existing, load-time/action-scoped lifecycle untouched by this
- * resync. See .vibe/decisions/037-cross-tab-progress-sync-scoped-to-grid-and-banner.md
+ * Re-reads this puzzle's saved progress and repaints the grid and win
+ * banner from it. Called when another tab changed that progress (the native
+ * `storage` event, which is never fired in the tab that made the write, so a
+ * tab can never react to its own action) and when a background sync pulled
+ * a newer copy. Deliberately touches only the grid and win banner — the
+ * one-time storage/restore-warning notes keep their own existing,
+ * load-time/action-scoped lifecycle untouched by this resync. See
+ * .vibe/decisions/037-cross-tab-progress-sync-scoped-to-grid-and-banner.md
  * (backlog item 059).
  */
-function handleStorageSync(
-  event: StorageEvent,
+function resyncGrid(
   table: HTMLTableElement,
   puzzle: Puzzle,
   progress: PuzzleProgress,
@@ -549,10 +546,6 @@ function handleStorageSync(
   locale: Locale,
   anchor: HTMLElement,
 ): void {
-  if (event.key !== null && event.key !== progressStorageKey(puzzle.id)) {
-    return;
-  }
-
   progress.cells = readProgress(puzzle).progress.cells;
   repaintAllCells(table, puzzle, progress);
 
@@ -668,8 +661,15 @@ export function hydrate(): void {
   // can't both slip through and show/re-fit twice.
   let storageWarningShown = false;
 
+  const puzzleId = puzzle.id;
+
   function reportSaveResult(success: boolean): void {
-    if (success || storageWarningShown || !storageWarning) {
+    if (success) {
+      // A failed local save must not sync; sync itself never throws.
+      syncPuzzleAfterSave(puzzleId, resync);
+      return;
+    }
+    if (storageWarningShown || !storageWarning) {
       return;
     }
     storageWarningShown = true;
@@ -753,11 +753,32 @@ export function hydrate(): void {
   applyGridFit(anchor, table);
   window.addEventListener("resize", () => applyGridFit(anchor, table));
 
+  const resync = (): void =>
+    resyncGrid(table, puzzle, progress, banner, locale, anchor);
+
   // Cross-tab progress sync (backlog item 059): resyncs this tab's grid and
   // win banner when another open tab changes this puzzle's saved progress.
-  window.addEventListener("storage", (event) =>
-    handleStorageSync(event, table, puzzle, progress, banner, locale, anchor),
-  );
+  // Only a change to this exact puzzle's progress key counts; `key === null`
+  // (a whole-area `localStorage.clear()`) also does, since that clears this
+  // puzzle's progress too even though no single key changed.
+  window.addEventListener("storage", (event) => {
+    if (event.key === null || event.key === progressStorageKey(puzzle.id)) {
+      resync();
+    }
+  });
+
+  // Optional server sync: pulls newer progress (e.g. a wiped Kindle being
+  // restored) and repaints this grid if it was this puzzle's that changed.
+  // Isolated like the setup above so it can never dead-end the page.
+  try {
+    syncAllOnOpen((puzzleIds) => {
+      if (puzzleIds.indexOf(puzzle.id) !== -1) {
+        resync();
+      }
+    });
+  } catch {
+    // Degrades silently — the game works without sync.
+  }
 }
 
 if (typeof document !== "undefined") {
