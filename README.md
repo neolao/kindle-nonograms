@@ -123,7 +123,7 @@ Preview the built site locally over HTTP:
 npm run preview
 ```
 
-Run the optional progress-sync server (for backing up progress on your own network; it is never part of the published site). It needs at least one secret key of 16 characters or more, and the address of the site that will talk to it. Put it behind an HTTPS reverse proxy so the key is not sent in clear text:
+Run the optional progress-sync server (for backing up progress on your own network; it is never part of the published site). It needs at least one secret key of 16 characters or more, and the address of the site that will talk to it. Put it behind an HTTPS reverse proxy so the key is not sent in clear text — [docs/sync-server.md](docs/sync-server.md) is the full setup guide (install, keep it running, HTTPS, connecting the Kindle, troubleshooting):
 
 ```bash
 KINDLE_SYNC_KEYS=a-long-secret-key ALLOWED_ORIGIN=https://your-name.github.io npm run start --workspace packages/server
@@ -147,6 +147,7 @@ npm run lint
 <!-- vibe:begin:docs-index -->
 - [docs/architecture.md](docs/architecture.md) — how the project's packages fit together, and how the site is built, deployed, and kept in sync with pull request previews.
 - [docs/configuration.md](docs/configuration.md) — build-time settings and the environment variables the automated workflows rely on.
+- [docs/sync-server.md](docs/sync-server.md) — how to install, run and secure the optional progress-sync server, connect a Kindle to it, and fix common problems.
 - [docs/testing.md](docs/testing.md) — the kinds of tests in the suite, what each one covers, and how to run them.
 <!-- vibe:end:docs-index -->
 
