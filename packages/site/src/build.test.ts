@@ -80,6 +80,16 @@ describe("buildSite", () => {
       expect(favicon).toContain("<svg");
     });
 
+    it("serves the Google Search Console verification file at the site root", async () => {
+      const verification = await readFile(
+        join(outDir, "googledc8842216a77ee3d.html"),
+        "utf-8",
+      );
+      expect(verification).toContain(
+        "google-site-verification: googledc8842216a77ee3d.html",
+      );
+    });
+
     it("only ever emits relative internal links and asset paths, never absolute or host-rooted", async () => {
       const home = await readFile(join(outDir, "index.html"), "utf-8");
       const catPage = await readFile(
